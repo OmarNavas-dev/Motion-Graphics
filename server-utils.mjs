@@ -32,6 +32,12 @@ const safeAsset = /^user-assets\/[0-9a-f-]{36}\.(?:png|jpg|jpeg|webp|mp3|wav|m4a
 const text = (value, max = 90) => String(value ?? '').trim().slice(0, max);
 const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
 
+const normalizeAuthored = (authored) => {
+  if (!authored || typeof authored !== 'object' || !Array.isArray(authored.layers)) return undefined;
+  // authored es una composición completa: no reducir ni reinterpretar sus capas.
+  return structuredClone(authored);
+};
+
 export function validateProject(raw) {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
     throw new Error('El proyecto debe ser un objeto JSON.');
@@ -121,6 +127,7 @@ export function validateProject(raw) {
         focusX: Math.round(Math.min(100, Math.max(0, number(scene.focusX, 50)))),
         focusY: Math.round(Math.min(100, Math.max(0, number(scene.focusY, 50)))),
         customScene: sanitizeCustomScene(scene.customScene, index + 1),
+         authored: normalizeAuthored(scene.authored),
         layers: (Array.isArray(scene.layers) ? scene.layers : []).slice(0, 8).map((rawLayer, layerIndex) => {
           const layer = rawLayer && typeof rawLayer === 'object' ? rawLayer : {};
           return {id: text(layer.id || `layer-${layerIndex + 1}`, 45).replace(/[^a-zA-Z0-9-_]/g, ''), asset: validateAsset(layer.asset, 'image'), depth: Math.round(Math.min(100, Math.max(-100, number(layer.depth, 0)))), x: Math.round(Math.min(100, Math.max(0, number(layer.x, 50)))), y: Math.round(Math.min(100, Math.max(0, number(layer.y, 50)))), scale: Math.round(Math.min(3, Math.max(0.1, number(layer.scale, 1))) * 100) / 100, opacity: Math.round(Math.min(1, Math.max(0, number(layer.opacity, 1))) * 100) / 100};

@@ -1,0 +1,10 @@
+export type MotionCamera = {x:number;y:number;zoom:number;rotate:number;tx?:number;ty?:number;scale?:number};
+export type MotionState = {opacity:number;x:number;y:number;scale:number;reveal?:number;blur?:number;rotate?:number;scaleY?:number};
+export function cameraAt(camera: Record<string, unknown>|undefined, u:number): MotionCamera;
+export function layerCamera(cam: MotionCamera, depth?:number): {tx:number;ty:number;scale:number;rotate:number};
+export function enterState(preset:string, seconds:number, spring?:string): MotionState;
+export function idleState(idle: Record<string, unknown>|undefined, seconds:number): MotionState;
+export function makeParticles(spec: Record<string, unknown>): Array<Record<string, number>>;
+export function particleState(kind:string, particle:Record<string, number>, seconds:number, speed?:number): {x:number;y:number;opacity:number};
+export function captionState(words:Array<Record<string, unknown>>, seconds:number): Array<{w:string;box:boolean;active:boolean;age:number}>|null;
+export function flicker(frame:number, amount:number):number;

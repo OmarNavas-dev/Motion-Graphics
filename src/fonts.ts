@@ -1,0 +1,5 @@
+import {useState} from 'react';
+import {cancelRender,continueRender,delayRender,staticFile} from 'remotion';
+export const FONT_FAMILIES={impact:'"MS Anton", Impact, "Arial Black", sans-serif',serifit:'"MS Playfair", Georgia, serif',sansbold:'"MS Inter", Arial, Helvetica, sans-serif',hand:'"MS Caveat", "Comic Sans MS", cursive'} as const;
+const FACES=[['MS Anton','fonts/anton.woff2','400','normal'],['MS Playfair','fonts/playfair-800-italic.woff2','800','italic'],['MS Inter','fonts/inter-800.woff2','800','normal'],['MS Inter','fonts/inter-500.woff2','500','normal'],['MS Caveat','fonts/caveat-700.woff2','700','normal']];let loading:Promise<void>|null=null;
+export const useBundledFonts=()=>{useState(()=>{const h=delayRender('Cargando fuentes incluidas',{timeoutInMilliseconds:30000});loading??=Promise.all(FACES.map(async([family,file,weight,style])=>{const f=new FontFace(family,`url(${staticFile(file)})`,{weight,style});await f.load();document.fonts.add(f)})).then(()=>undefined);loading.then(()=>continueRender(h)).catch(()=>{continueRender(h);void cancelRender});return h;});};

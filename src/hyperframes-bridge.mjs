@@ -267,7 +267,7 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
       graphicMarkupList, transition, styleName, camera: cameraMove(scene, styleName),
       focus, subtitle: false, customScript: customScene.script, custom: true};
   }
-  const sceneVisualClass = subject.kind === 'venice' && !media && !video ? ' hf-venice' : '';
+  const sceneVisualClass = authoredScene ? ' hf-authored-scene' : (subject.kind === 'venice' && !media && !video ? ' hf-venice' : '');
   const visualClip = video
     ? `<section id="${sceneId}" class="clip hf-scene hf-overlay${sceneVisualClass}" data-action-type="${h(actionPlan.actionType)}" data-action-plan="${h(actionPlan.action)}" data-start="${seconds(start)}" data-duration="${seconds(visualDuration)}" data-track-index="${track + 1}" style="${commonStyle}"><div class="scene-content">${content}</div></section>`
     : `<section id="${sceneId}" class="clip hf-scene${media ? ' hf-visual' : ''}${sceneVisualClass}" data-action-type="${h(actionPlan.actionType)}" data-action-plan="${h(actionPlan.action)}" data-start="${seconds(start)}" data-duration="${seconds(visualDuration)}" data-track-index="${track}" style="${commonStyle}">${imageMarkup}<div class="scene-content">${content}</div></section>`;

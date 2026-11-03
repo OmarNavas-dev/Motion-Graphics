@@ -24,6 +24,7 @@ import {
 import {SmartGraphicScene} from './SmartGraphicScene';
 import {AdaptiveScene} from './AdaptiveScene';
 import {Canvas3DScene} from './Canvas3DScene';
+import {AuthoredScene as ComplexAuthoredScene} from './AuthoredScene';
 import {MediaFirstScene} from './MediaFirstScene';
 import {chooseConcept} from './semantic-director.mjs';
 
@@ -499,9 +500,11 @@ const NarrativeScene: React.FC<{
   );
 };
 
-const AuthoredScene: React.FC<{scene: StudioScene; showText: boolean}> = ({scene, showText}) => {
+/* Legacy authored renderer removed; AuthoredScene is the single renderer.
+const LegacyAuthoredScene_UNUSED: React.FC<{scene: StudioScene; showText: boolean}> = ({scene: showScene, showText}) => {
   const frame = useCurrentFrame();
   const {fps, width} = useVideoConfig();
+  const scene = showScene;
   const authored = scene.authored;
   if (!authored?.layers?.length) return null;
   const seconds = frame / fps;
@@ -523,6 +526,7 @@ const AuthoredScene: React.FC<{scene: StudioScene; showText: boolean}> = ({scene
     })}
   </AbsoluteFill>;
 };
+*/
 
 const SceneLayers: React.FC<{scene: StudioScene}> = ({scene}) => {
   const frame = useCurrentFrame();
@@ -562,7 +566,7 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
               chooseConcept(scene, project).kind === 'venice' ? (
               <Canvas3DScene scene={scene} project={project} showText={showText}/>
             ) : scene.authored?.layers?.length ? (
-              <AuthoredScene scene={scene} showText={showText}/>
+              <ComplexAuthoredScene scene={scene} project={project} style={style} showText={showText}/>
             ) : project.visualEngine !== 'classic' && !scene.imageAsset ? (
               <AdaptiveScene scene={scene} project={project} style={style}
                 sceneNumber={index + 1} showText={showText}/>

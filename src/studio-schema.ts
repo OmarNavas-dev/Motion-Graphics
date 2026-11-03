@@ -77,6 +77,13 @@ export type CustomScene = {
   script?: string;
 };
 
+export type EnterPreset = 'none' | 'fade' | 'rise' | 'drop' | 'pop' | 'slide-left' | 'slide-right' | 'wipe' | 'zoom' | 'blur';
+export type LeavePreset = 'none' | 'fade' | 'drop' | 'shrink';
+export type SpringName = 'smooth' | 'soft' | 'snappy' | 'bouncy' | 'heavy';
+export type IdleKind = 'none' | 'float' | 'sway' | 'breathe' | 'pulse' | 'spin' | 'blink' | 'talk';
+export type AuthoredLayer = {id:string; type:'image'|'text'|'shape'|'particles'|'caption'; parent?:string; x?:number;y?:number;width?:number;height?:number;rotate?:number;ax?:number;ay?:number;depth?:number;opacity?:number;flip?:boolean;shadow?:boolean;blend?:string;fixed?:boolean;enter?:{preset:EnterPreset;at:number;spring?:SpringName};leave?:{preset:LeavePreset;at:number;duration:number};idle?:{kind:IdleKind;amount?:number;speed?:number;phase?:number;from?:number;to?:number};asset?:string;text?:string;size?:number;weight?:number;font?:string;align?:string;color?:string;mode?:string;stagger?:number;wordTimes?:number[];emphasize?:number[];upper?:boolean;fillAsset?:string;words?:{w:string;s:number;e:number;box?:boolean}[];shape?:string;fill?:string;fill2?:string;angle?:number;stroke?:string;strokeWidth?:number;radius?:number;particles?:{kind:string;count:number;speed:number;size:number;seed:number}};
+export type AuthoredSpec = {layers: AuthoredLayer[]; background?:{color?:string;color2?:string;angle?:number}; camera?:Record<string, unknown>; grade?:Record<string, unknown>; sfx?:unknown[]};
+
 export type StudioScene = {
   id: string;
   layout: SceneLayout;
@@ -91,7 +98,7 @@ export type StudioScene = {
   layers?: SceneLayer[];
   audioCues?: AudioCue[];
   customScene?: CustomScene;
-  authored?: {layers: any[]; background?: {color?: string; color2?: string; angle?: number}; camera?: any; grade?: any};
+  authored?: AuthoredSpec;
   motionGraphics?: MotionGraphic[];
   approved?: boolean;
   scriptExcerpt?: string;

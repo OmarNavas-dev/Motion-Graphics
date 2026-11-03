@@ -881,7 +881,7 @@ function StudioApp() {
           <span className="free-badge">LOCAL · SIN API DE PAGO</span>
           <span className="save-indicator">{dirty ? 'Cambios sin guardar' : 'Guardado'}</span>
           <button className="secondary" onClick={save} disabled={busy}>Guardar</button>
-          <button className="secondary" onClick={() => { void save().then(() => window.open('/preview', '_blank')); }}
+          <button className="secondary" onClick={() => { void save().then(() => window.open('/preview?engine=remotion', '_blank')); }}
             disabled={busy || project.visualEngine === 'canvas'}
             title={project.visualEngine === 'canvas' ? 'Canvas 3D se previsualiza en el monitor Remotion del editor' : 'Guarda y abre la vista previa con el mismo HTML que usa HyperFrames (incluye escenas HTML a medida)'}>
             Vista previa fiel

@@ -104,13 +104,6 @@ async function readProject() {
     if (error.code !== 'ENOENT') throw error;
     raw = {scenes:[]};
   }
-  // El arranque siempre empieza limpio; los proyectos solo entran mediante importación explícita.
-  if (process.env.MOTION_STUDIO_START_CLEAN !== 'false') {
-    raw = {scenes:[]};
-    if (!process.env.MOTION_STUDIO_TEST_ROOT && fs.existsSync(projectPath)) {
-      try { await fsp.unlink(projectPath); } catch { /* el siguiente arranque seguirá limpio */ }
-    }
-  }
   try {
     return validateProject(raw);
   } catch (error) {
@@ -577,6 +570,12 @@ async function handle(req, res) {
   }
   if (req.method === 'GET' && pathname === '/preview') {
     const project = await readProject();
+    if (url.searchParams.get('engine') === 'remotion') {
+      const props = encodeURIComponent(JSON.stringify({project}));
+      res.writeHead(302, {Location: `/?preview=remotion&props=${props}`});
+      res.end();
+      return;
+    }
     const gsapSource = await fsp.readFile(path.join(root, 'public', 'hyperframes', 'gsap.min.js'), 'utf8');
     res.writeHead(200, {'Content-Type': 'text/html; charset=utf-8', 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store'});
     res.end(buildPreviewHtml(project, gsapSource));
@@ -602,6 +601,11 @@ async function handle(req, res) {
 }
 
 await Promise.all([fsp.mkdir(assetsDir, {recursive: true}), fsp.mkdir(outDir, {recursive: true}), fsp.mkdir(dataDir, {recursive: true})]);
+
+// Arranque limpio una sola vez por proceso; no borrar el proyecto durante /api/project ni /preview.
+if (process.env.MOTION_STUDIO_START_CLEAN !== 'false' && !process.env.MOTION_STUDIO_TEST_ROOT) {
+  try { await fsp.unlink(projectPath); } catch (error) { if (error.code !== 'ENOENT') console.warn('[Motion Studio] No se pudo limpiar el proyecto anterior:', error.message); }
+}
 const server = http.createServer((req, res) => {
   handle(req, res).catch((error) => {
     console.error('[Motion Studio]', error);
