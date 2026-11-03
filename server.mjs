@@ -571,8 +571,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && pathname === '/preview') {
     const project = await readProject();
     if (url.searchParams.get('engine') === 'remotion') {
-      const props = encodeURIComponent(JSON.stringify({project}));
-      res.writeHead(302, {Location: `/?preview=remotion&props=${props}`});
+      res.writeHead(302, {Location: '/?preview=remotion'});
       res.end();
       return;
     }
