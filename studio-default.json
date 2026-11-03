@@ -1,0 +1,21 @@
+{
+  "name": "Motion Studio",
+  "format": "vertical",
+  "resolution": "720p",
+  "fps": 24,
+  "fontAsset": "",
+  "fontFamily": "",
+  "palette": "aurora",
+  "audioAsset": "",
+  "musicAsset": "",
+  "script": "",
+  "creativeBrief": "",
+  "style": "cinematic",
+  "visualEngine": "adaptive",
+  "showText": false,
+  "characterMode": "new",
+  "references": [],
+  "narrationMode": "single",
+  "voiceClips": [],
+  "scenes": []
+}

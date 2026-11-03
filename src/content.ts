@@ -1,0 +1,25 @@
+// Edit these labels to customize the demo without changing the animations.
+// Keep headline lengths similar to avoid running outside the 720px canvas.
+export const content = {
+  brand: 'MOTION / DESIGN SYSTEM',
+  introKicker: 'DESIGN STUDIO / 001',
+  introTitle1: 'IDEAS',
+  introTitle2: 'IN MOTION.',
+  introSubtitle: 'Visual stories designed to be',
+  introEmphasis: 'felt.',
+  introFooter: 'PRECISION  /  RHYTHM  /  DEPTH',
+  middleKicker: 'CREATIVE SYSTEM / 002',
+  middleTitle1: 'EVERY FRAME',
+  middleTitle2: 'HAS PURPOSE.',
+  feature1: 'Flow',
+  feature1Caption: 'Fluid movement',
+  feature2: 'Timing',
+  feature2Caption: 'Frame-accurate',
+  middleFooter: 'DETAILS MAKE THE DIFFERENCE',
+  finaleKicker: 'MAKE SOMETHING EXTRAORDINARY',
+  finaleTitle1: 'CREATE.',
+  finaleTitle2: 'ANIMATE.',
+  finaleTitle3: 'INSPIRE.',
+  finaleSubtitle: 'Creative motion. Precise execution.',
+  finaleBadge: 'MOTION STUDIO  •  2026',
+};

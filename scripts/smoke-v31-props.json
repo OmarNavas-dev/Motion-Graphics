@@ -1,0 +1,54 @@
+{
+  "project": {
+    "name": "Motion Studio 3.1 · estilos libres",
+    "format": "vertical",
+    "palette": "aurora",
+    "style": "modern",
+    "showText": true,
+    "audioAsset": "",
+    "musicAsset": "",
+    "scenes": [
+      {
+        "id": "cinematic-intro",
+        "layout": "kinetic",
+        "style": "energetic",
+        "duration": 1.8,
+        "title": "CREA SIN LIMITES",
+        "subtitle": "Motion graphics para cualquier tema",
+        "imageAsset": "",
+        "cues": [],
+        "motion": "push",
+        "motionStrength": 50,
+        "transition": "cut",
+        "approved": true
+      },
+      {
+        "id": "editorial-collage",
+        "layout": "collage",
+        "style": "documentary",
+        "duration": 1.8,
+        "title": "TU PROPIA ESTETICA",
+        "subtitle": "Composiciones editoriales",
+        "imageAsset": "",
+        "cues": [],
+        "motion": "drift",
+        "motionStrength": 30,
+        "transition": "fade",
+        "approved": true
+      },
+      {
+        "id": "calm-ending",
+        "layout": "hero",
+        "style": "minimal",
+        "duration": 1.5,
+        "title": "TU HISTORIA, TU ESTILO",
+        "subtitle": "",
+        "imageAsset": "",
+        "cues": [],
+        "motion": "static",
+        "transition": "dip",
+        "approved": true
+      }
+    ]
+  }
+}

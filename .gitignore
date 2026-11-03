@@ -1,0 +1,16 @@
+node_modules/
+.env
+.env.*
+!.env.example
+out/
+dist/
+build/
+dist-ui/
+data/
+public/user-assets/
+studio-*.zip
+*.log
+.hyperframes/
+examples/hyperframes-v7/
+/venecia.json
+/venecia-prueba-proyecto.json

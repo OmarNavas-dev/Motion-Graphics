@@ -1,0 +1,21 @@
+export type VisualActionType = 'establish' | 'descend' | 'construct' | 'install' | 'inspect' | 'transfer' | 'compare' | 'rise' | 'close' | 'follow' | 'resolve' | 'reveal';
+export type VisualBeat = {at: number; duration: number; action: string};
+export type VisualActionPlan = {
+  version: 1;
+  subject: string;
+  evidence: string;
+  actionType: VisualActionType;
+  action: string;
+  shotScale: 'wide' | 'medium' | 'close';
+  camera: 'static' | 'push' | 'pull' | 'pan-left' | 'pan-right' | 'rise' | 'drift';
+  confidence: 'grounded' | 'fallback';
+  beats: VisualBeat[];
+};
+export type PlannerScene = {id?: string; title?: string; scriptExcerpt?: string; visualQuery?: string; visualPlan?: string; visualActionPlan?: VisualActionPlan; motion?: string; motionStrength?: number};
+export type PlannerProject = {name?: string; script?: string; style?: string; scenes?: PlannerScene[]};
+export function createVisualActionPlan(scene?: PlannerScene, project?: PlannerProject, index?: number, previous?: VisualActionPlan): VisualActionPlan;
+export function normalizeVisualActionPlan(raw: unknown, scene?: PlannerScene, project?: PlannerProject, index?: number, previous?: VisualActionPlan): VisualActionPlan;
+export function createVisualActionPlans(scenes?: PlannerScene[], project?: PlannerProject): VisualActionPlan[];
+export function ensureDistinctVisualActionPlan(plan: VisualActionPlan, priorPlans?: VisualActionPlan[], index?: number): VisualActionPlan;
+export function visualCameraOffset(plan: VisualActionPlan, progress?: number, strength?: number): {x: number; y: number; z: number};
+export function visualActionProgress(plan: VisualActionPlan, progress?: number): number;
