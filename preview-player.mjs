@@ -9,8 +9,10 @@ const PLAYER_CSS = `
 
 // Reproductor: sustituye al runtime de HyperFrames solo en esta vista previa.
 const PLAYER_JS = `(function(){
-  var tl=window.__timelines&&window.__timelines['motion-studio-7'];if(!tl)return;
-  var total=tl.duration(),stage=document.getElementById('stage')||document.querySelector('.clip').parentElement;
+  var tl=window.__timelines&&window.__timelines['motion-studio-7'];
+  var stage=document.getElementById('stage')||document.querySelector('.clip')?.parentElement;
+  if(!tl||!stage){document.body.innerHTML='<div style="color:white;font:20px Arial;padding:32px">Proyecto vacío: importa un JSON o crea una escena para ver la vista previa.</div>';return;}
+  var total=tl.duration();
   document.documentElement.style.background='#080a10';document.body.style.cssText+=';margin:0;overflow:hidden;background:#080a10';
   var bar=document.createElement('div');bar.id='ms-bar';
   bar.innerHTML='<button id="ms-play" aria-label="Reproducir">&#9654;</button><input id="ms-seek" type="range" min="0" max="'+Math.round(total*100)+'" value="0"><span id="ms-time">0:00 / 0:00</span>';
