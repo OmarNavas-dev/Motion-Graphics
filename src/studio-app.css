@@ -1,0 +1,219 @@
+* {box-sizing: border-box}
+:root {
+  font-family: Inter, Segoe UI, Arial, Helvetica, sans-serif;
+  background: #080d17;
+  color: #eef4fc;
+  font-synthesis: none;
+}
+body {margin: 0; min-width: 320px}
+button, input, textarea, select {font: inherit}
+button {cursor: pointer; transition: background .15s ease, border-color .15s ease}
+button:disabled {opacity: .42; cursor: not-allowed}
+button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible {
+  outline: 2px solid #6ef5d9; outline-offset: 2px;
+}
+.studio-shell {min-height: 100vh; background: #080d17}
+.studio-header {
+  height: 78px; display: flex; align-items: center; justify-content: space-between;
+  gap: 18px; padding: 0 28px; background: #0c1320;
+  border-bottom: 1px solid #263144;
+}
+.brand {display: flex; gap: 13px; align-items: center; white-space: nowrap}
+.brand-symbol {
+  width: 47px; height: 47px; border: 2px solid #71f7dc;
+  border-radius: 13px; display: grid; place-items: center;
+  color: #71f7dc; font-size: 23px; font-weight: 900;
+}
+.brand strong {font-size: 20px; letter-spacing: -.5px}
+.brand small {display: block; margin-top: 3px; color: #8ea0bc; font-size: 12px}
+.studio-actions {display: flex; align-items: center; gap: 14px}
+.free-badge {
+  border: 1px solid #276c61; border-radius: 20px; color: #83f8d9;
+  font-size: 11px; letter-spacing: 1.3px; font-weight: 800; padding: 8px 11px;
+}
+.save-indicator {font-size: 12px; color: #9baac3}
+button.primary {
+  background: #73f6dc; color: #05151e; font-weight: 800;
+  padding: 11px 18px; border: 1px solid #73f6dc; border-radius: 10px;
+}
+button.primary:hover:not(:disabled) {background: #b1ffea}
+button.danger {background:#4a2028;color:#ffe9ec;border-color:#88424b}
+.scene-tools button.danger:hover:not(:disabled) {background:#71303a;border-color:#ff9aa5}
+button.secondary, .scene-tools button {
+  background: #1b2638; color: #eaf5ff; border: 1px solid #33435b;
+  border-radius: 10px; padding: 10px 14px;
+}
+button.secondary:hover:not(:disabled), .scene-tools button:hover:not(:disabled) {
+  background: #263953; border-color: #71f7dc;
+}
+.studio-workspace {
+  display: grid; grid-template-columns: 288px minmax(340px, 1fr) 340px;
+  max-width: 1780px; margin: auto; min-height: 760px;
+}
+.panel {
+  background: #0d1423; padding: 23px 18px 25px; overflow: auto;
+  border-right: 1px solid #253146;
+  max-height: calc(100vh - 78px); min-height: 670px;
+}
+.inspector {border-left: 1px solid #253146; border-right: 0}
+.panel-heading {display: flex; align-items: center; justify-content: space-between; gap: 10px}
+.panel-heading h2 {font-size: 15px; margin: 0; letter-spacing: .2px}
+.panel-heading span {font-size: 11px; color: #7d91b1; letter-spacing: .4px}
+.spaced {margin-top: 29px; margin-bottom: 13px}
+label {
+  font-size: 12px; color: #b5c2d5; display: block; line-height: 1.5;
+  margin-top: 17px; font-weight: 650;
+}
+input:not([type=file]), select, textarea {
+  display: block; width: 100%; min-width: 0; border: 1px solid #304058;
+  border-radius: 9px; background: #121d2f; color: #f5f7ff;
+  padding: 10px 11px; margin-top: 7px; font-size: 13px;
+}
+textarea {resize: vertical; line-height: 1.55}
+input[type=file] {width: 100%; font-size: 11px; padding-top: 9px; color: #aabbd5}
+input[type=file]::file-selector-button {
+  border: 1px solid #3b5270; padding: 6px 7px; border-radius: 7px;
+  background: #1a2a41; color: #d5e8fc; margin-right: 8px; cursor: pointer;
+}
+.two-fields {display: grid; grid-template-columns: 1fr 1fr; gap: 11px}
+.tiny-button, .text-button {
+  background: none; border: 0; color: #80fbe0; font-size: 12px;
+  font-weight: 700; padding: 5px;
+}
+.tiny-button:hover, .text-button:hover {text-decoration: underline}
+.scene-list {display: grid; gap: 7px}
+.scene-item {
+  background: #131f30; border: 1px solid #2a3c54; border-radius: 10px;
+  display: flex; align-items: center; text-align: left; width: 100%;
+  padding: 11px 10px; color: #f1f5fb; gap: 10px;
+}
+.scene-item:hover, .scene-item.selected {
+  border-color: #61e8cb; background: #183039;
+}
+.scene-index {
+  font-size: 11px; color: #77f0d5; font-weight: 900;
+  border: 1px solid #345e59; border-radius: 6px; padding: 6px;
+}
+.scene-info {flex: 1; min-width: 0}
+.scene-info strong {font-size: 11px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis}
+.scene-info small {font-size: 10px; color: #93a8c4; display: block; margin-top: 4px}
+.scene-duration {font-size: 10px; color: #a7b8d1}
+.audio-block {
+  padding: 1px 11px 12px; margin-top: 10px;
+  border: 1px solid #2a3a51; border-radius: 10px;
+}
+.audio-block label {margin-top: 9px}
+.audio-block small, .file-line {display: block; font-size: 11px; color: #92a5c1; margin-top: 7px}
+.audio-warning {font-size: 11px; line-height: 1.4; color: #ffcb87; border-left: 2px solid #e5a95b; padding-left: 8px}
+.checkline {display: flex; gap: 9px; align-items: center; cursor: pointer}
+.checkline input {accent-color: #74f5dc; width: 16px; height: 16px}
+.reference-row {display: flex; align-items: center; gap: 8px; padding: 8px 0; font-size: 11px; color: #acc4de}
+.reference-preview {width: 38px; height: 38px; flex-shrink: 0; border-radius: 7px;
+  background-position: center; background-size: cover; border: 1px solid #385171}
+.reference-row span {flex: 1}
+.dialogue-card {border: 1px solid #30425a; border-radius: 9px; padding: 9px; margin-top: 10px}
+.dialogue-card span {font-size: 10px; color: #91acc6; word-break: break-all}
+.dialogue-card label {margin-top: 7px}
+.review-alert {background: #3B2918; border: 1px solid #967043; color: #FFE0AC;
+  padding: 12px; margin: 10px 0 16px; border-radius: 10px; font-size: 12px; line-height: 1.4}
+.review-alert.ready {background: #12382F; color: #B0F5D8; border-color: #31856D}
+.review-alert p {font-size: 11px; color: inherit; margin: 7px 0}
+.review-alert button {margin-top: 8px; width: 100%}
+.center-panel {min-width: 0; background: #080d17; padding: 20px 22px}
+.preview-toolbar {display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px}
+.preview-toolbar h2 {font-size: 17px; margin: 0}
+.preview-toolbar p {font-size: 12px; color: #8e9db5; margin: 5px 0 0}
+.preview-meta {font-size: 12px; color: #91a6c2; white-space: nowrap}
+.preview-frame {
+  border: 1px solid #27334a; border-radius: 15px;
+  background: radial-gradient(ellipse at center, #192136, #0b1220 70%);
+  min-height: 515px; display: flex; align-items: center; justify-content: center;
+  padding: 20px; overflow: hidden;
+}
+.video-stage {box-shadow: 0 20px 55px #0009; overflow: hidden; background: #080b17}
+.video-stage.vertical {width: min(100%, 270px)}
+.video-stage.horizontal {width: min(100%, 560px)}
+.timeline-panel, .export-panel {
+  background: #101928; border: 1px solid #26374e;
+  border-radius: 12px; margin-top: 15px; padding: 15px;
+}
+.timeline-heading {display: flex; justify-content: space-between; gap: 10px; font-size: 13px}
+.timeline-heading span {font-size: 12px; color: #95a8c4}
+.scene-timeline {display: flex; gap: 3px; margin-top: 12px; height: 54px}
+.timeline-segment {
+  min-width: 0; background: #253149; border: 1px solid #3b4a66;
+  color: #c7d6ec; border-radius: 6px; padding: 7px;
+  text-align: left; overflow: hidden;
+}
+.timeline-segment.selected {border-color: #72f9df; background: #244647}
+.timeline-segment span {white-space: nowrap; font-size: 11px; font-weight: 700; display: block; overflow: hidden}
+.timeline-segment small {font-size: 10px; color: #99acc5}
+.hint {font-size: 11px; color: #899fbc; line-height: 1.5; margin: 12px 0 0}
+.export-track {height: 5px; border-radius: 20px; background: #28374e; margin-top: 13px; overflow: hidden}
+.export-track div {height: 100%; background: #71f7dc; transition: width .3s ease}
+.download-button {
+  display: inline-block; margin-top: 12px; background: #73f6dc; color: #06141d;
+  padding: 10px 14px; font-size: 12px; font-weight: 800;
+  border-radius: 9px; text-decoration: none;
+}
+.error-log {max-height: 130px; overflow: auto; color: #ffc7c7; white-space: pre-wrap; font-size: 11px}
+.scene-tools {display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px}
+.scene-tools button {font-size: 11px; padding: 8px 7px; flex: 1 1 40%}
+.scene-tools button.danger {flex-basis: 100%}
+.empty-project-state {min-height:520px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:32px}
+.empty-project-state h2 {font-size:26px;margin:0 0 8px}
+.empty-project-state p {color:#a6b8cf;margin:0 0 22px}
+.file-line {display: flex; justify-content: space-between; align-items: center}
+.cue-card {border: 1px solid #31425a; padding: 13px; border-radius: 11px; background: #141e30; margin-top: 10px}
+.cue-card label {margin-top: 8px}
+.cue-title {display: flex; justify-content: space-between; align-items: center; font-size: 12px}
+.assistant-area {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 18px;
+  max-width: 1780px; margin: auto; padding: 22px;
+  border-top: 1px solid #253146;
+}
+.assistant-box {border: 1px solid #29384d; border-radius: 13px; padding: 20px; background: #111a2b}
+.assistant-box p {font-size: 12px; color: #aabbd4; line-height: 1.5}
+.ai-panel {border-color: #346a71}
+.ai-preview {border: 1px solid #357d74; background: #102d31; border-radius: 11px;
+  padding: 14px; margin-top: 14px}
+.ai-preview > strong {color: #8fffe6; font-size: 13px}
+.ai-plan-list {display: grid; gap: 8px; max-height: 280px; overflow-y: auto; margin: 13px 0}
+.ai-scene {border: 1px solid #335761; border-radius: 8px; padding: 9px;
+  background: #0d2029}
+.ai-scene strong {display: block; font-size: 12px; overflow-wrap: anywhere}
+.ai-scene small {display: block; color: #a5bfd2; font-size: 11px; margin-top: 3px}
+.assistant-box textarea {margin: 13px 0}
+.assistant-box button {font-size: 12px}
+.asset-results {display: grid; grid-template-columns: repeat(auto-fit, minmax(135px, 1fr)); gap: 9px; margin-top: 16px}
+.asset-result {display: grid; align-content: start; gap: 7px; padding: 8px; border: 1px solid #2d465d; border-radius: 10px; min-width: 0}
+.asset-result-preview {width: 100%; height: 112px; background-color: #172638; background-position: center; background-size: cover; border-radius: 6px}
+.asset-result small {color: #a5bfd6; overflow-wrap: anywhere; font-size: 10px}
+.asset-result .scene-tools {display: grid; margin-top: 0; gap: 8px}
+.asset-result a {font-size: 10px; color: #77e7d2; overflow-wrap: anywhere}
+.studio-footer {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; padding: 14px 26px; border-top: 1px solid #253146;
+  color: #a7bad5; font-size: 12px;
+}
+.studio-footer [role=status] {color: #8cf9db}
+@media (max-width: 1240px) {
+  .studio-workspace {grid-template-columns: 250px minmax(300px, 1fr) 310px}
+  .panel {padding: 17px 12px}
+  .center-panel {padding: 17px 12px}
+  .free-badge {display: none}
+}
+@media (max-width: 1000px) {
+  .studio-workspace {grid-template-columns: 250px minmax(320px, 1fr)}
+  .inspector {grid-column: 1 / -1; max-height: none; min-height: unset; border-top: 1px solid #253146}
+}
+@media (max-width: 660px) {
+  .studio-header {height: auto; min-height: 77px; padding: 14px; flex-wrap: wrap}
+  .studio-workspace {display: block}
+  .panel {max-height: none; min-height: unset}
+  .preview-frame {min-height: 470px}
+  .assistant-area {display: block; padding: 12px}
+  .assistant-box {margin-bottom: 15px}
+  .studio-footer {display: block}
+  .save-indicator {display: none}
+}
