@@ -258,7 +258,7 @@ export function validateAsset(value, kind = 'any') {
 
 export function assetExtension(filename) {
   const ext = path.extname(String(filename || '')).toLowerCase();
-  if (!mediaExts.has(ext)) throw new Error('Formato no permitido. Usa PNG, JPG, WebP, MP3, WAV, M4A o MP4.');
+  if (!mediaExts.has(ext)) throw new Error('Formato no permitido. Usa PNG, JPG, WebP, MP3, WAV, M4A, MP4, WOFF2, TTF u OTF.');
   return ext;
 }
 
@@ -273,6 +273,9 @@ export function validMediaSignature(bytes, ext) {
   if (ext === '.mp4') return bytes.toString('ascii', 4, 8) === 'ftyp';
   if (ext === '.mp3') return bytes.toString('ascii', 0, 3) === 'ID3' ||
     (bytes[0] === 0xff && (bytes[1] & 0xe0) === 0xe0);
+  if (ext === '.woff2') return bytes.length >= 4 && bytes.toString('ascii', 0, 4) === 'wOF2';
+  if (ext === '.ttf') return bytes.length >= 4 && bytes.subarray(0, 4).equals(Buffer.from('00010000', 'hex'));
+  if (ext === '.otf') return bytes.length >= 4 && bytes.toString('ascii', 0, 4) === 'OTTO';
   return false;
 }
 

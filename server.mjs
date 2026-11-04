@@ -7,6 +7,7 @@ import {randomUUID} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
 import {pipeline} from 'node:stream/promises';
 import {buildPreviewHtml} from './preview-player.mjs';
+import {collectProjectAssets} from './src/project-assets.mjs';
 import {Transform} from 'node:stream';
 import {
   MAX_ASSET_BYTES, MAX_PROJECT_BYTES, assetExtension,
@@ -62,6 +63,9 @@ const mimeType = (file) => {
     '.wav': 'audio/wav',
     '.m4a': 'audio/mp4',
     '.mp4': 'video/mp4',
+    '.woff2': 'font/woff2',
+    '.ttf': 'font/ttf',
+    '.otf': 'font/otf',
   })[ext] || 'application/octet-stream';
 };
 
@@ -139,14 +143,9 @@ async function resetLocalContent() {
 }
 
 async function ensureMediaAvailable(project) {
-  const references = [
-    project.audioAsset, project.musicAsset,
-    ...project.references,
-    ...project.voiceClips.map((clip) => clip.asset),
-    ...project.scenes.map((scene) => scene.imageAsset),
-    ...project.scenes.map((scene) => scene.videoAsset),
-  ].filter(Boolean);
+  const references = collectProjectAssets(project, {includeReferences: true});
   for (const reference of references) {
+    validateAsset(reference);
     try {
       await fsp.access(path.join(assetsDir, path.basename(reference)));
     } catch {
@@ -409,11 +408,7 @@ async function beginHyperframesRender(project) {
     startedAt: Date.now(), workspace,
   };
   try {
-    const assets = new Set([
-      ...project.scenes.flatMap((scene) => [scene.imageAsset, scene.videoAsset]),
-      project.audioAsset, project.musicAsset,
-      ...(project.voiceClips || []).map((clip) => clip.asset),
-    ].filter(Boolean));
+    const assets = collectProjectAssets(project);
     await fsp.mkdir(path.join(workspace, 'assets'), {recursive: true});
     const embeddedAssets = {};
     let totalBytes = 0;
@@ -482,6 +477,9 @@ async function beginHyperframesRender(project) {
 async function handle(req, res) {
   const url = new URL(req.url || '/', 'http://127.0.0.1');
   const pathname = url.pathname;
+  if (req.method === 'GET' && pathname === '/hyperframes/gsap.min.js') {
+    return sendFile(res, path.join(root, 'public', 'hyperframes'), 'gsap.min.js');
+  }
   if (req.method === 'GET' && pathname === '/api/health') {
     return respond(res, 200, {ok: true, active: currentJob?.status === 'renderizando'});
   }
@@ -601,9 +599,11 @@ async function handle(req, res) {
 
 await Promise.all([fsp.mkdir(assetsDir, {recursive: true}), fsp.mkdir(outDir, {recursive: true}), fsp.mkdir(dataDir, {recursive: true})]);
 
-// Arranque limpio una sola vez por proceso; no borrar el proyecto durante /api/project ni /preview.
-if (process.env.MOTION_STUDIO_START_CLEAN !== 'false' && !process.env.MOTION_STUDIO_TEST_ROOT) {
-  try { await fsp.unlink(projectPath); } catch (error) { if (error.code !== 'ENOENT') console.warn('[Motion Studio] No se pudo limpiar el proyecto anterior:', error.message); }
+// Conservar el trabajo guardado. El arranque limpio es opcional y crea un respaldo.
+if (process.env.MOTION_STUDIO_START_CLEAN === 'true' && !process.env.MOTION_STUDIO_TEST_ROOT) {
+  const backup = path.join(dataDir, `studio-project-backup-${Date.now()}-${randomUUID()}.json`);
+  try { await fsp.rename(projectPath, backup); }
+  catch (error) { if (error.code !== 'ENOENT') throw error; }
 }
 const server = http.createServer((req, res) => {
   handle(req, res).catch((error) => {

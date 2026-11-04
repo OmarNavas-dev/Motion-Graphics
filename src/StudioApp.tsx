@@ -1,3 +1,4 @@
+import {collectProjectAssets} from './project-assets.mjs';
 import {useEffect, useMemo, useRef, useState, type ChangeEvent} from 'react';
 import {createRoot} from 'react-dom/client';
 import {Player, type PlayerRef} from '@remotion/player';
@@ -316,7 +317,7 @@ function StudioApp() {
   const [busy, setBusy] = useState(false);
   const [renderJobId, setRenderJobId] = useState<string | null>(null);
   const [renderStatus, setRenderStatus] = useState<JobStatus | null>(null);
-  const [notice, setNotice] = useState('Cargando proyecto limpio...');
+  const [notice, setNotice] = useState('Cargando proyecto...');
   const [dirty, setDirty] = useState(false);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
   const [integrationStatus, setIntegrationStatus] = useState<IntegrationStatus | null>(null);
@@ -797,15 +798,7 @@ function StudioApp() {
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       gsapSource = await response.text();
       const scenes = wholeProject ? project.scenes : [currentScene];
-      const paths: string[] = [...new Set([
-        ...scenes.flatMap((scene) => [scene.imageAsset, scene.videoAsset]).filter(Boolean),
-        ...(project.fontAsset ? [project.fontAsset] : []),
-        ...(wholeProject ? [
-          project.narrationMode === 'dialogues' ? '' : project.audioAsset,
-          project.musicAsset,
-          ...(project.narrationMode === 'dialogues' ? (project.voiceClips ?? []).map((clip) => clip.asset) : []),
-        ].filter(Boolean) : []),
-      ])].filter((asset): asset is string => typeof asset === 'string' && Boolean(asset));
+      const paths = collectProjectAssets(project, {scenes, includeNarration: wholeProject});
       let bytes = 0;
       for (const asset of paths) {
         if (asset.startsWith('/') || asset.includes('..') || asset.includes('://')) {
