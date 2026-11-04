@@ -239,7 +239,7 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
   const graphicMarkupList = (scene.motionGraphics || []).map((graphic, graphicIndex) => graphicMarkup(graphic, sceneId, graphicIndex)).join('');
   const cueMarkupList = (scene.cues || []).map((cue, cueIndex) => cueMarkup(cue, sceneId, cueIndex)).join('');
   const captionMarkupList = (scene.captions || []).map((caption, captionIndex) => captionMarkup(caption, sceneId, captionIndex)).join('');
-  const audioCueMarkup = (scene.audioCues || []).map((cue, cueIndex) => `<audio id="${sceneId}-audio-${cueIndex}" data-start="${seconds(cue.at)}" data-duration="${seconds(cue.duration)}" data-track-index="230" data-volume="${number(cue.volume, .45)}" src="${h(embeddedAssets[cue.asset] || '')}"></audio>`).join('');
+  const audioCueMarkup = (scene.audioCues || []).map((cue, cueIndex) => `<audio id="${sceneId}-audio-${cueIndex}" data-start="${seconds(start + cue.at)}" data-duration="${seconds(cue.duration)}" data-track-index="230" data-volume="${number(cue.volume, .45)}" src="${h(embeddedAssets[cue.asset] || '')}"></audio>`).join('');
   const customScene = customHtmlScene(scene, sceneId, media, video);
   const authoredScene = scene.authored && Array.isArray(scene.authored.layers) ? authoredSceneMarkup(scene.authored, sceneId) : '';
   const commonStyle = `--bg:${theme.background};--ink:${theme.ink};--accent:${theme.accent};--second:${theme.secondary};--font:${project.fontAsset ? "'MotionStudioLocal'," : ''}${theme.display}`;
@@ -261,7 +261,7 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
   if (customScene) {
     // Custom HTML/Canvas draws its own text and timing; do not overlay the global caption track,
     // which otherwise duplicates captions already composited into procedural scenes.
-    const customClip = `<section id="${sceneId}" class="clip hf-scene" data-start="${seconds(start)}" data-duration="${seconds(visualDuration)}" data-track-index="${track}" style="${commonStyle}">${customScene.markup}${graphicMarkupList}${cueMarkupList}</section>`;
+    const customClip = `<section id="${sceneId}" class="clip hf-scene" data-start="${seconds(start)}" data-duration="${seconds(visualDuration)}" data-track-index="${track}" style="${commonStyle}">${customScene.markup}${graphicMarkupList}${cueMarkupList}${audioCueMarkup}</section>`;
     return {html: customClip, id: sceneId, start, duration, visualDuration,
       media: false, video: false, graphics: scene.motionGraphics || [], cues: scene.cues || [], captions: [],
       graphicMarkupList, transition, styleName, camera: cameraMove(scene, styleName),
@@ -437,7 +437,7 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
     audio.push(`<audio id="hf-music" data-start="0" data-duration="${seconds(totalDuration)}" data-track-index="210" data-volume="${clamp(number(project.musicVolume, .18), 0, .5).toFixed(2)}" loop src="${h(embeddedAssets[project.musicAsset])}"></audio>`);
   }
   const fontFace = project.fontAsset && embeddedAssets[project.fontAsset]
-    ? `<style>@font-face{font-family:'MotionStudioLocal';src:url('${h(embeddedAssets[project.fontAsset])}') format('${project.fontAsset.toLowerCase().endsWith('.woff2') ? 'woff2' : 'truetype'}');font-display:swap}</style>`
+    ? `<style>@font-face{font-family:'MotionStudioLocal';src:url('${h(embeddedAssets[project.fontAsset])}') format('${project.fontAsset.toLowerCase().endsWith('.woff2') ? 'woff2' : project.fontAsset.toLowerCase().endsWith('.otf') ? 'opentype' : 'truetype'}');font-display:swap}</style>`
     : '';
   const compositionId = 'motion-studio-7';
   const gsap = gsapSource

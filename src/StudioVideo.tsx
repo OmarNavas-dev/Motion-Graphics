@@ -1,3 +1,4 @@
+import {audioCueFrames} from './audio-cue-timing.mjs';
 import {
   AbsoluteFill,
   Audio,
@@ -538,6 +539,7 @@ const SceneLayers: React.FC<{scene: StudioScene}> = ({scene}) => {
 };
 
 export const StudioVideo: React.FC<StudioProps> = ({project}) => {
+  const {fps} = useVideoConfig();
   let position = 0;
   let audioPosition = 0;
   const showText = project.showText ?? (project.style ?? 'modern') === 'modern';
@@ -550,7 +552,7 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
         const exit = project.scenes[index + 1]?.transition;
         position += sceneFrames;
         return (
-          <Sequence key={scene.id} from={start} durationInFrames={sceneFrames}>
+          <Sequence key={scene.id} from={start} durationInFrames={sceneFrames} premountFor={fps}>
             {scene.videoAsset ? (
               <AbsoluteFill style={{overflow: 'hidden', background: '#080B11'}}>
                 <OffthreadVideo src={staticFile(scene.videoAsset)} muted
@@ -583,6 +585,15 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
             )}
             {showText && scene.captions?.length ? <CaptionTrack scene={scene}/> : null}
             {scene.layers?.length ? <SceneLayers scene={scene}/> : null}
+            {(scene.audioCues ?? []).map((cue, cueIndex) => {
+              const timing = audioCueFrames(cue, fps, sceneFrames);
+              return cue.asset && timing ? (
+                <Sequence key={`${cue.id}-${cueIndex}`} from={timing.from}
+                  durationInFrames={timing.durationInFrames} premountFor={fps}>
+                  <Audio src={staticFile(cue.asset)} volume={cue.volume ?? 0.45}/>
+                </Sequence>
+              ) : null;
+            })}
             <SceneBoundary entry={scene.transition} exit={exit} frames={sceneFrames}/>
           </Sequence>
         );
@@ -600,7 +611,6 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
         })
         : project.audioAsset && <Audio src={staticFile(project.audioAsset)} volume={1} />}
       {project.musicAsset && <Audio src={staticFile(project.musicAsset)} volume={project.musicVolume ?? 0.18} />}
-      {project.scenes.flatMap((scene) => (scene.audioCues ?? []).map((cue) => ({...cue, sceneId: scene.id}))).map((cue) => cue.asset ? <Audio key={cue.id} src={staticFile(cue.asset)} volume={cue.volume ?? 0.45} /> : null)}
     </AbsoluteFill>
   );
 };

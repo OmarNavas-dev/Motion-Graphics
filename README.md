@@ -1,4 +1,13 @@
-# Motion Studio 7.0.2 — HyperFrames + GSAP + Remotion
+# Motion Studio 7.1.3 — HyperFrames + GSAP + Remotion
+
+### Correcciones de persistencia y exportación
+
+- El proyecto guardado se recupera al reiniciar. El arranque limpio opcional crea un respaldo del JSON.
+- Los efectos de audio respetan el inicio y la duración de su escena en Remotion y HyperFrames.
+- La importación admite fuentes WOFF2, TTF y OTF y comprueba su firma.
+- El servidor entrega GSAP para descargar la composición HTML.
+- La vista previa, el HTML y el render HyperFrames comparten la recopilación de recursos, incluidas fuentes y efectos.
+- `npm test` incluye pruebas de reinicio, respaldo, fuentes y recursos. Después de `npm run build`, `npm run test:audio-cues` renderiza dos muestras y verifica el audio a 24 y 30 FPS. Necesita FFmpeg.
 
 ## Novedades de Motion Studio 7
 
@@ -8,7 +17,7 @@ Motion Studio puede enviar el plan del storyboard al Ollama que ya tienes instal
 
 ### Arranque limpio y limpieza de datos
 
-El editor abre sin guiones ni escenas precargadas. Pulsa **Proyecto nuevo** para comenzar, añade escenas o importa un proyecto propio. El botón **Limpiar todos los datos locales…** solicita confirmación escrita y elimina el proyecto guardado, archivos importados, créditos y renders del directorio `out/`; conserva código, dependencias, configuración y lanzadores. Descarga el JSON y respalda `public/user-assets/` antes de limpiar si quieres guardar tu trabajo. Al iniciar, un proyecto antiguo inválido se aparta como archivo de recuperación en `data/` en vez de mostrarse; si es información útil, respáldala fuera del sistema antes de eliminarla.
+El editor recupera el último proyecto guardado al reiniciar. Si todavía no hay un proyecto, abre vacío. Para abrir vacío en cada arranque, configura `MOTION_STUDIO_START_CLEAN=true` en `.env`: el proyecto anterior se mueve a un respaldo `data/studio-project-backup-*.json`. Los archivos importados se conservan. Pulsa **Proyecto nuevo** para comenzar, añade escenas o importa un proyecto propio. El botón **Limpiar todos los datos locales…** solicita confirmación escrita y elimina el proyecto guardado, archivos importados, créditos y renders del directorio `out/`; conserva código, dependencias, configuración y lanzadores. Descarga el JSON y respalda `public/user-assets/` antes de limpiar si quieres guardar tu trabajo. Al iniciar, un proyecto antiguo inválido se aparta como archivo de recuperación en `data/` en vez de mostrarse; si es información útil, respáldala fuera del sistema antes de eliminarla.
 
 **Corrección 7.0.2:** se reparó `package-lock.json` para que `npm ci` instale las dependencias sin el conflicto de versiones de `locate-path` y `lru-cache`.
 

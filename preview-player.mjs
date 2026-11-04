@@ -1,5 +1,6 @@
 // Vista previa fiel: usa el mismo HTML que HyperFrames y añade un reproductor propio.
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
+import {collectProjectAssets} from './src/project-assets.mjs';
 
 const PLAYER_CSS = `
 #ms-bar{position:fixed;left:0;right:0;bottom:0;height:56px;display:flex;align-items:center;gap:14px;padding:0 18px;background:#12151fe6;color:#fff;font:600 14px Arial,Helvetica,sans-serif;z-index:99999}
@@ -45,10 +46,7 @@ const PLAYER_JS = `(function(){
 
 export function previewAssetMap(project) {
   const map = {};
-  const add = (asset) => { if (asset) map[asset] = `/${asset}`; };
-  add(project.audioAsset); add(project.musicAsset);
-  (project.voiceClips || []).forEach((clip) => add(clip.asset));
-  (project.scenes || []).forEach((scene) => { add(scene.imageAsset); add(scene.videoAsset); });
+  for (const asset of collectProjectAssets(project)) map[asset] = `/${asset}`;
   return map;
 }
 
