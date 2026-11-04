@@ -1,0 +1,133 @@
+# Skill: Director de videos authored en JSON
+
+## Objetivo
+Convertir un guion en un proyecto JSON completo, validado y listo para Motion Studio. El resultado debe usar `authored.layers` como fuente visual principal y conservarse sin pérdida durante importación, vista previa y render.
+
+## Entrada
+- Tema y guion del usuario.
+- Duración o número de escenas, si se especifica.
+- Estilo visual, audiencia y formato, si se especifican.
+- Restricciones del usuario: sin cifras inventadas, sin imágenes externas, sin subtítulos, etc.
+
+## Salida obligatoria
+Devuelve el resultado en una ventana de código Markdown con lenguaje `json`. No agregues explicaciones antes ni después del bloque. Dentro de la ventana debe existir únicamente un objeto JSON válido, sin comentarios ni texto adicional.
+
+Formato obligatorio:
+
+```json
+{
+  "project": {}
+}
+```
+La raíz debe ser:
+
+```json
+{
+  "project": {
+    "name": "",
+    "format": "vertical",
+    "resolution": "720p",
+    "fps": 24,
+    "palette": "aurora",
+    "script": "",
+    "creativeBrief": "",
+    "style": "cinematic",
+    "visualEngine": "adaptive",
+    "showText": true,
+    "characterMode": "new",
+    "references": [],
+    "narrationMode": "single",
+    "voiceClips": [],
+    "musicVolume": 0.18,
+    "duckMusic": true,
+    "scenes": []
+  }
+}
+```
+
+## Reglas de escenas
+Cada escena debe incluir:
+- `id` único y estable;
+- `layout`, `duration`, `title`, `subtitle`;
+- `scriptExcerpt` que corresponda al guion;
+- `imageAsset: ""` y `videoAsset: ""` salvo que el usuario proporcione un asset;
+- `approved: false`;
+- `style`, `motion`, `motionStrength`, `transition`, `focusX`, `focusY`;
+- `authored.background`, `authored.camera`, `authored.grade`;
+- `authored.layers` con composición visual completa.
+
+## Reglas authored.layers
+`authored.layers` es la fuente visual del proyecto: escribe la composición completa ahí, no la describas solo en `visualPlan`.
+
+Tipos que el renderer instalado (`src/AuthoredScene.tsx`) pinta de verdad:
+- `shape`: `rect` (por defecto), `circle`, `ring`, `triangle`, `line` o `blob`, con `fill`, `fill2`, `angle`, `radius`, `stroke` y `strokeWidth`;
+- `text`: títulos, etiquetas y llamadas breves;
+- `caption`: subtítulos temporizados por palabra (requieren `words` con `s` y `e`);
+- `particles`: puntos deterministas con semilla fija; `kind: "embers"` es el único patrón propio (brasas ascendentes), cualquier otro valor se comporta como puntos descendentes;
+- `image`: únicamente assets que ya existan en el proyecto;
+- `group`: contenedor invisible; úsalo como padre de piezas compuestas y sus hijos sí se dibujan.
+
+No emitas `svg`, `path`, `arrow`, `wave`, `glow`, `gradient`, `icon`, `video` ni `mask`: existen en el esquema TypeScript pero el renderer no los pinta y la capa desaparece del video.
+
+Cada capa admite:
+- `x` e `y` en % del ancho y alto (posición del centro), `width` y `height` en % del ancho;
+- `opacity` de 0 a 1, `rotate` en grados, `ax`/`ay` para el origen de giro, `flip` para espejar;
+- `parent` para anidar piezas dentro de otra capa;
+- `enter` (`preset` + `at` en segundos relativos), `leave` e `idle` con `phase` fija;
+- color con `fill`, `fill2`, `angle`, `stroke`, `strokeWidth`, `radius` y los tokens `@accent`, `@secondary`, `@ink`, `@bg`, `@soft`;
+- `blend` y `shadow`;
+- `text`, `size` (en % del ancho), `weight`, `font`, `align`, `emphasize` y `color`;
+- `particles` con `kind`, `count`, `speed`, `size` y `seed`.
+
+`depth` y `fixed` están en el esquema pero el renderer no los aplica: no los uses para fingir profundidad. Consigue el efecto con escala, opacidad y posición.
+
+## Prioridad de render
+El motor elige en este orden: `videoAsset`, `imageAsset`, `motionGraphics` (solo con `showText` activo), `authored`, plantilla. Por eso:
+- deja `imageAsset` y `videoAsset` vacíos salvo que el usuario aporte el archivo;
+- no pongas `motionGraphics` en una escena con `authored.layers`, porque los gráficos tapan la composición;
+- la escena sin assets ni gráficos es la que muestra tus capas authored.
+
+## Dirección visual
+- Diseña cada escena como composición completa, no como una instrucción abstracta.
+- Usa entre 8 y 30 capas cuando el plano lo necesite.
+- Crea profundidad con escala, tamaño en pantalla y opacidades, no con `depth`.
+- Usa jerarquías padre/hijo para personajes, edificios, máquinas y objetos compuestos.
+- Varía la composición entre escenas: hero, corte técnico, comparación, mapa, datos, cinética y cierre.
+- No repitas el mismo zoom o transición en todas las escenas.
+- Mantén legibilidad en pantalla móvil.
+- Usa fondo, cámara y grade para completar la identidad visual.
+
+## Texto
+- Los títulos deben ser breves y legibles.
+- Resalta una idea, no toda la narración.
+- No inventes datos, cifras ni assets.
+- Esa prohibición no alcanza a la composición: formas, colores, cámara y grade sí debes crearlos tú.
+- Con `showText: false`, no agregues capas de texto o captions visibles.
+- En historias narradas de Antonio o terror, no agregues texto salvo petición expresa.
+- Los captions deben usar tiempos relativos a la escena y no afirmar sincronización exacta si no existe audio alineado.
+
+## Movimiento
+- Todo movimiento debe depender del fotograma y ser determinista.
+- Usa `enter.at` en segundos relativos a la escena.
+- Usa `idle.phase` fija; nunca uses azar, relojes reales ni temporizadores.
+- Conserva la duración de cada escena: las transiciones no deben alterar el reloj de voz.
+
+## Verificación antes de responder
+Comprueba mentalmente:
+1. El JSON es sintácticamente válido.
+2. Todas las escenas tienen `authored.layers`.
+3. Los ids no se repiten.
+4. La suma de duraciones es coherente.
+5. No hay assets inventados.
+6. No hay cifras no presentes en el guion.
+7. `approved` es `false` en toda escena nueva.
+8. Todas las capas usan solo tipos que el renderer pinta y ningún campo inerte.
+9. El cierre responde al guion sin crear una falsa resolución.
+
+## Prohibiciones
+- No devolver explicaciones fuera del JSON cuando el usuario pida el proyecto.
+- No devolver Markdown.
+- No reemplazar `authored.layers` por `motionGraphics` vacíos.
+- No reducir una composición authored compleja a rectángulos genéricos.
+- No borrar propiedades authored durante normalización.
+- No declarar un render exitoso sin comprobar un MP4 real y reproducible.

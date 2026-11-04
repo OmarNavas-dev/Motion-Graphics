@@ -1,0 +1,4555 @@
+{
+  "project": {
+    "name": "El hijo pródigo — amor y perdón",
+    "format": "vertical",
+    "resolution": "720p",
+    "fps": 24,
+    "palette": "sunset",
+    "script": "Acérquense un momento. Quiero contarles una historia que tiene una de las enseñanzas más hermosas sobre el amor y el perdón. Hace mucho tiempo vivía un hombre que tenía dos hijos. El menor, inquieto y deseoso de conocer el mundo, un día decidió pedirle a su padre la parte de la herencia que le correspondía. Y así fue. Recibió sus bienes, preparó sus cosas y se marchó a una tierra lejana. Allí comenzó a gastar su fortuna en fiestas, placeres y toda clase de diversiones. Al principio parecía tenerlo todo: dinero, amigos y una vida llena de comodidades. Pero, queridos amigos, la riqueza malgastada pronto se termina. Cuando se quedó sin dinero, una terrible hambre llegó a aquella región. Sus amigos desaparecieron y aquel joven terminó trabajando en el campo cuidando cerdos. Tenía tanta hambre que hasta deseaba comer lo que comían aquellos animales. Qué triste destino para alguien que había tenido tanto. Fue entonces cuando recordó la casa de su padre. Recordó que hasta los trabajadores tenían pan de sobra mientras él se encontraba muriendo de hambre. Y tomó una decisión: regresaría a casa. Sabía que había pecado contra Dios y contra su padre, así que pensó pedirle que lo recibiera como uno de sus trabajadores. Pero escuchen bien lo que sucedió después. Cuando todavía estaba lejos, su padre lo vio venir y, lleno de compasión, corrió hacia él, lo abrazó y lo besó. El muchacho comenzó a reconocer sus errores, pero su padre ya estaba ordenando a sus servidores que trajeran la mejor ropa, un anillo y sandalias para sus pies. Y mandó preparar una gran fiesta. Imaginen aquella alegría: el Padre había recuperado a su hijo; aquel que estaba perdido había sido encontrado. Y así termina esta hermosa parábola que Jesús nos dejó. El amor de Dios es inmenso. No importa cuán lejos nos hayamos marchado, siempre podemos regresar a sus brazos.",
+    "creativeBrief": "Relato bíblico vertical, cálido y contemplativo, con ilustración vectorial tipo acuarela y papel. Mostrar una familia genérica sin rasgos fotográficos; usar siluetas, arquitectura, paisajes y objetos simbólicos. Ritmo pausado, alternando planos amplios y detalles. Sin subtítulos ni texto en pantalla.",
+    "style": "watercolor",
+    "visualEngine": "adaptive",
+    "showText": false,
+    "characterMode": "new",
+    "references": [],
+    "narrationMode": "single",
+    "voiceClips": [],
+    "musicVolume": 0.18,
+    "duckMusic": true,
+    "audioAsset": "user-assets/145a25f7-2517-4570-a29e-6c305df149c2.mp3",
+    "musicAsset": "",
+    "scenes": [
+      {
+        "id": "prod-01",
+        "layout": "hero",
+        "duration": 10,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Acérquense un momento. Quiero contarles una historia que tiene una de las enseñanzas más hermosas sobre el amor y el perdón.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "drift",
+        "motionStrength": 28,
+        "transition": "fade",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#F3EBD9",
+            "color2": "#D9C29C",
+            "angle": 165
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 2,
+              "zoom": 1.01,
+              "rotate": 0
+            },
+            "to": {
+              "x": -1,
+              "y": -1,
+              "zoom": 1.05,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.14,
+            "grain": 0.08
+          },
+          "layers": [
+            {
+              "id": "s1-glow",
+              "type": "shape",
+              "shape": "circle",
+              "x": 77,
+              "y": 15,
+              "width": 26,
+              "height": 26,
+              "fill": "#F7DFAE",
+              "opacity": 0.32
+            },
+            {
+              "id": "s1-sun",
+              "type": "shape",
+              "shape": "circle",
+              "x": 77,
+              "y": 15,
+              "width": 13,
+              "height": 13,
+              "fill": "#E9B36A",
+              "opacity": 0.95,
+              "enter": {
+                "preset": "fade",
+                "at": 0
+              }
+            },
+            {
+              "id": "s1-a-c1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 30,
+              "y": 22,
+              "width": 20,
+              "height": 7,
+              "fill": "#FFF6E2",
+              "opacity": 0.45
+            },
+            {
+              "id": "s1-a-c2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 37,
+              "y": 20.875,
+              "width": 12,
+              "height": 6,
+              "fill": "#FFF6E2",
+              "opacity": 0.45
+            },
+            {
+              "id": "s1-hill-a",
+              "type": "shape",
+              "shape": "circle",
+              "x": 22,
+              "y": 78,
+              "width": 150,
+              "height": 34,
+              "fill": "#A8B393",
+              "opacity": 0.95
+            },
+            {
+              "id": "s1-hill-b",
+              "type": "shape",
+              "shape": "circle",
+              "x": 84,
+              "y": 80,
+              "width": 150,
+              "height": 30,
+              "fill": "#9AAE8C",
+              "opacity": 0.95
+            },
+            {
+              "id": "s1-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 96.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#8C9C79"
+            },
+            {
+              "id": "s1-path",
+              "type": "shape",
+              "shape": "circle",
+              "x": 51,
+              "y": 92,
+              "width": 9,
+              "height": 46,
+              "fill": "#E7C995",
+              "rotate": -5,
+              "enter": {
+                "preset": "fade",
+                "at": 0.5
+              }
+            },
+            {
+              "id": "s1-t1-trunk",
+              "type": "shape",
+              "shape": "rect",
+              "x": 12,
+              "y": 77.765625,
+              "width": 2.76,
+              "height": 11.5,
+              "fill": "#6E4B3A",
+              "radius": 50,
+              "enter": {
+                "preset": "rise",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s1-t1-canopy",
+              "type": "shape",
+              "shape": "circle",
+              "x": 12,
+              "y": 70.003125,
+              "width": 16.099999999999998,
+              "height": 16.099999999999998,
+              "fill": "#5F7F62",
+              "enter": {
+                "preset": "pop",
+                "at": 0.85
+              },
+              "idle": {
+                "kind": "sway",
+                "amount": 1.2,
+                "speed": 0.2,
+                "phase": 0.2
+              }
+            },
+            {
+              "id": "s1-t2-trunk",
+              "type": "shape",
+              "shape": "rect",
+              "x": 34,
+              "y": 79.609375,
+              "width": 2.04,
+              "height": 8.5,
+              "fill": "#6E4B3A",
+              "radius": 50,
+              "enter": {
+                "preset": "rise",
+                "at": 0.9
+              }
+            },
+            {
+              "id": "s1-t2-canopy",
+              "type": "shape",
+              "shape": "circle",
+              "x": 34,
+              "y": 73.871875,
+              "width": 11.9,
+              "height": 11.9,
+              "fill": "#6B8A6C",
+              "enter": {
+                "preset": "pop",
+                "at": 1.05
+              },
+              "idle": {
+                "kind": "sway",
+                "amount": 1.2,
+                "speed": 0.2,
+                "phase": 0.2
+              }
+            },
+            {
+              "id": "s1-home-wall",
+              "type": "shape",
+              "shape": "rect",
+              "x": 78,
+              "y": 75.375,
+              "width": 26,
+              "height": 20,
+              "fill": "#B98A63",
+              "radius": 2,
+              "enter": {
+                "preset": "rise",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s1-home-roof",
+              "type": "shape",
+              "shape": "triangle",
+              "x": 78,
+              "y": 67.1625,
+              "width": 33.800000000000004,
+              "height": 9.200000000000001,
+              "fill": "#7A4F3E",
+              "enter": {
+                "preset": "drop",
+                "at": 1.3499999999999999
+              }
+            },
+            {
+              "id": "s1-home-door",
+              "type": "shape",
+              "shape": "rect",
+              "x": 78,
+              "y": 78.8625,
+              "width": 5.2,
+              "height": 7.6,
+              "fill": "#5A3B2E",
+              "radius": 16,
+              "enter": {
+                "preset": "fade",
+                "at": 1.5
+              }
+            },
+            {
+              "id": "s1-home-window",
+              "type": "shape",
+              "shape": "rect",
+              "x": 71.24,
+              "y": 74.25,
+              "width": 4.42,
+              "height": 3.8,
+              "fill": "#F0CE86",
+              "radius": 12,
+              "enter": {
+                "preset": "pop",
+                "at": 1.6
+              }
+            },
+            {
+              "id": "s1-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#B27E55",
+              "opacity": 0.26,
+              "particles": {
+                "kind": "dust",
+                "count": 22,
+                "speed": 0.22,
+                "size": 1.2,
+                "seed": 11
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-02",
+        "layout": "editorial",
+        "duration": 5,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Hace mucho tiempo vivía un hombre que tenía dos hijos.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "static",
+        "motionStrength": 18,
+        "transition": "cut",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#E6D3B5",
+            "color2": "#A98C68",
+            "angle": 180
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 0,
+              "zoom": 1.02,
+              "rotate": 0
+            },
+            "to": {
+              "x": 2,
+              "y": 0,
+              "zoom": 1.07,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.2,
+            "grain": 0.08
+          },
+          "layers": [
+            {
+              "id": "s2-glow",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 16,
+              "width": 22,
+              "height": 22,
+              "fill": "#F7DFAE",
+              "opacity": 0.28
+            },
+            {
+              "id": "s2-sun",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 16,
+              "width": 11,
+              "height": 11,
+              "fill": "#E9B36A",
+              "opacity": 0.95,
+              "enter": {
+                "preset": "fade",
+                "at": 0
+              }
+            },
+            {
+              "id": "s2-a-c1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 26,
+              "y": 20,
+              "width": 18,
+              "height": 6.3,
+              "fill": "#FFF6E2",
+              "opacity": 0.4
+            },
+            {
+              "id": "s2-a-c2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 32.3,
+              "y": 18.9875,
+              "width": 10.8,
+              "height": 5.4,
+              "fill": "#FFF6E2",
+              "opacity": 0.4
+            },
+            {
+              "id": "s2-hill",
+              "type": "shape",
+              "shape": "circle",
+              "x": 16,
+              "y": 78,
+              "width": 130,
+              "height": 28,
+              "fill": "#A8B393",
+              "opacity": 0.9
+            },
+            {
+              "id": "s2-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 98.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#8C9C79"
+            },
+            {
+              "id": "s2-home-wall",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 69.0625,
+              "width": 56,
+              "height": 46,
+              "fill": "#B98A63",
+              "radius": 2,
+              "enter": {
+                "preset": "rise",
+                "at": 0.2
+              }
+            },
+            {
+              "id": "s2-home-roof",
+              "type": "shape",
+              "shape": "triangle",
+              "x": 50,
+              "y": 50.17375,
+              "width": 72.8,
+              "height": 21.16,
+              "fill": "#7A4F3E",
+              "enter": {
+                "preset": "drop",
+                "at": 0.35
+              }
+            },
+            {
+              "id": "s2-home-door",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 77.08375,
+              "width": 11.200000000000001,
+              "height": 17.48,
+              "fill": "#5A3B2E",
+              "radius": 16,
+              "enter": {
+                "preset": "fade",
+                "at": 0.5
+              }
+            },
+            {
+              "id": "s2-home-window",
+              "type": "shape",
+              "shape": "rect",
+              "x": 35.44,
+              "y": 66.475,
+              "width": 9.520000000000001,
+              "height": 8.74,
+              "fill": "#F0CE86",
+              "radius": 12,
+              "enter": {
+                "preset": "pop",
+                "at": 0.6000000000000001
+              }
+            },
+            {
+              "id": "s2-fore",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 104,
+              "width": 150,
+              "height": 40,
+              "fill": "#7E8F6C",
+              "enter": {
+                "preset": "fade",
+                "at": 0.2
+              }
+            },
+            {
+              "id": "s2-father-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 34,
+              "y": 88.72,
+              "width": 20.24,
+              "height": 29.44,
+              "fill": "#4F6F6A",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s2-father-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 34,
+              "y": 76.55875,
+              "width": 13.799999999999999,
+              "height": 13.799999999999999,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.72
+              }
+            },
+            {
+              "id": "s2-son1-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 21,
+              "y": 91.52,
+              "width": 15.84,
+              "height": 23.04,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.9
+              }
+            },
+            {
+              "id": "s2-son1-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 21,
+              "y": 82.0025,
+              "width": 10.799999999999999,
+              "height": 10.799999999999999,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.02
+              }
+            },
+            {
+              "id": "s2-son2-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 63,
+              "y": 91.52,
+              "width": 15.84,
+              "height": 23.04,
+              "fill": "#C79A5B",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 1.05
+              }
+            },
+            {
+              "id": "s2-son2-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 63,
+              "y": 82.0025,
+              "width": 10.799999999999999,
+              "height": 10.799999999999999,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.17
+              }
+            },
+            {
+              "id": "s2-beam",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 22,
+              "width": 62,
+              "height": 2.4,
+              "fill": "#F8E8BF",
+              "opacity": 0.35,
+              "rotate": -3,
+              "strokeWidth": 2.4
+            },
+            {
+              "id": "s2-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#C9A97A",
+              "opacity": 0.2,
+              "particles": {
+                "kind": "dust",
+                "count": 16,
+                "speed": 0.18,
+                "size": 1.2,
+                "seed": 13
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-03",
+        "layout": "hero",
+        "duration": 9,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "El menor, inquieto y deseoso de conocer el mundo, un día decidió pedirle a su padre la parte de la herencia que le correspondía.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "pan-right",
+        "motionStrength": 34,
+        "transition": "fade",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#D8C49F",
+            "color2": "#7D997F",
+            "angle": 150
+          },
+          "camera": {
+            "from": {
+              "x": -3,
+              "y": 0,
+              "zoom": 1.02,
+              "rotate": 0
+            },
+            "to": {
+              "x": 5,
+              "y": -2,
+              "zoom": 1.1,
+              "rotate": 1
+            }
+          },
+          "grade": {
+            "vignette": 0.16,
+            "grain": 0.09
+          },
+          "layers": [
+            {
+              "id": "s3-floor",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 104,
+              "width": 150,
+              "height": 28,
+              "fill": "#A98C68"
+            },
+            {
+              "id": "s3-window",
+              "type": "shape",
+              "shape": "rect",
+              "x": 19,
+              "y": 32,
+              "width": 20,
+              "height": 24,
+              "fill": "#9BC0BC",
+              "radius": 8,
+              "enter": {
+                "preset": "fade",
+                "at": 0.1
+              }
+            },
+            {
+              "id": "s3-glow",
+              "type": "shape",
+              "shape": "rect",
+              "x": 19,
+              "y": 32,
+              "width": 15,
+              "height": 18,
+              "fill": "#F7D99E",
+              "radius": 8,
+              "opacity": 0.35
+            },
+            {
+              "id": "s3-table-top",
+              "type": "shape",
+              "shape": "rect",
+              "x": 52,
+              "y": 85.025,
+              "width": 58,
+              "height": 2.8,
+              "fill": "#77553F",
+              "radius": 20,
+              "enter": {
+                "preset": "rise",
+                "at": 0.2
+              }
+            },
+            {
+              "id": "s3-table-leg-l",
+              "type": "shape",
+              "shape": "rect",
+              "x": 31.12,
+              "y": 88.90625,
+              "width": 1.8,
+              "height": 11,
+              "fill": "#77553F",
+              "radius": 20,
+              "enter": {
+                "preset": "fade",
+                "at": 0.35
+              }
+            },
+            {
+              "id": "s3-table-leg-r",
+              "type": "shape",
+              "shape": "rect",
+              "x": 72.88,
+              "y": 88.90625,
+              "width": 1.8,
+              "height": 11,
+              "fill": "#77553F",
+              "radius": 20,
+              "enter": {
+                "preset": "fade",
+                "at": 0.35
+              }
+            },
+            {
+              "id": "s3-father-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 68,
+              "y": 84.44,
+              "width": 18.48,
+              "height": 26.88,
+              "fill": "#4F6F6A",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.5
+              }
+            },
+            {
+              "id": "s3-father-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 68,
+              "y": 73.33624999999999,
+              "width": 12.6,
+              "height": 12.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.62
+              }
+            },
+            {
+              "id": "s3-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 32,
+              "y": 85.52,
+              "width": 15.84,
+              "height": 23.04,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s3-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 32,
+              "y": 76.0025,
+              "width": 10.799999999999999,
+              "height": 10.799999999999999,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.82
+              }
+            },
+            {
+              "id": "s3-c1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 46,
+              "y": 74,
+              "width": 4,
+              "height": 4,
+              "fill": "#D9A74A",
+              "enter": {
+                "preset": "pop",
+                "at": 1
+              }
+            },
+            {
+              "id": "s3-c2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 53,
+              "y": 73.4,
+              "width": 4,
+              "height": 4,
+              "fill": "#D9A74A",
+              "enter": {
+                "preset": "pop",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s3-c3",
+              "type": "shape",
+              "shape": "circle",
+              "x": 60,
+              "y": 74,
+              "width": 4,
+              "height": 4,
+              "fill": "#D9A74A",
+              "enter": {
+                "preset": "pop",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s3-hands",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 66,
+              "width": 18,
+              "height": 2,
+              "fill": "#E4B68A",
+              "rotate": -8,
+              "strokeWidth": 2,
+              "enter": {
+                "preset": "fade",
+                "at": 1.3
+              }
+            },
+            {
+              "id": "s3-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 45,
+              "width": 80,
+              "height": 70,
+              "fill": "#E8C68B",
+              "opacity": 0.26,
+              "particles": {
+                "kind": "dust",
+                "count": 14,
+                "speed": 0.16,
+                "size": 1.2,
+                "seed": 17
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-04",
+        "layout": "collage",
+        "duration": 7,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Y así fue. Recibió sus bienes, preparó sus cosas y se marchó a una tierra lejana.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "pull",
+        "motionStrength": 32,
+        "transition": "dip",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#E4D2B4",
+            "color2": "#7F9A88",
+            "angle": 145
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 2,
+              "zoom": 1.08,
+              "rotate": 0
+            },
+            "to": {
+              "x": -4,
+              "y": -3,
+              "zoom": 1,
+              "rotate": -1
+            }
+          },
+          "grade": {
+            "vignette": 0.2,
+            "grain": 0.08
+          },
+          "layers": [
+            {
+              "id": "s4-glow",
+              "type": "shape",
+              "shape": "circle",
+              "x": 82,
+              "y": 20,
+              "width": 22,
+              "height": 22,
+              "fill": "#F7DFAE",
+              "opacity": 0.22
+            },
+            {
+              "id": "s4-sun",
+              "type": "shape",
+              "shape": "circle",
+              "x": 82,
+              "y": 20,
+              "width": 11,
+              "height": 11,
+              "fill": "#D9A05F",
+              "opacity": 0.95,
+              "enter": {
+                "preset": "fade",
+                "at": 0
+              }
+            },
+            {
+              "id": "s4-hill",
+              "type": "shape",
+              "shape": "circle",
+              "x": 84,
+              "y": 76,
+              "width": 130,
+              "height": 30,
+              "fill": "#A8B393",
+              "opacity": 0.9
+            },
+            {
+              "id": "s4-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 98.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#8E9A78"
+            },
+            {
+              "id": "s4-road",
+              "type": "shape",
+              "shape": "circle",
+              "x": 52,
+              "y": 96,
+              "width": 10,
+              "height": 50,
+              "fill": "#E9C98F",
+              "rotate": -7,
+              "enter": {
+                "preset": "fade",
+                "at": 0.2
+              }
+            },
+            {
+              "id": "s4-home-wall",
+              "type": "shape",
+              "shape": "rect",
+              "x": 84,
+              "y": 76.21875,
+              "width": 22,
+              "height": 17,
+              "fill": "#B98A63",
+              "radius": 2,
+              "enter": {
+                "preset": "rise",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s4-home-roof",
+              "type": "shape",
+              "shape": "triangle",
+              "x": 84,
+              "y": 69.238125,
+              "width": 28.6,
+              "height": 7.82,
+              "fill": "#7A4F3E",
+              "enter": {
+                "preset": "drop",
+                "at": 0.9500000000000001
+              }
+            },
+            {
+              "id": "s4-home-door",
+              "type": "shape",
+              "shape": "rect",
+              "x": 84,
+              "y": 79.183125,
+              "width": 4.4,
+              "height": 6.46,
+              "fill": "#5A3B2E",
+              "radius": 16,
+              "enter": {
+                "preset": "fade",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s4-home-window",
+              "type": "shape",
+              "shape": "rect",
+              "x": 78.28,
+              "y": 75.2625,
+              "width": 3.74,
+              "height": 3.23,
+              "fill": "#F0CE86",
+              "radius": 12,
+              "enter": {
+                "preset": "pop",
+                "at": 1.2000000000000002
+              }
+            },
+            {
+              "id": "s4-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 37,
+              "y": 77.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.4
+              }
+            },
+            {
+              "id": "s4-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 37,
+              "y": 68.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.52
+              }
+            },
+            {
+              "id": "s4-bag",
+              "type": "shape",
+              "shape": "rect",
+              "x": 46,
+              "y": 70,
+              "width": 9,
+              "height": 11,
+              "fill": "#6E4B3A",
+              "radius": 26,
+              "rotate": 8,
+              "enter": {
+                "preset": "drop",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s4-bird1",
+              "type": "shape",
+              "shape": "line",
+              "x": 28,
+              "y": 26,
+              "width": 4,
+              "height": 1.1,
+              "fill": "#7A6A55",
+              "rotate": -12,
+              "opacity": 0.5
+            },
+            {
+              "id": "s4-bird2",
+              "type": "shape",
+              "shape": "line",
+              "x": 34,
+              "y": 23,
+              "width": 3.4,
+              "height": 1.1,
+              "fill": "#7A6A55",
+              "rotate": 8,
+              "opacity": 0.5
+            },
+            {
+              "id": "s4-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 55,
+              "width": 100,
+              "height": 90,
+              "fill": "#C19B68",
+              "opacity": 0.26,
+              "particles": {
+                "kind": "dust",
+                "count": 20,
+                "speed": 0.3,
+                "size": 1.2,
+                "seed": 19
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-05",
+        "layout": "kinetic",
+        "duration": 7,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Allí comenzó a gastar su fortuna en fiestas, placeres y toda clase de diversiones.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "drift",
+        "motionStrength": 40,
+        "transition": "flash",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#4C3151",
+            "color2": "#C17B55",
+            "angle": 135
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 0,
+              "zoom": 1.05,
+              "rotate": -1
+            },
+            "to": {
+              "x": 3,
+              "y": 2,
+              "zoom": 1.13,
+              "rotate": 2
+            }
+          },
+          "grade": {
+            "vignette": 0.28,
+            "grain": 0.11
+          },
+          "layers": [
+            {
+              "id": "s5-table",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 84,
+              "width": 96,
+              "height": 11,
+              "fill": "#745143",
+              "radius": 4,
+              "enter": {
+                "preset": "rise",
+                "at": 0.3
+              }
+            },
+            {
+              "id": "s5-lamp1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 20,
+              "y": 28,
+              "width": 12,
+              "height": 12,
+              "fill": "#F1C578",
+              "opacity": 0.85,
+              "idle": {
+                "kind": "pulse",
+                "amount": 4,
+                "speed": 0.4,
+                "phase": 0.1
+              }
+            },
+            {
+              "id": "s5-lamp2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 28,
+              "width": 12,
+              "height": 12,
+              "fill": "#F1C578",
+              "opacity": 0.85,
+              "idle": {
+                "kind": "pulse",
+                "amount": 4,
+                "speed": 0.4,
+                "phase": 0.5
+              }
+            },
+            {
+              "id": "s5-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 84.8,
+              "width": 17.6,
+              "height": 25.6,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.5
+              }
+            },
+            {
+              "id": "s5-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 74.225,
+              "width": 12,
+              "height": 12,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.62
+              }
+            },
+            {
+              "id": "s5-g1-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 22,
+              "y": 86.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#8D6C87",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s5-g1-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 22,
+              "y": 77.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.92
+              }
+            },
+            {
+              "id": "s5-g2-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 78,
+              "y": 86.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#577B70",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.95
+              }
+            },
+            {
+              "id": "s5-g2-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 78,
+              "y": 77.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.0699999999999998
+              }
+            },
+            {
+              "id": "s5-cup1",
+              "type": "shape",
+              "shape": "rect",
+              "x": 34,
+              "y": 80,
+              "width": 5,
+              "height": 7,
+              "fill": "#E5C37D",
+              "radius": 30,
+              "rotate": -7,
+              "enter": {
+                "preset": "pop",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s5-cup2",
+              "type": "shape",
+              "shape": "rect",
+              "x": 66,
+              "y": 80,
+              "width": 5,
+              "height": 7,
+              "fill": "#E5C37D",
+              "radius": 30,
+              "rotate": 7,
+              "enter": {
+                "preset": "pop",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s5-plate",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 80,
+              "width": 15,
+              "height": 15,
+              "fill": "#C9924F",
+              "opacity": 0.95
+            },
+            {
+              "id": "s5-confetti",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#F2C76D",
+              "opacity": 0.5,
+              "particles": {
+                "kind": "dust",
+                "count": 30,
+                "speed": 0.7,
+                "size": 1.2,
+                "seed": 23
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-06",
+        "layout": "editorial",
+        "duration": 11,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Al principio parecía tenerlo todo: dinero, amigos y una vida llena de comodidades. Pero, queridos amigos, la riqueza malgastada pronto se termina.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "push",
+        "motionStrength": 30,
+        "transition": "cut",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#D3B487",
+            "color2": "#6D6E63",
+            "angle": 170
+          },
+          "camera": {
+            "from": {
+              "x": -2,
+              "y": 0,
+              "zoom": 1,
+              "rotate": 0
+            },
+            "to": {
+              "x": 2,
+              "y": 2,
+              "zoom": 1.16,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.22,
+            "grain": 0.1
+          },
+          "layers": [
+            {
+              "id": "s6-floor",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 104,
+              "width": 150,
+              "height": 24,
+              "fill": "#77664E"
+            },
+            {
+              "id": "s6-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 86.8,
+              "width": 17.6,
+              "height": 25.6,
+              "fill": "#A8664F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.3
+              }
+            },
+            {
+              "id": "s6-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 76.225,
+              "width": 12,
+              "height": 12,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.42
+              }
+            },
+            {
+              "id": "s6-f1-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 23,
+              "y": 88.6,
+              "width": 13.2,
+              "height": 19.2,
+              "fill": "#577B70",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.55
+              }
+            },
+            {
+              "id": "s6-f1-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 23,
+              "y": 80.66874999999999,
+              "width": 9,
+              "height": 9,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.67
+              }
+            },
+            {
+              "id": "s6-f2-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 77,
+              "y": 88.6,
+              "width": 13.2,
+              "height": 19.2,
+              "fill": "#8D6C87",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s6-f2-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 77,
+              "y": 80.66874999999999,
+              "width": 9,
+              "height": 9,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.82
+              }
+            },
+            {
+              "id": "s6-c1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 42,
+              "y": 48,
+              "width": 3.4,
+              "height": 3.4,
+              "fill": "#E7B95E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.9
+              }
+            },
+            {
+              "id": "s6-c2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 58,
+              "y": 42,
+              "width": 3.4,
+              "height": 3.4,
+              "fill": "#E7B95E",
+              "enter": {
+                "preset": "pop",
+                "at": 1
+              }
+            },
+            {
+              "id": "s6-c3",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 36,
+              "width": 3.4,
+              "height": 3.4,
+              "fill": "#E7B95E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s6-crack",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 88,
+              "width": 46,
+              "height": 1.2,
+              "fill": "#4B4038",
+              "rotate": -8,
+              "opacity": 0.75,
+              "strokeWidth": 1.2,
+              "enter": {
+                "preset": "fade",
+                "at": 4.5
+              }
+            },
+            {
+              "id": "s6-shadow",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 96,
+              "width": 62,
+              "height": 7,
+              "fill": "#302C2C",
+              "opacity": 0.3,
+              "enter": {
+                "preset": "fade",
+                "at": 5.2
+              }
+            },
+            {
+              "id": "s6-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 45,
+              "width": 90,
+              "height": 60,
+              "fill": "#E7B95E",
+              "opacity": 0.36,
+              "particles": {
+                "kind": "dust",
+                "count": 16,
+                "speed": 0.3,
+                "size": 1.2,
+                "seed": 29
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-07",
+        "layout": "hero",
+        "duration": 6,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Cuando se quedó sin dinero, una terrible hambre llegó a aquella región.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "rise",
+        "motionStrength": 36,
+        "transition": "dip",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#B9A58B",
+            "color2": "#6C6E65",
+            "angle": 180
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 5,
+              "zoom": 1.04,
+              "rotate": 0
+            },
+            "to": {
+              "x": -2,
+              "y": -4,
+              "zoom": 1.09,
+              "rotate": -1
+            }
+          },
+          "grade": {
+            "vignette": 0.32,
+            "grain": 0.12
+          },
+          "layers": [
+            {
+              "id": "s7-sun",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 20,
+              "width": 12,
+              "height": 12,
+              "fill": "#E3B16D",
+              "opacity": 0.3
+            },
+            {
+              "id": "s7-hill",
+              "type": "shape",
+              "shape": "circle",
+              "x": 20,
+              "y": 74,
+              "width": 120,
+              "height": 22,
+              "fill": "#B0A084",
+              "opacity": 0.85
+            },
+            {
+              "id": "s7-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 96.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#9A866A"
+            },
+            {
+              "id": "s7-dead-trunk",
+              "type": "shape",
+              "shape": "rect",
+              "x": 14,
+              "y": 77.625,
+              "width": 2.88,
+              "height": 12,
+              "fill": "#5E4A3A",
+              "radius": 50,
+              "enter": {
+                "preset": "rise",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s7-dead-canopy",
+              "type": "shape",
+              "shape": "circle",
+              "x": 14,
+              "y": 69.525,
+              "width": 16.8,
+              "height": 16.8,
+              "fill": "#6B5A47",
+              "enter": {
+                "preset": "pop",
+                "at": 0.75
+              },
+              "idle": {
+                "kind": "sway",
+                "amount": 1.2,
+                "speed": 0.2,
+                "phase": 0.2
+              }
+            },
+            {
+              "id": "s7-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 74.88,
+              "width": 14.96,
+              "height": 21.76,
+              "fill": "#765C56",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.4
+              }
+            },
+            {
+              "id": "s7-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 65.89125,
+              "width": 10.2,
+              "height": 10.2,
+              "fill": "#C79B78",
+              "enter": {
+                "preset": "pop",
+                "at": 0.52
+              }
+            },
+            {
+              "id": "s7-bag",
+              "type": "shape",
+              "shape": "rect",
+              "x": 62,
+              "y": 70,
+              "width": 8,
+              "height": 10,
+              "fill": "#55463B",
+              "radius": 30,
+              "rotate": 12,
+              "enter": {
+                "preset": "drop",
+                "at": 1
+              }
+            },
+            {
+              "id": "s7-crack1",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 90,
+              "width": 40,
+              "height": 1.1,
+              "fill": "#6B5843",
+              "rotate": -6,
+              "opacity": 0.6
+            },
+            {
+              "id": "s7-wind",
+              "type": "particles",
+              "x": 50,
+              "y": 55,
+              "width": 110,
+              "height": 90,
+              "fill": "#D5C5A6",
+              "opacity": 0.32,
+              "particles": {
+                "kind": "dust",
+                "count": 28,
+                "speed": 0.5,
+                "size": 1.2,
+                "seed": 31
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-08",
+        "layout": "editorial",
+        "duration": 7,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Sus amigos desaparecieron y aquel joven terminó trabajando en el campo cuidando cerdos.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "pan-left",
+        "motionStrength": 38,
+        "transition": "cut",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#96836E",
+            "color2": "#4E5B4D",
+            "angle": 170
+          },
+          "camera": {
+            "from": {
+              "x": 3,
+              "y": 0,
+              "zoom": 1.03,
+              "rotate": 0
+            },
+            "to": {
+              "x": -5,
+              "y": 2,
+              "zoom": 1,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.26,
+            "grain": 0.1
+          },
+          "layers": [
+            {
+              "id": "s8-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 92.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#6E7358"
+            },
+            {
+              "id": "s8-mud",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 88,
+              "width": 70,
+              "height": 12,
+              "fill": "#5A5343",
+              "opacity": 0.5
+            },
+            {
+              "id": "s8-post1",
+              "type": "shape",
+              "shape": "rect",
+              "x": 20,
+              "y": 70,
+              "width": 3,
+              "height": 28,
+              "fill": "#654B3B",
+              "radius": 12,
+              "enter": {
+                "preset": "rise",
+                "at": 0.2
+              }
+            },
+            {
+              "id": "s8-post2",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 70,
+              "width": 3,
+              "height": 28,
+              "fill": "#654B3B",
+              "radius": 12,
+              "enter": {
+                "preset": "rise",
+                "at": 0.3
+              }
+            },
+            {
+              "id": "s8-post3",
+              "type": "shape",
+              "shape": "rect",
+              "x": 80,
+              "y": 70,
+              "width": 3,
+              "height": 28,
+              "fill": "#654B3B",
+              "radius": 12,
+              "enter": {
+                "preset": "rise",
+                "at": 0.4
+              }
+            },
+            {
+              "id": "s8-rail1",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 63,
+              "width": 62,
+              "height": 1.8,
+              "fill": "#654B3B",
+              "strokeWidth": 1.8,
+              "enter": {
+                "preset": "slide-right",
+                "at": 0.5
+              }
+            },
+            {
+              "id": "s8-rail2",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 72,
+              "width": 62,
+              "height": 1.5,
+              "fill": "#654B3B",
+              "strokeWidth": 1.5,
+              "enter": {
+                "preset": "slide-right",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s8-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 52,
+              "y": 74.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#765C56",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s8-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 52,
+              "y": 65.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#C79B78",
+              "enter": {
+                "preset": "pop",
+                "at": 0.82
+              }
+            },
+            {
+              "id": "s8-pig1-body",
+              "type": "shape",
+              "shape": "circle",
+              "x": 22,
+              "y": 85.9925,
+              "width": 19.2,
+              "height": 10.799999999999999,
+              "fill": "#C08A76",
+              "enter": {
+                "preset": "slide-left",
+                "at": 0.9
+              }
+            },
+            {
+              "id": "s8-pig1-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 11.92,
+              "y": 85.04750000000001,
+              "width": 7.919999999999999,
+              "height": 7.919999999999999,
+              "fill": "#C99A86",
+              "enter": {
+                "preset": "pop",
+                "at": 1.02
+              }
+            },
+            {
+              "id": "s8-pig1-snout",
+              "type": "shape",
+              "shape": "circle",
+              "x": 8.32,
+              "y": 85.04750000000001,
+              "width": 3.12,
+              "height": 3.12,
+              "fill": "#A9715F",
+              "enter": {
+                "preset": "fade",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s8-pig1-leg1",
+              "type": "shape",
+              "shape": "rect",
+              "x": 17.2,
+              "y": 90.515,
+              "width": 1.92,
+              "height": 5.28,
+              "fill": "#8E5F51",
+              "radius": 40,
+              "enter": {
+                "preset": "fade",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s8-pig1-leg2",
+              "type": "shape",
+              "shape": "rect",
+              "x": 26.8,
+              "y": 90.515,
+              "width": 1.92,
+              "height": 5.28,
+              "fill": "#8E5F51",
+              "radius": 40,
+              "enter": {
+                "preset": "fade",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s8-pig2-body",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 89.49312499999999,
+              "width": 17.6,
+              "height": 9.9,
+              "fill": "#C08A76",
+              "enter": {
+                "preset": "slide-left",
+                "at": 1.05
+              }
+            },
+            {
+              "id": "s8-pig2-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 70.75999999999999,
+              "y": 88.626875,
+              "width": 7.26,
+              "height": 7.26,
+              "fill": "#C99A86",
+              "enter": {
+                "preset": "pop",
+                "at": 1.17
+              }
+            },
+            {
+              "id": "s8-pig2-snout",
+              "type": "shape",
+              "shape": "circle",
+              "x": 67.46,
+              "y": 88.626875,
+              "width": 2.8600000000000003,
+              "height": 2.8600000000000003,
+              "fill": "#A9715F",
+              "enter": {
+                "preset": "fade",
+                "at": 1.25
+              }
+            },
+            {
+              "id": "s8-pig2-leg1",
+              "type": "shape",
+              "shape": "rect",
+              "x": 75.6,
+              "y": 93.63875,
+              "width": 1.7600000000000002,
+              "height": 4.840000000000001,
+              "fill": "#8E5F51",
+              "radius": 40,
+              "enter": {
+                "preset": "fade",
+                "at": 1.25
+              }
+            },
+            {
+              "id": "s8-pig2-leg2",
+              "type": "shape",
+              "shape": "rect",
+              "x": 84.4,
+              "y": 93.63875,
+              "width": 1.7600000000000002,
+              "height": 4.840000000000001,
+              "fill": "#8E5F51",
+              "radius": 40,
+              "enter": {
+                "preset": "fade",
+                "at": 1.25
+              }
+            },
+            {
+              "id": "s8-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 84,
+              "width": 100,
+              "height": 20,
+              "fill": "#544D3F",
+              "opacity": 0.28,
+              "particles": {
+                "kind": "dust",
+                "count": 14,
+                "speed": 0.18,
+                "size": 1.2,
+                "seed": 37
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-09",
+        "layout": "hero",
+        "duration": 6,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Tenía tanta hambre que hasta deseaba comer lo que comían aquellos animales.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "push",
+        "motionStrength": 25,
+        "transition": "fade",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#5A6450",
+            "color2": "#28372F",
+            "angle": 180
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 0,
+              "zoom": 1.04,
+              "rotate": 0
+            },
+            "to": {
+              "x": 0,
+              "y": 2,
+              "zoom": 1.14,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.38,
+            "grain": 0.12
+          },
+          "layers": [
+            {
+              "id": "s9-pen",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 50,
+              "width": 150,
+              "height": 150,
+              "fill": "#4E5A47"
+            },
+            {
+              "id": "s9-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 100,
+              "width": 150,
+              "height": 32,
+              "fill": "#3E4A3A"
+            },
+            {
+              "id": "s9-trough",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 82,
+              "width": 54,
+              "height": 8,
+              "fill": "#6E4B3A",
+              "radius": 16,
+              "enter": {
+                "preset": "rise",
+                "at": 0.4
+              }
+            },
+            {
+              "id": "s9-leg1",
+              "type": "shape",
+              "shape": "rect",
+              "x": 34,
+              "y": 88,
+              "width": 2.2,
+              "height": 8,
+              "fill": "#5A3B2E"
+            },
+            {
+              "id": "s9-leg2",
+              "type": "shape",
+              "shape": "rect",
+              "x": 66,
+              "y": 88,
+              "width": 2.2,
+              "height": 8,
+              "fill": "#5A3B2E"
+            },
+            {
+              "id": "s9-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 42,
+              "y": 81.6,
+              "width": 13.2,
+              "height": 19.2,
+              "fill": "#765C56",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s9-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 42,
+              "y": 73.66874999999999,
+              "width": 9,
+              "height": 9,
+              "fill": "#C79B78",
+              "enter": {
+                "preset": "pop",
+                "at": 0.72
+              }
+            },
+            {
+              "id": "s9-pig-body",
+              "type": "shape",
+              "shape": "circle",
+              "x": 76,
+              "y": 92.2428125,
+              "width": 18.4,
+              "height": 10.35,
+              "fill": "#C08A76",
+              "enter": {
+                "preset": "slide-left",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s9-pig-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 66.34,
+              "y": 91.3371875,
+              "width": 7.589999999999999,
+              "height": 7.589999999999999,
+              "fill": "#C99A86",
+              "enter": {
+                "preset": "pop",
+                "at": 0.92
+              }
+            },
+            {
+              "id": "s9-pig-snout",
+              "type": "shape",
+              "shape": "circle",
+              "x": 62.89,
+              "y": 91.3371875,
+              "width": 2.9899999999999998,
+              "height": 2.9899999999999998,
+              "fill": "#A9715F",
+              "enter": {
+                "preset": "fade",
+                "at": 1
+              }
+            },
+            {
+              "id": "s9-pig-leg1",
+              "type": "shape",
+              "shape": "rect",
+              "x": 71.4,
+              "y": 96.576875,
+              "width": 1.8399999999999999,
+              "height": 5.06,
+              "fill": "#8E5F51",
+              "radius": 40,
+              "enter": {
+                "preset": "fade",
+                "at": 1
+              }
+            },
+            {
+              "id": "s9-pig-leg2",
+              "type": "shape",
+              "shape": "rect",
+              "x": 80.6,
+              "y": 96.576875,
+              "width": 1.8399999999999999,
+              "height": 5.06,
+              "fill": "#8E5F51",
+              "radius": 40,
+              "enter": {
+                "preset": "fade",
+                "at": 1
+              }
+            },
+            {
+              "id": "s9-grain1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 44,
+              "y": 79,
+              "width": 2.4,
+              "height": 2.4,
+              "fill": "#D2AE62",
+              "enter": {
+                "preset": "pop",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s9-grain2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 53,
+              "y": 79.6,
+              "width": 2.4,
+              "height": 2.4,
+              "fill": "#D2AE62",
+              "enter": {
+                "preset": "pop",
+                "at": 1.3
+              }
+            },
+            {
+              "id": "s9-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 76,
+              "width": 80,
+              "height": 24,
+              "fill": "#D2AE62",
+              "opacity": 0.36,
+              "particles": {
+                "kind": "dust",
+                "count": 18,
+                "speed": 0.2,
+                "size": 1.2,
+                "seed": 41
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-10",
+        "layout": "editorial",
+        "duration": 8,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Qué triste destino para alguien que había tenido tanto. Fue entonces cuando recordó la casa de su padre.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "pull",
+        "motionStrength": 30,
+        "transition": "dip",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#394B57",
+            "color2": "#121D2A",
+            "angle": 180
+          },
+          "camera": {
+            "from": {
+              "x": 4,
+              "y": 1,
+              "zoom": 1.14,
+              "rotate": 0
+            },
+            "to": {
+              "x": -1,
+              "y": -2,
+              "zoom": 1.01,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.4,
+            "grain": 0.1
+          },
+          "layers": [
+            {
+              "id": "s10-night",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 50,
+              "width": 150,
+              "height": 150,
+              "fill": "#394B57"
+            },
+            {
+              "id": "s10-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 100,
+              "width": 150,
+              "height": 28,
+              "fill": "#2C3A44"
+            },
+            {
+              "id": "s10-moon",
+              "type": "shape",
+              "shape": "circle",
+              "x": 78,
+              "y": 16,
+              "width": 13,
+              "height": 13,
+              "fill": "#F0D59B",
+              "opacity": 0.9,
+              "enter": {
+                "preset": "fade",
+                "at": 0.3
+              }
+            },
+            {
+              "id": "s10-home-wall",
+              "type": "shape",
+              "shape": "rect",
+              "x": 24,
+              "y": 81.25,
+              "width": 30,
+              "height": 24,
+              "fill": "#8A6B4F",
+              "radius": 2,
+              "enter": {
+                "preset": "rise",
+                "at": 1
+              }
+            },
+            {
+              "id": "s10-home-roof",
+              "type": "shape",
+              "shape": "triangle",
+              "x": 24,
+              "y": 71.395,
+              "width": 39,
+              "height": 11.040000000000001,
+              "fill": "#664739",
+              "enter": {
+                "preset": "drop",
+                "at": 1.15
+              }
+            },
+            {
+              "id": "s10-home-door",
+              "type": "shape",
+              "shape": "rect",
+              "x": 24,
+              "y": 85.435,
+              "width": 6,
+              "height": 9.120000000000001,
+              "fill": "#5A3B2E",
+              "radius": 16,
+              "enter": {
+                "preset": "fade",
+                "at": 1.3
+              }
+            },
+            {
+              "id": "s10-home-window",
+              "type": "shape",
+              "shape": "rect",
+              "x": 16.2,
+              "y": 79.9,
+              "width": 5.1000000000000005,
+              "height": 4.5600000000000005,
+              "fill": "#F0CE86",
+              "radius": 12,
+              "enter": {
+                "preset": "pop",
+                "at": 1.4
+              }
+            },
+            {
+              "id": "s10-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 55,
+              "y": 82.88,
+              "width": 14.96,
+              "height": 21.76,
+              "fill": "#403E4A",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.5
+              }
+            },
+            {
+              "id": "s10-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 55,
+              "y": 73.89125,
+              "width": 10.2,
+              "height": 10.2,
+              "fill": "#8E7C6A",
+              "enter": {
+                "preset": "pop",
+                "at": 0.62
+              }
+            },
+            {
+              "id": "s10-path",
+              "type": "shape",
+              "shape": "circle",
+              "x": 44,
+              "y": 98,
+              "width": 11,
+              "height": 26,
+              "fill": "#6E7B72",
+              "opacity": 0.45,
+              "rotate": -6
+            },
+            {
+              "id": "s10-stars",
+              "type": "particles",
+              "x": 50,
+              "y": 30,
+              "width": 110,
+              "height": 50,
+              "fill": "#F4E4BE",
+              "opacity": 0.5,
+              "particles": {
+                "kind": "dust",
+                "count": 20,
+                "speed": 0.1,
+                "size": 1.2,
+                "seed": 43
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-11",
+        "layout": "editorial",
+        "duration": 7,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Recordó que hasta los trabajadores tenían pan de sobra mientras él se encontraba muriendo de hambre.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "drift",
+        "motionStrength": 24,
+        "transition": "cut",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#E3D0AE",
+            "color2": "#B48762",
+            "angle": 180
+          },
+          "camera": {
+            "from": {
+              "x": -2,
+              "y": 1,
+              "zoom": 1.03,
+              "rotate": 0
+            },
+            "to": {
+              "x": 2,
+              "y": -1,
+              "zoom": 1.08,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.17,
+            "grain": 0.08
+          },
+          "layers": [
+            {
+              "id": "s11-floor",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 104,
+              "width": 150,
+              "height": 24,
+              "fill": "#B48762"
+            },
+            {
+              "id": "s11-table-top",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 87.025,
+              "width": 66,
+              "height": 2.8,
+              "fill": "#77553F",
+              "radius": 20,
+              "enter": {
+                "preset": "rise",
+                "at": 0.3
+              }
+            },
+            {
+              "id": "s11-table-leg-l",
+              "type": "shape",
+              "shape": "rect",
+              "x": 26.240000000000002,
+              "y": 90.90625,
+              "width": 1.8,
+              "height": 11,
+              "fill": "#77553F",
+              "radius": 20,
+              "enter": {
+                "preset": "fade",
+                "at": 0.44999999999999996
+              }
+            },
+            {
+              "id": "s11-table-leg-r",
+              "type": "shape",
+              "shape": "rect",
+              "x": 73.75999999999999,
+              "y": 90.90625,
+              "width": 1.8,
+              "height": 11,
+              "fill": "#77553F",
+              "radius": 20,
+              "enter": {
+                "preset": "fade",
+                "at": 0.44999999999999996
+              }
+            },
+            {
+              "id": "s11-bread1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 40,
+              "y": 72,
+              "width": 12,
+              "height": 5,
+              "fill": "#E1B86A",
+              "enter": {
+                "preset": "pop",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s11-bread2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 52,
+              "y": 72,
+              "width": 12,
+              "height": 5,
+              "fill": "#E1B86A",
+              "enter": {
+                "preset": "pop",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s11-bread3",
+              "type": "shape",
+              "shape": "circle",
+              "x": 64,
+              "y": 72,
+              "width": 12,
+              "height": 5,
+              "fill": "#E1B86A",
+              "enter": {
+                "preset": "pop",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s11-w1-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 25,
+              "y": 88.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#577B70",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.85
+              }
+            },
+            {
+              "id": "s11-w1-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 25,
+              "y": 79.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.97
+              }
+            },
+            {
+              "id": "s11-w2-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 75,
+              "y": 88.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#577B70",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 1
+              }
+            },
+            {
+              "id": "s11-w2-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 75,
+              "y": 79.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.12
+              }
+            },
+            {
+              "id": "s11-bowl",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 81,
+              "width": 20,
+              "height": 6,
+              "fill": "#9B6B4F",
+              "enter": {
+                "preset": "fade",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s11-window",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 30,
+              "width": 24,
+              "height": 15,
+              "fill": "#F2D59E",
+              "radius": 10,
+              "opacity": 0.5
+            },
+            {
+              "id": "s11-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 40,
+              "width": 90,
+              "height": 60,
+              "fill": "#F5E1B2",
+              "opacity": 0.28,
+              "particles": {
+                "kind": "dust",
+                "count": 14,
+                "speed": 0.18,
+                "size": 1.2,
+                "seed": 47
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-12",
+        "layout": "hero",
+        "duration": 4,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Y tomó una decisión: regresaría a casa.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "push",
+        "motionStrength": 36,
+        "transition": "flash",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#B9D0C0",
+            "color2": "#E8D9B5",
+            "angle": 155
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 2,
+              "zoom": 1.02,
+              "rotate": 0
+            },
+            "to": {
+              "x": 0,
+              "y": -2,
+              "zoom": 1.16,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.12,
+            "grain": 0.07
+          },
+          "layers": [
+            {
+              "id": "s12-glow",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 20,
+              "width": 24,
+              "height": 24,
+              "fill": "#F7DFAE",
+              "opacity": 0.26
+            },
+            {
+              "id": "s12-sun",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 20,
+              "width": 12,
+              "height": 12,
+              "fill": "#D69A59",
+              "opacity": 0.95,
+              "enter": {
+                "preset": "fade",
+                "at": 0
+              }
+            },
+            {
+              "id": "s12-hill",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 78,
+              "width": 120,
+              "height": 26,
+              "fill": "#B4C7A8",
+              "opacity": 0.85
+            },
+            {
+              "id": "s12-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 102.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#9CB694"
+            },
+            {
+              "id": "s12-road",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 98,
+              "width": 11,
+              "height": 44,
+              "fill": "#E8D9B5",
+              "rotate": -6,
+              "enter": {
+                "preset": "fade",
+                "at": 0.2
+              }
+            },
+            {
+              "id": "s12-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 44,
+              "y": 81.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.4
+              }
+            },
+            {
+              "id": "s12-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 44,
+              "y": 72.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.52
+              }
+            },
+            {
+              "id": "s12-arrow",
+              "type": "shape",
+              "shape": "line",
+              "x": 64,
+              "y": 52,
+              "width": 18,
+              "height": 2.4,
+              "fill": "#577B70",
+              "rotate": -22,
+              "strokeWidth": 2.4,
+              "enter": {
+                "preset": "slide-right",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s12-head",
+              "type": "shape",
+              "shape": "triangle",
+              "x": 72,
+              "y": 48,
+              "width": 6,
+              "height": 6,
+              "fill": "#577B70",
+              "rotate": 68,
+              "enter": {
+                "preset": "pop",
+                "at": 1
+              }
+            },
+            {
+              "id": "s12-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#E3D3B0",
+              "opacity": 0.26,
+              "particles": {
+                "kind": "dust",
+                "count": 16,
+                "speed": 0.24,
+                "size": 1.2,
+                "seed": 53
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-13",
+        "layout": "editorial",
+        "duration": 9,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Sabía que había pecado contra Dios y contra su padre, así que pensó pedirle que lo recibiera como uno de sus trabajadores.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "rise",
+        "motionStrength": 27,
+        "transition": "fade",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#93AFAA",
+            "color2": "#E5D1AE",
+            "angle": 180
+          },
+          "camera": {
+            "from": {
+              "x": 1,
+              "y": 3,
+              "zoom": 1.02,
+              "rotate": 0
+            },
+            "to": {
+              "x": -2,
+              "y": 0,
+              "zoom": 1.12,
+              "rotate": -1
+            }
+          },
+          "grade": {
+            "vignette": 0.2,
+            "grain": 0.09
+          },
+          "layers": [
+            {
+              "id": "s13-mountain",
+              "type": "shape",
+              "shape": "triangle",
+              "x": 20,
+              "y": 72,
+              "width": 58,
+              "height": 30,
+              "fill": "#607F77",
+              "opacity": 0.55
+            },
+            {
+              "id": "s13-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 104.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#A9BCA4"
+            },
+            {
+              "id": "s13-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 82.6,
+              "width": 13.2,
+              "height": 19.2,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.4
+              }
+            },
+            {
+              "id": "s13-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 74.66874999999999,
+              "width": 9,
+              "height": 9,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.52
+              }
+            },
+            {
+              "id": "s13-kneel",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 86,
+              "width": 22,
+              "height": 6,
+              "fill": "#8E6A55",
+              "enter": {
+                "preset": "drop",
+                "at": 0.9
+              }
+            },
+            {
+              "id": "s13-hands",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 72,
+              "width": 9,
+              "height": 2.4,
+              "fill": "#E4B68A",
+              "rotate": 90,
+              "strokeWidth": 2.4,
+              "enter": {
+                "preset": "fade",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s13-light",
+              "type": "shape",
+              "shape": "circle",
+              "x": 76,
+              "y": 28,
+              "width": 26,
+              "height": 26,
+              "fill": "#F5D99B",
+              "opacity": 0.3,
+              "enter": {
+                "preset": "fade",
+                "at": 1.4
+              }
+            },
+            {
+              "id": "s13-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 45,
+              "width": 100,
+              "height": 80,
+              "fill": "#F1E2B8",
+              "opacity": 0.28,
+              "particles": {
+                "kind": "dust",
+                "count": 18,
+                "speed": 0.2,
+                "size": 1.2,
+                "seed": 59
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-14",
+        "layout": "kinetic",
+        "duration": 4,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Pero escuchen bien lo que sucedió después.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "static",
+        "motionStrength": 18,
+        "transition": "flash",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#5B4B5B",
+            "color2": "#1D2935",
+            "angle": 180
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 0,
+              "zoom": 1,
+              "rotate": 0
+            },
+            "to": {
+              "x": 0,
+              "y": 0,
+              "zoom": 1.07,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.38,
+            "grain": 0.1
+          },
+          "layers": [
+            {
+              "id": "s14-ring",
+              "type": "shape",
+              "shape": "ring",
+              "x": 50,
+              "y": 48,
+              "width": 46,
+              "height": 46,
+              "fill": "#EBCB76",
+              "strokeWidth": 2.2,
+              "opacity": 0.8,
+              "enter": {
+                "preset": "pop",
+                "at": 0.2
+              },
+              "idle": {
+                "kind": "pulse",
+                "amount": 3,
+                "speed": 0.2,
+                "phase": 0.1
+              }
+            },
+            {
+              "id": "s14-dot",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 48,
+              "width": 11,
+              "height": 11,
+              "fill": "#EBCB76",
+              "enter": {
+                "preset": "pop",
+                "at": 0.5
+              }
+            },
+            {
+              "id": "s14-ray1",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 20,
+              "width": 1.6,
+              "height": 1.6,
+              "fill": "#EBCB76",
+              "strokeWidth": 1.6,
+              "opacity": 0.5,
+              "enter": {
+                "preset": "fade",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s14-ray2",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 76,
+              "width": 1.6,
+              "height": 1.6,
+              "fill": "#EBCB76",
+              "strokeWidth": 1.6,
+              "opacity": 0.5,
+              "enter": {
+                "preset": "fade",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s14-ray3",
+              "type": "shape",
+              "shape": "line",
+              "x": 20,
+              "y": 48,
+              "width": 1.6,
+              "height": 1.6,
+              "fill": "#EBCB76",
+              "strokeWidth": 1.6,
+              "opacity": 0.5,
+              "rotate": 90,
+              "enter": {
+                "preset": "fade",
+                "at": 0.9
+              }
+            },
+            {
+              "id": "s14-ray4",
+              "type": "shape",
+              "shape": "line",
+              "x": 80,
+              "y": 48,
+              "width": 1.6,
+              "height": 1.6,
+              "fill": "#EBCB76",
+              "strokeWidth": 1.6,
+              "opacity": 0.5,
+              "rotate": 90,
+              "enter": {
+                "preset": "fade",
+                "at": 1
+              }
+            },
+            {
+              "id": "s14-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#EBCB76",
+              "opacity": 0.32,
+              "particles": {
+                "kind": "dust",
+                "count": 20,
+                "speed": 0.3,
+                "size": 1.2,
+                "seed": 61
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-15",
+        "layout": "hero",
+        "duration": 9,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Cuando todavía estaba lejos, su padre lo vio venir y, lleno de compasión, corrió hacia él, lo abrazó y lo besó.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "pan-right",
+        "motionStrength": 30,
+        "transition": "fade",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#C4D6C4",
+            "color2": "#E9D4A5",
+            "angle": 160
+          },
+          "camera": {
+            "from": {
+              "x": -6,
+              "y": 0,
+              "zoom": 1.02,
+              "rotate": 0
+            },
+            "to": {
+              "x": 2,
+              "y": -2,
+              "zoom": 1.13,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.12,
+            "grain": 0.08
+          },
+          "layers": [
+            {
+              "id": "s15-glow",
+              "type": "shape",
+              "shape": "circle",
+              "x": 84,
+              "y": 16,
+              "width": 22,
+              "height": 22,
+              "fill": "#F7DFAE",
+              "opacity": 0.24
+            },
+            {
+              "id": "s15-sun",
+              "type": "shape",
+              "shape": "circle",
+              "x": 84,
+              "y": 16,
+              "width": 11,
+              "height": 11,
+              "fill": "#E3B16D",
+              "opacity": 0.95,
+              "enter": {
+                "preset": "fade",
+                "at": 0
+              }
+            },
+            {
+              "id": "s15-hill",
+              "type": "shape",
+              "shape": "circle",
+              "x": 16,
+              "y": 72,
+              "width": 120,
+              "height": 26,
+              "fill": "#9DB58F",
+              "opacity": 0.8
+            },
+            {
+              "id": "s15-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 96.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#7FA07C"
+            },
+            {
+              "id": "s15-home-wall",
+              "type": "shape",
+              "shape": "rect",
+              "x": 78,
+              "y": 72.8125,
+              "width": 26,
+              "height": 22,
+              "fill": "#A8795B",
+              "radius": 2,
+              "enter": {
+                "preset": "rise",
+                "at": 0.4
+              }
+            },
+            {
+              "id": "s15-home-roof",
+              "type": "shape",
+              "shape": "triangle",
+              "x": 78,
+              "y": 63.77875,
+              "width": 33.800000000000004,
+              "height": 10.120000000000001,
+              "fill": "#6F4D42",
+              "enter": {
+                "preset": "drop",
+                "at": 0.55
+              }
+            },
+            {
+              "id": "s15-home-door",
+              "type": "shape",
+              "shape": "rect",
+              "x": 78,
+              "y": 76.64875,
+              "width": 5.2,
+              "height": 8.36,
+              "fill": "#5A3B2E",
+              "radius": 16,
+              "enter": {
+                "preset": "fade",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s15-home-window",
+              "type": "shape",
+              "shape": "rect",
+              "x": 71.24,
+              "y": 71.575,
+              "width": 4.42,
+              "height": 4.18,
+              "fill": "#F0CE86",
+              "radius": 12,
+              "enter": {
+                "preset": "pop",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s15-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 26,
+              "y": 74.88,
+              "width": 14.96,
+              "height": 21.76,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s15-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 26,
+              "y": 65.89125,
+              "width": 10.2,
+              "height": 10.2,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.92
+              }
+            },
+            {
+              "id": "s15-father-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 52,
+              "y": 74.16,
+              "width": 16.72,
+              "height": 24.32,
+              "fill": "#4F6F6A",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 1
+              }
+            },
+            {
+              "id": "s15-father-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 52,
+              "y": 64.11375,
+              "width": 11.4,
+              "height": 11.4,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.12
+              }
+            },
+            {
+              "id": "s15-arms",
+              "type": "shape",
+              "shape": "line",
+              "x": 39,
+              "y": 71.595,
+              "width": 23.56,
+              "height": 2.2,
+              "fill": "#E4B68A",
+              "rotate": -12,
+              "strokeWidth": 2.2,
+              "enter": {
+                "preset": "rise",
+                "at": 1.3
+              }
+            },
+            {
+              "id": "s15-heart",
+              "type": "shape",
+              "shape": "circle",
+              "x": 39,
+              "y": 60,
+              "width": 7,
+              "height": 7,
+              "fill": "#D77762",
+              "opacity": 0.6,
+              "enter": {
+                "preset": "pop",
+                "at": 1.7
+              }
+            },
+            {
+              "id": "s15-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#E6D9B4",
+              "opacity": 0.28,
+              "particles": {
+                "kind": "dust",
+                "count": 18,
+                "speed": 0.2,
+                "size": 1.2,
+                "seed": 67
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-16",
+        "layout": "collage",
+        "duration": 11,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "El muchacho comenzó a reconocer sus errores, pero su padre ya estaba ordenando a sus servidores que trajeran la mejor ropa, un anillo y sandalias para sus pies.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "drift",
+        "motionStrength": 28,
+        "transition": "cut",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#E8D7B8",
+            "color2": "#AF9270",
+            "angle": 170
+          },
+          "camera": {
+            "from": {
+              "x": 2,
+              "y": -2,
+              "zoom": 1,
+              "rotate": 0
+            },
+            "to": {
+              "x": -2,
+              "y": 1,
+              "zoom": 1.09,
+              "rotate": 1
+            }
+          },
+          "grade": {
+            "vignette": 0.15,
+            "grain": 0.08
+          },
+          "layers": [
+            {
+              "id": "s16-floor",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 102,
+              "width": 150,
+              "height": 20,
+              "fill": "#C0A47C"
+            },
+            {
+              "id": "s16-s1-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 20,
+              "y": 88.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#577B70",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s16-s1-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 20,
+              "y": 79.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.72
+              }
+            },
+            {
+              "id": "s16-s2-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 80,
+              "y": 88.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#577B70",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.75
+              }
+            },
+            {
+              "id": "s16-s2-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 80,
+              "y": 79.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.87
+              }
+            },
+            {
+              "id": "s16-robe",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 78,
+              "width": 22,
+              "height": 32,
+              "fill": "#C08D52",
+              "radius": 40,
+              "enter": {
+                "preset": "pop",
+                "at": 1
+              }
+            },
+            {
+              "id": "s16-ring",
+              "type": "shape",
+              "shape": "ring",
+              "x": 50,
+              "y": 40,
+              "width": 11,
+              "height": 11,
+              "fill": "#D9A74A",
+              "strokeWidth": 2.4,
+              "enter": {
+                "preset": "pop",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s16-sandal1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 41,
+              "y": 92,
+              "width": 10,
+              "height": 4,
+              "fill": "#76523E",
+              "rotate": -8,
+              "enter": {
+                "preset": "rise",
+                "at": 1.5
+              }
+            },
+            {
+              "id": "s16-sandal2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 59,
+              "y": 92,
+              "width": 10,
+              "height": 4,
+              "fill": "#76523E",
+              "rotate": 8,
+              "enter": {
+                "preset": "rise",
+                "at": 1.65
+              }
+            },
+            {
+              "id": "s16-light",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 24,
+              "width": 34,
+              "height": 11,
+              "fill": "#F5E1B2",
+              "radius": 40,
+              "opacity": 0.35
+            },
+            {
+              "id": "s16-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#F5E1B2",
+              "opacity": 0.3,
+              "particles": {
+                "kind": "dust",
+                "count": 18,
+                "speed": 0.24,
+                "size": 1.2,
+                "seed": 71
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-17",
+        "layout": "hero",
+        "duration": 4,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Y mandó preparar una gran fiesta.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "push",
+        "motionStrength": 45,
+        "transition": "flash",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#733E53",
+            "color2": "#D59460",
+            "angle": 145
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 0,
+              "zoom": 1,
+              "rotate": 0
+            },
+            "to": {
+              "x": 1,
+              "y": -1,
+              "zoom": 1.18,
+              "rotate": 1
+            }
+          },
+          "grade": {
+            "vignette": 0.18,
+            "grain": 0.1
+          },
+          "layers": [
+            {
+              "id": "s17-table",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 86,
+              "width": 98,
+              "height": 12,
+              "fill": "#754D3E",
+              "radius": 4,
+              "enter": {
+                "preset": "rise",
+                "at": 0.3
+              }
+            },
+            {
+              "id": "s17-lamp1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 18,
+              "y": 30,
+              "width": 11,
+              "height": 11,
+              "fill": "#F4C96B",
+              "opacity": 0.85,
+              "idle": {
+                "kind": "pulse",
+                "amount": 4,
+                "speed": 0.4,
+                "phase": 0.1
+              }
+            },
+            {
+              "id": "s17-lamp2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 82,
+              "y": 30,
+              "width": 11,
+              "height": 11,
+              "fill": "#F4C96B",
+              "opacity": 0.85,
+              "idle": {
+                "kind": "pulse",
+                "amount": 4,
+                "speed": 0.4,
+                "phase": 0.45
+              }
+            },
+            {
+              "id": "s17-plate",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 79,
+              "width": 24,
+              "height": 8,
+              "fill": "#E6B96D",
+              "enter": {
+                "preset": "pop",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s17-fruit1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 44,
+              "y": 76.5,
+              "width": 5,
+              "height": 5,
+              "fill": "#C9744E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.95
+              }
+            },
+            {
+              "id": "s17-fruit2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 55,
+              "y": 76.5,
+              "width": 5,
+              "height": 5,
+              "fill": "#C9744E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.05
+              }
+            },
+            {
+              "id": "s17-p1-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 24,
+              "y": 88.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s17-p1-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 24,
+              "y": 79.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.72
+              }
+            },
+            {
+              "id": "s17-p2-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 76,
+              "y": 88.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#8D6C87",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.75
+              }
+            },
+            {
+              "id": "s17-p2-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 76,
+              "y": 79.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.87
+              }
+            },
+            {
+              "id": "s17-cup",
+              "type": "shape",
+              "shape": "rect",
+              "x": 66,
+              "y": 80,
+              "width": 4.6,
+              "height": 6.4,
+              "fill": "#E5C37D",
+              "radius": 30,
+              "enter": {
+                "preset": "pop",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s17-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#F3D6A0",
+              "opacity": 0.38,
+              "particles": {
+                "kind": "dust",
+                "count": 26,
+                "speed": 0.4,
+                "size": 1.2,
+                "seed": 73
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-18",
+        "layout": "hero",
+        "duration": 9,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Imaginen aquella alegría: el Padre había recuperado a su hijo; aquel que estaba perdido había sido encontrado.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "drift",
+        "motionStrength": 25,
+        "transition": "fade",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#F1D69B",
+            "color2": "#A8C4A4",
+            "angle": 150
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 2,
+              "zoom": 1.01,
+              "rotate": 0
+            },
+            "to": {
+              "x": -2,
+              "y": -1,
+              "zoom": 1.08,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.1,
+            "grain": 0.07
+          },
+          "layers": [
+            {
+              "id": "s18-halo",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 44,
+              "width": 54,
+              "height": 54,
+              "fill": "#FFF2C6",
+              "opacity": 0.5,
+              "idle": {
+                "kind": "breathe",
+                "amount": 2,
+                "speed": 0.2,
+                "phase": 0.1
+              }
+            },
+            {
+              "id": "s18-father-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 41,
+              "y": 84.44,
+              "width": 18.48,
+              "height": 26.88,
+              "fill": "#4F6F6A",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s18-father-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 41,
+              "y": 73.33624999999999,
+              "width": 12.6,
+              "height": 12.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.72
+              }
+            },
+            {
+              "id": "s18-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 59,
+              "y": 84.8,
+              "width": 17.6,
+              "height": 25.6,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 0.8
+              }
+            },
+            {
+              "id": "s18-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 59,
+              "y": 74.225,
+              "width": 12,
+              "height": 12,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 0.92
+              }
+            },
+            {
+              "id": "s18-arms",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 81.605,
+              "width": 26.04,
+              "height": 2.2,
+              "fill": "#E4B68A",
+              "rotate": -10,
+              "strokeWidth": 2.2,
+              "enter": {
+                "preset": "rise",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s18-ground",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 100,
+              "width": 150,
+              "height": 26,
+              "fill": "#C6D3A8",
+              "opacity": 0.7
+            },
+            {
+              "id": "s18-sparkles",
+              "type": "particles",
+              "x": 50,
+              "y": 50,
+              "width": 100,
+              "height": 100,
+              "fill": "#FFF0B8",
+              "opacity": 0.5,
+              "particles": {
+                "kind": "dust",
+                "count": 28,
+                "speed": 0.3,
+                "size": 1.2,
+                "seed": 79
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-19",
+        "layout": "editorial",
+        "duration": 5,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "Y así termina esta hermosa parábola que Jesús nos dejó.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "pull",
+        "motionStrength": 20,
+        "transition": "dip",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#E9D9B7",
+            "color2": "#A8BDA5",
+            "angle": 180
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 0,
+              "zoom": 1.1,
+              "rotate": 0
+            },
+            "to": {
+              "x": 0,
+              "y": 1,
+              "zoom": 1,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.16,
+            "grain": 0.08
+          },
+          "layers": [
+            {
+              "id": "s19-page",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 50,
+              "width": 62,
+              "height": 76,
+              "fill": "#F4E9CC",
+              "radius": 4,
+              "enter": {
+                "preset": "fade",
+                "at": 0.3
+              }
+            },
+            {
+              "id": "s19-spine",
+              "type": "shape",
+              "shape": "line",
+              "x": 50,
+              "y": 50,
+              "width": 0.8,
+              "height": 1,
+              "fill": "#B18C63",
+              "strokeWidth": 1,
+              "opacity": 0.5,
+              "rotate": 90
+            },
+            {
+              "id": "s19-sun",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 34,
+              "width": 16,
+              "height": 16,
+              "fill": "#D8A55F",
+              "opacity": 0.35,
+              "enter": {
+                "preset": "pop",
+                "at": 0.6
+              }
+            },
+            {
+              "id": "s19-path",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 68,
+              "width": 9,
+              "height": 30,
+              "fill": "#C19B68",
+              "opacity": 0.6
+            },
+            {
+              "id": "s19-leaf1",
+              "type": "shape",
+              "shape": "circle",
+              "x": 36,
+              "y": 66,
+              "width": 9,
+              "height": 16,
+              "fill": "#6E9275",
+              "rotate": -26,
+              "enter": {
+                "preset": "rise",
+                "at": 1
+              }
+            },
+            {
+              "id": "s19-leaf2",
+              "type": "shape",
+              "shape": "circle",
+              "x": 64,
+              "y": 66,
+              "width": 9,
+              "height": 16,
+              "fill": "#6E9275",
+              "rotate": 26,
+              "enter": {
+                "preset": "rise",
+                "at": 1.15
+              }
+            },
+            {
+              "id": "s19-shadow",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 93,
+              "width": 90,
+              "height": 5,
+              "fill": "#8E7A5B",
+              "opacity": 0.3
+            },
+            {
+              "id": "s19-dust",
+              "type": "particles",
+              "x": 50,
+              "y": 45,
+              "width": 70,
+              "height": 70,
+              "fill": "#E7D4A8",
+              "opacity": 0.28,
+              "particles": {
+                "kind": "dust",
+                "count": 12,
+                "speed": 0.15,
+                "size": 1.2,
+                "seed": 83
+              }
+            }
+          ]
+        }
+      },
+      {
+        "id": "prod-20",
+        "layout": "hero",
+        "duration": 9,
+        "title": "",
+        "subtitle": "",
+        "scriptExcerpt": "El amor de Dios es inmenso. No importa cuán lejos nos hayamos marchado, siempre podemos regresar a sus brazos.",
+        "imageAsset": "",
+        "videoAsset": "",
+        "approved": false,
+        "style": "watercolor",
+        "motion": "drift",
+        "motionStrength": 22,
+        "transition": "fade",
+        "focusX": 50,
+        "focusY": 50,
+        "authored": {
+          "background": {
+            "color": "#F4D9A5",
+            "color2": "#91B9A2",
+            "angle": 155
+          },
+          "camera": {
+            "from": {
+              "x": 0,
+              "y": 2,
+              "zoom": 1,
+              "rotate": 0
+            },
+            "to": {
+              "x": -1,
+              "y": -1,
+              "zoom": 1.1,
+              "rotate": 0
+            }
+          },
+          "grade": {
+            "vignette": 0.08,
+            "grain": 0.07
+          },
+          "layers": [
+            {
+              "id": "s20-glow",
+              "type": "shape",
+              "shape": "circle",
+              "x": 78,
+              "y": 18,
+              "width": 34,
+              "height": 34,
+              "fill": "#F7DFAE",
+              "opacity": 0.4
+            },
+            {
+              "id": "s20-sun",
+              "type": "shape",
+              "shape": "circle",
+              "x": 78,
+              "y": 18,
+              "width": 17,
+              "height": 17,
+              "fill": "#FFF0B8",
+              "opacity": 0.95,
+              "enter": {
+                "preset": "fade",
+                "at": 0
+              }
+            },
+            {
+              "id": "s20-horizon",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 76,
+              "width": 150,
+              "height": 26,
+              "fill": "#6E9A79",
+              "opacity": 0.7,
+              "enter": {
+                "preset": "rise",
+                "at": 0.5
+              }
+            },
+            {
+              "id": "s20-ground",
+              "type": "shape",
+              "shape": "rect",
+              "x": 50,
+              "y": 100.875,
+              "width": 150,
+              "height": 60,
+              "fill": "#7FA37E"
+            },
+            {
+              "id": "s20-road",
+              "type": "shape",
+              "shape": "circle",
+              "x": 50,
+              "y": 110,
+              "width": 16,
+              "height": 62,
+              "fill": "#E9C98F",
+              "rotate": -4,
+              "enter": {
+                "preset": "fade",
+                "at": 0.7
+              }
+            },
+            {
+              "id": "s20-home-wall",
+              "type": "shape",
+              "shape": "rect",
+              "x": 82,
+              "y": 77.375,
+              "width": 24,
+              "height": 20,
+              "fill": "#A8795B",
+              "radius": 2,
+              "enter": {
+                "preset": "rise",
+                "at": 0.9
+              }
+            },
+            {
+              "id": "s20-home-roof",
+              "type": "shape",
+              "shape": "triangle",
+              "x": 82,
+              "y": 69.1625,
+              "width": 31.200000000000003,
+              "height": 9.200000000000001,
+              "fill": "#6F4D42",
+              "enter": {
+                "preset": "drop",
+                "at": 1.05
+              }
+            },
+            {
+              "id": "s20-home-door",
+              "type": "shape",
+              "shape": "rect",
+              "x": 82,
+              "y": 80.8625,
+              "width": 4.800000000000001,
+              "height": 7.6,
+              "fill": "#5A3B2E",
+              "radius": 16,
+              "enter": {
+                "preset": "fade",
+                "at": 1.2
+              }
+            },
+            {
+              "id": "s20-home-window",
+              "type": "shape",
+              "shape": "rect",
+              "x": 75.76,
+              "y": 76.25,
+              "width": 4.08,
+              "height": 3.8,
+              "fill": "#F0CE86",
+              "radius": 12,
+              "enter": {
+                "preset": "pop",
+                "at": 1.3
+              }
+            },
+            {
+              "id": "s20-father-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 62,
+              "y": 78.88,
+              "width": 14.96,
+              "height": 21.76,
+              "fill": "#4F6F6A",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 1.1
+              }
+            },
+            {
+              "id": "s20-father-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 62,
+              "y": 69.89125,
+              "width": 10.2,
+              "height": 10.2,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.2200000000000002
+              }
+            },
+            {
+              "id": "s20-son-body",
+              "type": "shape",
+              "shape": "rect",
+              "x": 48,
+              "y": 79.24,
+              "width": 14.08,
+              "height": 20.48,
+              "fill": "#B4714F",
+              "radius": 46,
+              "enter": {
+                "preset": "rise",
+                "at": 1.25
+              }
+            },
+            {
+              "id": "s20-son-head",
+              "type": "shape",
+              "shape": "circle",
+              "x": 48,
+              "y": 70.78,
+              "width": 9.6,
+              "height": 9.6,
+              "fill": "#D9A87E",
+              "enter": {
+                "preset": "pop",
+                "at": 1.37
+              }
+            },
+            {
+              "id": "s20-arms",
+              "type": "shape",
+              "shape": "line",
+              "x": 55,
+              "y": 76.585,
+              "width": 21.08,
+              "height": 2.2,
+              "fill": "#E4B68A",
+              "rotate": -14,
+              "strokeWidth": 2.2,
+              "enter": {
+                "preset": "rise",
+                "at": 1.6
+              }
+            },
+            {
+              "id": "s20-stars",
+              "type": "particles",
+              "x": 50,
+              "y": 40,
+              "width": 110,
+              "height": 70,
+              "fill": "#FFF2C6",
+              "opacity": 0.4,
+              "particles": {
+                "kind": "dust",
+                "count": 26,
+                "speed": 0.2,
+                "size": 1.2,
+                "seed": 89
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}
