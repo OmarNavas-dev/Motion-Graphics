@@ -320,7 +320,9 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
     }
     if (item.custom) {
       if (item.customScript) {
-        tweens.push(`try{(function(tl,S,T0,D,gsap){${item.customScript}\n})(tl,'${id}',${item.start.toFixed(3)},${seconds(item.duration)},gsap);}catch(error){console.error('Escena HTML ${index + 1}:',error);}`);
+        // Repeats and stagger may run past D. Drive a private scene clock only
+        // through its assigned interval; never stretch it (which shifts captions).
+        tweens.push(`try{const sceneTl${index}=gsap.timeline({paused:true});(function(tl,S,T0,D,gsap){${item.customScript}\n})(sceneTl${index},'${id}',0,${seconds(item.duration)},gsap);tl.fromTo(sceneTl${index},{time:0},{time:${seconds(item.duration)},duration:${seconds(item.duration)},ease:'none',immediateRender:false},${item.start.toFixed(3)});}catch(error){console.error('Escena HTML ${index + 1}:',error);}`);
       }
     } else if (item.video) {
       const wrap = `#${item.id}-video-wrap`;

@@ -1,8 +1,7 @@
 import {collectProjectAssets} from './project-assets.mjs';
-import {useEffect, useMemo, useRef, useState, type ChangeEvent} from 'react';
+import {useEffect, useRef, useState, type ChangeEvent} from 'react';
 import {createRoot} from 'react-dom/client';
-import {Player, type PlayerRef} from '@remotion/player';
-import {StudioVideo} from './StudioVideo';
+import {FaithfulPreview, type PreviewHandle} from './FaithfulPreview';
 import {exportHyperframesProject, exportHyperframesScene} from './hyperframes-bridge';
 import {assignReferenceImages} from './media-director.mjs';
 import {suggestMotionGraphics, timedStoryboardBlocks} from './auto-graphics.mjs';
@@ -331,18 +330,17 @@ function StudioApp() {
   const [sceneCodeBusy, setSceneCodeBusy] = useState(false);
   const [fullVideoCodeBusy, setFullVideoCodeBusy] = useState(false);
   const aiBaseProject = useRef('');
-  const playerRef = useRef<PlayerRef>(null);
+  const playerRef = useRef<PreviewHandle>(null);
 
   const dimensions = getDimensions(project.format, project.resolution);
   const totalFrames = getTotalFrames(project);
-  const totalSeconds = totalFrames / FPS;
+  const totalSeconds = totalFrames / (project.fps ?? FPS);
   const pendingApproval = project.scenes.filter((scene) => !scene.approved).length;
   const multiAudioSeconds = getNarrationSeconds(project);
   const effectiveAudioDuration = project.narrationMode === 'dialogues' ? multiAudioSeconds : audioDuration;
   const currentScene = project.scenes[Math.min(selected, project.scenes.length - 1)];
-  const inputProps = useMemo(() => ({project}), [project]);
   const missingIllustrations = project.scenes.filter((scene) =>
-    !scene.imageAsset && !scene.videoAsset && !(scene.motionGraphics?.length) &&
+    !scene.imageAsset && !scene.videoAsset && !scene.customScene?.html && !scene.authored?.layers?.length && !(scene.motionGraphics?.length) &&
     !['modern', 'tech', 'energetic', 'playful'].includes(resolveSceneStyle(project, scene))).length;
   const unusedReferences = (project.references ?? []).filter((asset) =>
     !project.scenes.some((scene) => scene.imageAsset === asset)).length;
@@ -1164,13 +1162,17 @@ function StudioApp() {
             }}>Crear primera escena</button>
           </div> : <>
           <div className="preview-toolbar">
-            <div><h2>Vista previa del editor</h2><p>Revisa el montaje; el MP4 final lo genera HyperFrames</p></div>
+            <div><h2>Vista previa del video</h2><p>Revisa aquí las escenas, animaciones y el audio antes de exportar.</p></div>
             <div className="preview-meta">{dimensions.width} × {dimensions.height} · {project.fps ?? 24} FPS</div>
           </div>
           <div className={pendingApproval ? 'review-alert' : 'review-alert ready'}>
             {pendingApproval
               ? `Revisión obligatoria: ${pendingApproval} de ${project.scenes.length} escenas pendientes.`
               : 'Todas las escenas están aprobadas. Ya puedes exportar.'}
+            {pendingApproval > 0 && <button className="primary" onClick={() => {
+              changeProject({...project, scenes: project.scenes.map(scene => ({...scene, approved: true}))});
+              setNotice(`Las ${project.scenes.length} escenas están aprobadas. Ya puedes exportar.`);
+            }}>✓ Aprobar todas las escenas</button>}
           </div>
           <div className={preflightNotes.length ? 'review-alert' : 'review-alert ready'}>
             <strong>Revisión técnica antes de exportar</strong>
@@ -1180,19 +1182,7 @@ function StudioApp() {
           </div>
           <div className="preview-frame">
             <div className={`video-stage ${project.format}`}>
-              <Player
-                ref={playerRef}
-                component={StudioVideo}
-                inputProps={inputProps}
-                durationInFrames={totalFrames}
-                compositionWidth={dimensions.width}
-                compositionHeight={dimensions.height}
-                fps={project.fps ?? FPS}
-                controls
-                autoPlay={false}
-                loop
-                style={{width: '100%', aspectRatio: `${dimensions.width}/${dimensions.height}`}}
-              />
+              <FaithfulPreview ref={playerRef} project={project}/>
             </div>
           </div>
           <div className="timeline-panel">
