@@ -83,3 +83,12 @@ test('custom scenes no duplican captions ni alargan el fondo para solapamiento d
   assert.doesNotMatch(html.slice(html.indexOf('<main'), html.indexOf('</main>')), /hf-flash/);
   assert.doesNotMatch(html, /hf-scene-0-caption-0/);
 });
+
+test('custom scenes can crossfade without moving the narration timeline',()=>{
+  const basic={duration:3,customScene:{html:'<svg><circle cx="10" cy="10" r="5"/></svg>',script:''}};
+  const html=exportHyperframesProject({format:'vertical',showText:false,scenes:[{...basic,id:'a'}, {...basic,id:'b',transition:'fade'}]},undefined,'');
+  assert.match(html,/data-start="0" data-duration="3\\.42"/);
+  assert.match(html,/data-start="3" data-duration="3"/);
+  assert.match(html,/tl\\.fromTo\\('#hf-scene-1',\\{opacity:0\\}/);
+  assert.match(html,/tl\\.set\\(\\{\\}, \\{\\}, 6\\)/);
+});
