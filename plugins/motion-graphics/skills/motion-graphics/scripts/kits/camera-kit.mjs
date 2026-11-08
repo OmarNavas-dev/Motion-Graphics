@@ -12,13 +12,14 @@ import {flash} from './fx-kit.mjs';
  *   El fondo debe dibujarse con margen (bleed) para no mostrar bordes al hacer zoom.
  * Los movimientos deben anadirse en orden cronologico; se encadenan desde el estado anterior.
  */
-export function camera(s, {layers = [['bg', .5], ['mid', .85], ['fg', 1]], anchor = [s.W / 2, s.H * .55], focus, k = 1} = {}) {
+export function camera(s, {layers = [['bg', .5], ['mid', .85], ['fg', 1]], anchor = [s.W / 2, s.H * .55], focus, k = 1, safeTop = 330} = {}) {
   s.use('camera');
   const [cx, cy] = anchor;
   let st = {f: focus ?? [cx, cy], k}, last = 0;
-  const pose = (f, kk, F) => { const kl = 1 + (kk - 1) * f, fx = cx + f * (F[0] - cx), fy = cy + f * (F[1] - cy); return {x: cx - kl * fx, y: cy - kl * fy, scale: kl}; };
+  // Protege la zona superior de subtítulos al acercarse; safeTop:0 desactiva.
+  const pose = (f, kk, F) => { const kl = 1 + (kk - 1) * f, fx = cx + f * (F[0] - cx), fy = cy + f * (F[1] - cy); let y = cy - kl * fy; if (safeTop > 0 && kl > 1) y = Math.max(y, -(kl - 1) * safeTop); return {x: cx - kl * fx, y, scale: kl}; };
   const P = (p) => `x:${n(p.x, 1)},y:${n(p.y, 1)},scale:${n(p.scale, 4)}`;
-  layers.forEach(([l, f]) => s.js(`tl.set(S+' .L-${l}',{svgOrigin:'0 0',${P(pose(f, st.k, st.f))}},T0);`));
+  layers.forEach(([l, f]) => s.js(`gsap.set(S+' .L-${l}',{svgOrigin:'0 0',${P(pose(f, st.k, st.f))}});tl.set(S+' .L-${l}',{svgOrigin:'0 0',${P(pose(f, st.k, st.f))}},T0);`));
   const api = {
     /** Mueve foco y/o zoom suavemente. focus=[x,y] en coordenadas del mundo; k = zoom total. */
     move(at, dur, {focus: F, k: K, ease = 'power2.inOut'} = {}) {
@@ -49,7 +50,7 @@ export function camera(s, {layers = [['bg', .5], ['mid', .85], ['fg', 1]], ancho
       s.js(`tl.to(S+' .shake',{keyframes:[${kf.join(',')}]},T0+${n(at)});`); return api;
     },
     /** «Camara lenta»: viñeta + etiqueta fija + acercamiento suave. No cambia la velocidad de la timeline. */
-    slowMo(at, dur, {label = '', focus: F, k: K, vignette = .6} = {}) {
+    emphasis(at, dur, {label = '', focus: F, k: K, vignette = .6} = {}) {
       checkTime(s, at, dur, 'camera.slowMo');
       const c = s.nid('vig'), g = s.gid(c);
       s.defs(c, `<radialGradient id="${g}" cx=".5" cy=".5" r=".75"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".9"/></radialGradient>`);
@@ -61,8 +62,11 @@ export function camera(s, {layers = [['bg', .5], ['mid', .85], ['fg', 1]], ancho
       if (F || K) api.move(at, dur, {focus: F, k: K, ease: 'sine.inOut'});
       return api;
     },
+    // Compatibility alias. This is visual emphasis, never a time remapping.
+    slowMo(at, dur, options = {}) { return api.emphasis(at, dur, options); },
     get state() { return {...st}; },
   };
   return api;
 }
+
 

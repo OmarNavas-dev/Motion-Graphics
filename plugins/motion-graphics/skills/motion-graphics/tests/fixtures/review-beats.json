@@ -1,0 +1,8 @@
+{
+  "duration": 30,
+  "beats": [
+    {"id":"inicio","at":0.5,"scene":"uno","subject":"corazón","visual":"aparece el órgano","cause":"inicio de explicación","effect":"estructura visible"},
+    {"id":"pulmones","at":10.5,"scene":"dos","subject":"sangre","visual":"llega a pulmones","cause":"bombeo","effect":"intercambio de gases","bridge":"continuidad de la sangre"},
+    {"id":"cierre","at":25,"scene":"tres","subject":"sangre","visual":"se cierra el circuito","cause":"circulación","effect":"vuelve al corazón","bridge":"misma sangre"}
+  ]
+}

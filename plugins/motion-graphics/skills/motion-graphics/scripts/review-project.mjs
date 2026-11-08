@@ -6,6 +6,8 @@ import {once} from 'node:events';
 import {createRequire} from 'node:module';
 import {pathToFileURL} from 'node:url';
 import crypto from 'node:crypto';
+import {reviewTimes} from './runtime-review-utils.mjs';
+import {compareScreenshotPixels} from './compare-png.mjs';
 import {closeRenderBrowser,renderBrowserArgs} from './compat/scripts/render-browser.mjs';
 
 // Runtime evidence, not an artistic score. Reuses an available Motion Studio checkout.
@@ -64,9 +66,7 @@ try {
     const classes=tag.match(/\bclass=["']([^"']+)/)?.[1].split(/\s+/)??[];
     for(const cls of classes)if(body.includes(' .'+cls)&&/\b(?:x|y|scale|rotation)\s*["']?\s*:/.test(body))warnings.push({scene:s.id,reason:'Revisar '+cls+': grupo con transform de colocacion y selector animado. Envolver colocacion fija y animar un hijo; podria haber sobrescritura de posicion.'});
   }
-  if(!wanted||wanted.includes(s.id))for(const fraction of [.1,.5,.9])samples.push({scene:s.id,sceneIndex:i,time:+(start+s.duration*fraction).toFixed(4),fraction});
-  if(!wanted||wanted.includes(s.id))for(const action of s.direction?.actions??[])for(const local of [action.at,action.at+action.duration*.5,Math.min(s.duration-.001,action.at+action.duration)])samples.push({scene:s.id,sceneIndex:i,time:+(start+local).toFixed(4),fraction:null});
-  if(!wanted||wanted.includes(s.id))for(const action of s.direction?.actions??[])for(const point of action.checkpoints??[])samples.push({scene:s.id,sceneIndex:i,time:start+Math.min(s.duration-.000001,action.at+point.at),fraction:null});
+  if(!wanted||wanted.includes(s.id))for(const local of reviewTimes(s,{fps:p.fps??24,denseFps:Number(option('--dense-fps')??0)}))samples.push({scene:s.id,sceneIndex:i,time:start+local,fraction:null});
   start+=s.duration;
  }
  for(const text of (option('--times')??'').split(',').filter(Boolean)){
@@ -91,7 +91,7 @@ try {
     const r=w.getBoundingClientRect();if(r.left<0||r.right>innerWidth||r.top<0||r.bottom>innerHeight)clipped.push(w.textContent);
    }
   }
-  const actors=[...document.querySelectorAll('.clip')].filter(c=>getComputedStyle(c).display!=='none').flatMap(c=>[...c.querySelectorAll('.hero,.ghost,.person,.child,.door,.piston')].map(n=>{const r=n.getBoundingClientRect();return {class:n.getAttribute('class'),x:r.x,y:r.y,width:r.width,height:r.height,outside:r.right<0||r.left>innerWidth||r.bottom<0||r.top>innerHeight};}));
+  const actors=[...document.querySelectorAll('.clip')].filter(c=>getComputedStyle(c).display!=='none').flatMap(c=>[...c.querySelectorAll('[data-motion-actor],[data-character-id],.hero,.ghost,.person,.child,.door,.piston')].map(n=>{const r=n.getBoundingClientRect();return {class:n.getAttribute('class'),x:r.x,y:r.y,width:r.width,height:r.height,outside:r.right<0||r.left>innerWidth||r.bottom<0||r.top>innerHeight};}));
   const rigAnchors=[...document.querySelectorAll('[data-dvj-joint],[data-dvj-held]')].filter(n=>getComputedStyle(n.closest('.clip')).display!=='none').map(n=>{const m=n.getCTM();return {class:n.getAttribute('class'),type:n.hasAttribute('data-dvj-joint')?'joint':'held',x:m.e,y:m.f};});
   return {clipped,actors,rigAnchors,errors:window.__dvjErrors};
  },time);
@@ -104,7 +104,7 @@ try {
   errors.push(...motion.errors.map(e=>sample.scene+' @'+sample.time+': '+e));
   if(state.clipped.length)errors.push(sample.scene+' @'+sample.time+': texto fuera del lienzo.');
   await fs.writeFile(path.join(out,sample.file),await screenshot());
-  if(i===0){const first=await screenshot();await seek(Math.min(expected-.001,sample.time+.3));await seek(sample.time);sample.deterministic=crypto.createHash('sha256').update(first).digest('hex')===crypto.createHash('sha256').update(await screenshot()).digest('hex');if(!sample.deterministic)errors.push('El primer fotograma cambia tras buscar hacia atras.');}
+  {const first=await screenshot();await seek(Math.min(expected-.001,sample.time+.3));await seek(Math.max(0,sample.time-.17));await seek(sample.time);sample.pixelComparison=compareScreenshotPixels(first,await screenshot());sample.deterministic=sample.pixelComparison.passed;if(!sample.deterministic)errors.push(sample.scene+' @'+sample.time+': fotograma cambia tras saltos temporales.');}
   if(i%9===0)console.log('Capturas '+(i+1)+'/'+samples.length);
  }
  for(const sample of [...samples].reverse().filter(s=>s.motionObservations?.length)){
@@ -132,7 +132,7 @@ try {
    }return result;
  });
  for(const row of motionAudit){
-   if(row.overflow>.001)warnings.push({scene:row.scene,reason:'Animaciones exceden el clip en '+row.overflow.toFixed(3)+' s. El motor puede recortarlas; revisar fases y repeats/stagger.'});
+   if(row.overflow>.001)errors.push(row.scene+': animaciones exceden el clip en '+row.overflow.toFixed(3)+' s; revisar fases y repeats/stagger.');
    if(row.fixedPlacementAnimated.length)errors.push(row.scene+': se anima la colocacion fija del rig '+row.fixedPlacementAnimated.join(', '));
  }
  const report={motionAudit,projectHash:crypto.createHash('sha256').update(JSON.stringify(p)).digest('hex'),runtimePassed:!errors.length,artisticReview:'PENDING_HUMAN_OR_MODEL_IMAGE_INSPECTION',audioAlignmentVerified:false,expectedDuration:expected,timelineDuration,samples,warnings,errors:[...new Set(errors)]};
@@ -142,4 +142,5 @@ try {
  console.log(JSON.stringify({runtimePassed:report.runtimePassed,errors:report.errors,samples:samples.length,report:path.join(out,'report.json')}));
  process.exitCode=errors.length?1:0;
 }catch(e){console.error(e.message);process.exitCode=1;}finally{if(server)server.closeAllConnections();try{await closeRenderBrowser(browser);}finally{if(server)await new Promise(r=>server.close(r));}}
+
 

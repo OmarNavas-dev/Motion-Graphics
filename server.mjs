@@ -18,6 +18,7 @@ import {
 import {searchFreeMedia, downloadFreeMedia, transcribeWithGroq} from './cloud-integrations.mjs';
 import {aiPlannerConfig, requestAiPlan, requestSceneCode, requestFullVideoCode} from './ai-planner.mjs';
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
+import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -391,6 +392,8 @@ function assertHyperframesRequirements() {
 }
 
 async function beginHyperframesRender(project) {
+  const preflight=checkCustomScenePreflight(project);
+  if(!preflight.passed)throw Error('Corrige la escena antes de exportar: '+preflight.errors.slice(0,6).join(' | '));
   if (project.visualEngine === 'canvas') {
     throw new Error('El modo Canvas 3D requiere la ruta de exportación Remotion.');
   }
@@ -558,6 +561,8 @@ async function handle(req, res) {
     if (req.method === 'POST' && pathname === '/api/review') {
       const project = validateProject(await bodyJson(req));
       if (!project.scenes.length) throw new Error('Añade escenas antes de revisar.');
+      const preflight=checkCustomScenePreflight(project);
+      if(!preflight.passed)return respond(res,200,{passed:false,errors:preflight.errors,warnings:preflight.warnings});
       const {reviewExplainer} = await import('./scripts/review-explainer.mjs');
       return respond(res, 200, await reviewExplainer(project, {root, publicDir, capture:false}));
     }
