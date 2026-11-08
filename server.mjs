@@ -1,3 +1,4 @@
+import {listStylePresets,getStylePreset,getStyleGuide} from './src/style-catalog.mjs';
 import http from 'node:http';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
@@ -550,6 +551,11 @@ async function handle(req, res) {
     await resetLocalContent();
     return respond(res, 200, {ok:true, project:await readProject()});
   }
+  if(req.method==='GET'&&pathname==='/api/styles')
+    return respond(res,200,{styles:listStylePresets()});
+  const styleMatch=pathname.match(/^\\/api\\/styles\\/([a-z0-9-]+)$/);
+  if(req.method==='GET'&&styleMatch)
+    return respond(res,200,{...getStylePreset(styleMatch[1]),guide:getStyleGuide(styleMatch[1])});
   if (req.method === 'GET' && pathname === '/api/integrations') {
     const llm = aiPlannerConfig();
     return respond(res, 200, {version: appVersion, sceneContract:MOTION_STUDIO_CONTRACT, customScene: true, openverse: true,
