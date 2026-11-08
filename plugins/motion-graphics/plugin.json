@@ -15,7 +15,7 @@
         "category": "Creativity",
         "composerIcon": "./assets/icon.svg",
         "defaultPrompt": [
-          "Crea un unico JSON para Motion Studio con este guion y audio, escenas completas en codigo y titulos sincronizados."
+          "Genera un JSON para Motion Studio con los 21 estilos visuales, los 26 flujos de producción, identidad visual persistente, diseño sonoro optativo, cámara ejecutable, loops y validación de contrato actualizado."
         ],
         "developerName": "Omar Navas",
         "displayName": "Motion Graphics",
@@ -36,5 +36,5 @@
     "svg"
   ],
   "name": "motion-graphics",
-  "version": "2.8.2"
+  "version": "2.9.1"
 }
