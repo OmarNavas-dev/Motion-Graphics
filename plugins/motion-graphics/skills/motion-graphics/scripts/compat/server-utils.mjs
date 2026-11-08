@@ -1,4 +1,4 @@
-import {STYLE_PRESET_IDS,normalizeSoundDesign} from './src/motion-capabilities.mjs';
+import {STYLE_PRESET_IDS,normalizeSoundDesign,normalizeBrandProfile} from './src/motion-capabilities.mjs';
 import path from 'node:path';
 import {ensureDistinctVisualActionPlan, normalizeVisualActionPlan} from './src/visual-action-planner.mjs';
 import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
@@ -95,6 +95,7 @@ export function validateProject(raw) {
     creativeBrief: text(raw.creativeBrief, 2000),
     style: styles.has(raw.style) ? raw.style : 'modern',
     stylePreset: acceptedStylePresets.has(raw.stylePreset)?raw.stylePreset:'',
+    brandProfile: normalizeBrandProfile(raw.brandProfile),
     visualEngine: ['classic', 'canvas'].includes(raw.visualEngine) ? raw.visualEngine : 'adaptive',
     resolution: raw.resolution === '1080p' ? '1080p' : '720p',
     fps: Number(raw.fps) === 30 ? 30 : 24,
