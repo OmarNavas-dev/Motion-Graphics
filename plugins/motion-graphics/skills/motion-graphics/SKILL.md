@@ -106,3 +106,10 @@ Entregar un unico archivo `proyecto.json` descargable usando los archivos genera
 ## Motor de calidad 2.8 compartido
 
 Antes de generar JSON nuevos, leer [pipeline-calidad-2.8.md](references/pipeline-calidad-2.8.md). Para movimientos de cámara planificados con más de un plano, emitir `direction.shots` con tiempos reales y `direction.cameraTarget` apuntando a un grupo SVG presente. Para transformaciones declarativas emitir `direction.actions[].motion` solo cuando existan `from/to`, duraciones y geometría seguras; mantener GSAP manual ya diseñado. Si se quiere continuidad entre dos escenas SVG, usar `transition:"fade"` en la entrante; no afirmar que un corte es un travelling. Marcar los anclajes de pies plantados para revisión de contacto y comprobar voz, hojas de contactos y el render mediante `npm run accept:five:render` cuando el sistema esté accesible. La aprobación artística siempre requiere inspección humana; nunca declarar exportación ni sincronización verificadas sin los MP4 y audios reales.
+
+
+## Fuentes integradas y limitaciones verificables
+
+Leer [galeria-estilos-21.md](references/galeria-estilos-21.md) y la especificación del estilo elegido en `references/styles/<id>.md`. Emitir `stylePreset` con uno de los 21 IDs conocidos y respetar sus reglas de composición, color, tipografía y timing. Para sonido opcional, emitir `soundDesign:{enabled:true,cues:[{type,at,duration,gain}]}`; los eventos son tiempos globales, los tipos son `whoosh,impact,click,pop,riser,chime,pad,wind`. No añadir sonido sin autorización o si se pidió silencio. Emitir `loop:true` solo cuando ambos extremos del movimiento vuelven al mismo estado y la prueba de cierre esté planificada. Los reportes `pacingAudit`, `loopAudit` y `soundDesignAudit` del sistema nunca sustituyen la inspección artística.
+
+**Importante:** la integración de los cuatro repositorios todavía no está completa. No declarar compatibilidad total ni pedir aceptación final hasta que el informe `docs/reference-parity.json` de Motion Studio y su comando `npm run integration:gate` estén aprobados. Cuando una capacidad figure `missing` o `external`, informarlo en lugar de inventar resultados.
