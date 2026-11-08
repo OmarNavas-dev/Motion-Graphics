@@ -208,7 +208,7 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
   const themeBase=identities[styleName] || identities.modern;
   // Built-in templates receive the selected palette; hand-authored SVG must follow the full style guide.
   const selectedStyle=scene.stylePreset||project.stylePreset;
-  const theme=selectedStyle?{...themeBase,...getStylePreset(selectedStyle).colors}:themeBase;
+  const theme={...themeBase,...(selectedStyle?getStylePreset(selectedStyle).colors:{}),...(project.brandProfile?.colors||{})};
   const subject = chooseConcept(scene, project);
   const actionPlan = scene.visualActionPlan || {actionType:'reveal', action:'', camera:'drift', shotScale:'medium'};
   const media = scene.imageAsset ? embeddedAssets[scene.imageAsset] : '';
