@@ -11,6 +11,9 @@ import {exportHyperframesProject} from '../src/hyperframes-bridge.mjs';
 import {createFrameContactSheet} from '../src/quality-contact-sheet.mjs';
 import {auditRenderedVideo} from '../src/render-quality-audit.mjs';
 import {auditTimelineAudio,measureAudioLoudness} from '../src/audio-quality-audit.mjs';
+import {renderSoundWav,muxSoundtrack} from '../src/sound-design.mjs';
+import {auditLoopSeam} from '../src/loop-quality-audit.mjs';
+import {auditRenderedPacing} from '../src/pacing-quality-audit.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const COLOR={anatomia:'#fa627c',volcanes:'#fa8c4a',personajes:'#76b9eb',historia:'#eebd6e',graficos:'#70dfb4'};
 const subjects={
@@ -28,7 +31,13 @@ export function makeAcceptanceFixtures(){
    customScene:{html:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280"><rect width="720" height="1280" fill="#101d2e"/><g class="world">'+theme.shape+'</g><text x="360" y="290" text-anchor="middle" fill="'+COLOR[topic]+'" font-size="36">'+theme.label+'</text></svg>',css:'',script:i===1?'tl.fromTo(S+\' .pulse\',{opacity:.5},{opacity:1,duration:1.2,yoyo:true,repeat:1},T0+.2);':''},
    direction:{objective:'Mostrar la relación de causa y efecto: '+theme.title,before:{},after:{},actions:i===2?[{id:'mostrar-'+topic,at:.3,duration:1.2,selector:'.pulse',description:'Revelar foco',result:'Foco visible',motion:{from:{opacity:.2},to:{opacity:1}}}]:[],shots:[{at:0,duration:1.5,scale:'wide',target:'world',purpose:'Contexto'},{at:1.5,duration:1.5,scale:'close',target:'world',purpose:'Detalle'}],cameraTarget:'.world'}
   });
-  return {topic,project:{name:'Aceptación '+topic,format:'vertical',resolution:'720p',fps:24,showText:false,script:theme.title,creativeBrief:'Prueba técnica reproducible, no aprobada artísticamente.',scenes:[scene(1),scene(2)]}};
+  return {topic,project:{name:'Aceptación '+topic,format:'vertical',resolution:'720p',fps:24,showText:false,script:theme.title,
+    stylePreset:({anatomia:'blueprint',volcanes:'poster-pop',personajes:'paper-world',historia:'time-travel',graficos:'data-story'})[topic],
+    loop:topic==='graficos',
+    soundDesign:topic==='volcanes'?{enabled:true,cues:[
+      {type:'riser',at:.25,duration:.75,gain:.14},{type:'impact',at:1.2,duration:.5,gain:.26},{type:'whoosh',at:3.4,duration:.8,gain:.19}
+    ]}:undefined,
+    creativeBrief:'Prueba técnica reproducible, no aprobada artísticamente.',scenes:[scene(1),scene(2)]}};
  });
 }
 const run=(bin,args,cwd)=>new Promise((resolve,reject)=>{
@@ -62,7 +71,19 @@ export async function runAcceptanceSuite({out=path.join(root,'out','acceptance-f
    if(render){
     const cli=path.join(root,'node_modules','hyperframes','bin','hyperframes.mjs');
     await run(process.execPath,[cli,'render','--output','result.mp4','--fps','24','--quality','standard','--workers','1','--no-browser-gpu'],folder);
-    r.mp4='passed';r.videoAudit=await auditRenderedVideo(path.join(folder,'result.mp4'));
+    const video=path.join(folder,'result.mp4');
+     if(project.soundDesign?.enabled&&project.soundDesign.cues.length){
+       const wav=path.join(folder,'foley.wav'),mix=path.join(folder,'mix.mp4');
+       r.soundDesign=await renderSoundWav(project.soundDesign,wav,{seconds:6});
+       await muxSoundtrack(video,wav,mix,{hasExistingAudio:false});
+       await fs.rename(mix,video);
+     }
+     r.mp4='passed';r.videoAudit=await auditRenderedVideo(video);
+     r.pacingAudit=await auditRenderedPacing(video);
+     if(project.loop) {
+       try{r.loopAudit=await auditLoopSeam(video);}
+       catch(error){r.loopAudit={error:error.message,measured:false};}
+     }
     if(r.videoAudit.video.audioPresent)r.loudness=await measureAudioLoudness(path.join(folder,'result.mp4'));
     const sheet=await createFrameContactSheet(path.join(folder,'result.mp4'),project,path.join(folder,'frames'),{maxFrames:12});
     r.inspection=sheet.captured===sheet.totalRequested?'frames-generated':'partial';r.reviewFile=path.join(folder,'frames','index.html');
