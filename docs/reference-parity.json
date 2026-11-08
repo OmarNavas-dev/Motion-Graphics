@@ -1,0 +1,293 @@
+{
+  "schemaVersion": 1,
+  "target": "Motion Studio + Motion Graphics",
+  "readyForUserAcceptance": false,
+  "sources": [
+    "https://github.com/Barty-Bart/motion-graphics",
+    "https://github.com/whaleyxbt/claude-motion",
+    "https://github.com/ItsssssJack/claude-video-2",
+    "https://github.com/charlie947/motion-graphics-skills"
+  ],
+  "capabilities": [
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "explainer-default",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/references/produccion-2.7.md"
+      ],
+      "blocker": "Production mode not separately exposed and acceptance-tested"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "explainer-engaging",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/creative-direction.mjs"
+      ],
+      "blocker": "No dedicated engaging production profile"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "explainer-high-energy",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/continuous-motion.mjs"
+      ],
+      "blocker": "No dedicated high-energy production profile"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "motion-broll",
+      "status": "missing",
+      "evidence": [],
+      "blocker": "Timeline-attached cutaways, alpha ProRes export, comparison viewer, and word-aligned B-roll are not implemented"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "object-separation",
+      "status": "external",
+      "evidence": [],
+      "blocker": "Needs SAM 2.1 local model install, hardware selection and per-frame segmentation pipeline"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "sound-effects",
+      "status": "partial",
+      "evidence": [
+        "src/sound-design.mjs"
+      ],
+      "blocker": "Synthesized Foley exists; library/music credits and intelligent auto-placement remain absent"
+    },
+    {
+      "source": "whaleyxbt/claude-motion",
+      "id": "motion-design",
+      "status": "partial",
+      "evidence": [
+        "src/direction-compiler.mjs"
+      ],
+      "blocker": "Not all camera/composition principles guaranteed to be executed"
+    },
+    {
+      "source": "whaleyxbt/claude-motion",
+      "id": "review-loop",
+      "status": "partial",
+      "evidence": [
+        "src/quality-contact-sheet.mjs",
+        "src/pacing-quality-audit.mjs"
+      ],
+      "blocker": "Contact sheets exist; automated visual correction-and-rerender loop not built"
+    },
+    {
+      "source": "whaleyxbt/claude-motion",
+      "id": "sound-design",
+      "status": "partial",
+      "evidence": [
+        "src/sound-design.mjs"
+      ],
+      "blocker": "Cues/mux included; multimodal cue recommendation, automated mastering and pan not complete"
+    },
+    {
+      "source": "whaleyxbt/claude-motion",
+      "id": "web-sims",
+      "status": "missing",
+      "evidence": [],
+      "blocker": "Simulation engine and live interaction-to-video adaptation absent"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "21-style-gallery",
+      "status": "partial",
+      "evidence": [
+        "src/style-catalog.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/references/styles/blueprint.md"
+      ],
+      "blocker": "All 21 written guides integrated, but 21 local rendered previews and per-style visual implementation not yet complete"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "storyboard",
+      "status": "partial",
+      "evidence": [
+        "src/visual-direction-audit.mjs"
+      ],
+      "blocker": "Studio storyboard exists; full media credit storyboard and review approval not equivalent"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "pacing-check",
+      "status": "partial",
+      "evidence": [
+        "src/pacing-quality-audit.mjs"
+      ],
+      "blocker": "10 FPS gap detection implemented; exact flash/hold and human approval incomplete"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "loop-check",
+      "status": "partial",
+      "evidence": [
+        "src/loop-quality-audit.mjs"
+      ],
+      "blocker": "Pixel seam heuristic implemented; full end-state comparison with no-wrap clock not complete"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "Higgsfield-media",
+      "status": "external",
+      "evidence": [],
+      "blocker": "Requires external account, explicit cost confirmation, API credentials, licensing and video import"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "brand-intake",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/references/direccion-creativa-2.6.md"
+      ],
+      "blocker": "Persistent enforceable brand/MOTION design contract absent"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "animated-chart",
+      "status": "partial",
+      "evidence": [
+        "src/auto-graphics.mjs"
+      ],
+      "blocker": "Not all advanced chart morphing / storytelling workflows implemented"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "apple-launch-film",
+      "status": "missing",
+      "evidence": [],
+      "blocker": "No dedicated brand/product cinematic launch workflow"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "launch-video",
+      "status": "partial",
+      "evidence": [
+        "src/semantic-director.mjs"
+      ],
+      "blocker": "No dedicated turnkey launch mode"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "loop-cover",
+      "status": "partial",
+      "evidence": [
+        "src/loop-quality-audit.mjs"
+      ],
+      "blocker": "Loop auditing exists but autonomous cover design and rework absent"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "milestone-reveal",
+      "status": "missing",
+      "evidence": [],
+      "blocker": "No milestone-specific staged reveal generator"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "model-showdown",
+      "status": "missing",
+      "evidence": [],
+      "blocker": "No split comparison showdown workflow"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "motion-brief-writer",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/creative-direction.mjs"
+      ],
+      "blocker": "No dedicated verified quantitative brief generator"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "motion-effects",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/kits/effects-16-kit.mjs"
+      ],
+      "blocker": "16 effects present but no source-wide effect-by-effect equivalence test"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "motion-prompt-writer",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/SKILL.md"
+      ],
+      "blocker": "No independent canonical prompt workflow"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "newsletter-promo",
+      "status": "missing",
+      "evidence": [],
+      "blocker": "No newsletter-specific renderer workflow"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "reel-export",
+      "status": "partial",
+      "evidence": [
+        "src/hyperframes-bridge.mjs"
+      ],
+      "blocker": "MP4 export works; all reel aspect/bitrate/caption presets not verified"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "reference-to-motion",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/compare-video-motion.py"
+      ],
+      "blocker": "Motion difference exists; perceptual look transfer and auto-correct absent"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "title-sequence-3d",
+      "status": "partial",
+      "evidence": [
+        "src/canvas-3d-engine.mjs"
+      ],
+      "blocker": "Canvas 3D exists; no source-equivalent 3D title workflow fully verified"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "vox-explainer",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/explainer-kit.mjs"
+      ],
+      "blocker": "Vox-specific visual storytelling contract not fully verified"
+    },
+    {
+      "source": "Motion Studio (target)",
+      "id": "autonomous-artistic-correction-loop",
+      "status": "missing",
+      "evidence": [],
+      "blocker": "Render, diagnose, iteratively edit and re-render using visual feedback not implemented"
+    },
+    {
+      "source": "Motion Studio (target)",
+      "id": "natural-character-acting",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/kinematic-motion.mjs",
+        "src/contact-motion-audit.mjs"
+      ],
+      "blocker": "Physical weight, expressions and credible acting lack robust visual evaluation"
+    },
+    {
+      "source": "Motion Studio (target)",
+      "id": "transparent-ProRes-4444",
+      "status": "missing",
+      "evidence": [],
+      "blocker": "No end-to-end alpha composition export"
+    }
+  ]
+}
