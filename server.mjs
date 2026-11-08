@@ -590,9 +590,10 @@ async function handle(req, res) {
   }
   if(req.method==='GET'&&pathname==='/api/styles')
     return respond(res,200,{styles:listStylePresets()});
-  const styleMatch=pathname.match(/^\\/api\\/styles\\/([a-z0-9-]+)$/);
+  const styleId=pathname.startsWith('/api/styles/')?pathname.slice('/api/styles/'.length):'';
+  const styleMatch=/^[a-z0-9-]+$/.test(styleId)?styleId:null;
   if(req.method==='GET'&&styleMatch)
-    return respond(res,200,{...getStylePreset(styleMatch[1]),guide:getStyleGuide(styleMatch[1])});
+    return respond(res,200,{...getStylePreset(styleMatch),guide:getStyleGuide(styleMatch)});
   if (req.method === 'GET' && pathname === '/api/integrations') {
     const llm = aiPlannerConfig();
     return respond(res, 200, {version: appVersion, sceneContract:MOTION_STUDIO_CONTRACT, customScene: true, openverse: true,
