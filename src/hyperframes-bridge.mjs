@@ -1,3 +1,4 @@
+import {getStylePreset} from './style-catalog.mjs';
 import {compileSceneDirection} from './direction-compiler.mjs';
 import {chooseConcept, identities, supportingLine, visualHeadline} from './semantic-director.mjs';
 import {directMediaScene} from './media-director.mjs';
@@ -204,7 +205,10 @@ const customHtmlScene = (scene, sceneId, media, video) => {
 const renderScene = (scene, project, index, record, embeddedAssets, showText) => {
   const {start, duration, visualDuration, track} = record;
   const styleName = resolveSceneStyle(project, scene);
-  const theme = identities[styleName] || identities.modern;
+  const themeBase=identities[styleName] || identities.modern;
+  // Built-in templates receive the selected palette; hand-authored SVG must follow the full style guide.
+  const selectedStyle=scene.stylePreset||project.stylePreset;
+  const theme=selectedStyle?{...themeBase,...getStylePreset(selectedStyle).colors}:themeBase;
   const subject = chooseConcept(scene, project);
   const actionPlan = scene.visualActionPlan || {actionType:'reveal', action:'', camera:'drift', shotScale:'medium'};
   const media = scene.imageAsset ? embeddedAssets[scene.imageAsset] : '';
