@@ -275,6 +275,17 @@ export async function reviewExplainer(
         const feet=await page.evaluate(index=>{
           const root=document.getElementById('hf-scene-'+index);
           return [...(root?.querySelectorAll('[data-dvj-foot]')||[])].map(n=>{
+            // Compare feet in scene-world coordinates, not camera/screen space:
+            // zoom/pan must never be misdiagnosed as a planted foot sliding.
+            const world=n.closest('.world,.camera,.stage');
+            try{
+              if(world&&typeof n.getCTM==='function'&&typeof world.getCTM==='function'&&n.getBBox){
+                const local=world.getCTM().inverse().multiply(n.getCTM());
+                const box=n.getBBox(),cx=box.x+box.width/2,cy=box.y+box.height/2;
+                return {id:n.getAttribute('data-dvj-foot'),x:local.a*cx+local.c*cy+local.e,
+                  y:local.b*cx+local.d*cy+local.f,contact:n.getAttribute('data-dvj-contact')||'unknown'};
+              }
+            }catch{ /* Browser or SVG implementation may not expose inverse matrices. */ }
             const r=n.getBoundingClientRect();
             return {id:n.getAttribute('data-dvj-foot'),x:r.x+r.width/2,y:r.y+r.height/2,
               contact:n.getAttribute('data-dvj-contact')||'unknown'};
