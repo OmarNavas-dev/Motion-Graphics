@@ -23,6 +23,7 @@ import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
 import {auditVisualDirection} from './src/visual-direction-audit.mjs';
 import {auditRenderedVideo} from './src/render-quality-audit.mjs';
 import {auditLoopSeam} from './src/loop-quality-audit.mjs';
+import {auditRenderedPacing} from './src/pacing-quality-audit.mjs';
 import {renderSoundWav,muxSoundtrack} from './src/sound-design.mjs';
 import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
 import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
@@ -316,6 +317,11 @@ async function reviewCompletedRender(job,project,output,id){
     job.log+='[Video] '+job.visualAudit.metrics.sampledFrames+' fotogramas evaluados; '+job.visualAudit.warnings.length+' observaciones.\\n';
     for(const warning of job.visualAudit.warnings)job.log+='- '+warning+'\\n';
   }catch(error){job.log+='[Video] Auditoría no disponible: '+error.message+'\\n';}
+  try{
+    job.pacingAudit=await auditRenderedPacing(output);
+    for(const gap of job.pacingAudit.deadGaps)job.log+='[Ritmo] Intervalo de baja actividad '+gap.start+'–'+gap.end+' s.\\n';
+    if(job.pacingAudit.flashSuspects.length)job.log+='[Ritmo] '+job.pacingAudit.flashSuspects.length+' posible(s) destello(s).\\n';
+  }catch(error){job.log+='[Ritmo] No disponible: '+error.message+'\\n';}
   job.audioTimingAudit=auditTimelineAudio(project);
   for(const warning of job.audioTimingAudit.warnings)job.log+='[Narración] '+warning+'\\n';
   try{
@@ -668,7 +674,7 @@ async function handle(req, res) {
       download: job.status === 'completado' ? `/exports/${job.output}` : null,
       visualAudit:job.visualAudit??null, audioTimingAudit:job.audioTimingAudit??null,
       audioLoudnessAudit:job.audioLoudnessAudit??null, audioAssetsAudit:job.audioAssetsAudit??null, contactSheet:job.contactSheet??null,
-      soundDesignAudit:job.soundtrackAudit??null,loopAudit:job.loopAudit??null,qualityEvidence:job.qualityEvidence??null,
+      soundDesignAudit:job.soundtrackAudit??null,loopAudit:job.loopAudit??null,qualityEvidence:job.qualityEvidence??null,pacingAudit:job.pacingAudit??null,
     }) : respond(res, 404, {error: 'Trabajo no encontrado.'});
   }
   if (req.method === 'GET' && pathname === '/preview') {
