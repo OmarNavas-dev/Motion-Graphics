@@ -22,7 +22,7 @@ import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
 import {auditVisualDirection} from './src/visual-direction-audit.mjs';
 import {auditRenderedVideo} from './src/render-quality-audit.mjs';
 import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
-import {auditTimelineAudio,measureAudioLoudness} from './src/audio-quality-audit.mjs';
+import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -338,6 +338,8 @@ async function beginRender(project) {
       if (stat?.isFile() && stat.size > 15000) {
         // Independent evidence: speech timing, sound level, and scene contact sheets.
       job.audioTimingAudit = auditTimelineAudio(project);
+      job.audioAssetsAudit=await auditAudioAssets(project,assetsDir);
+      for(const warning of job.audioAssetsAudit.warnings)job.log += '[Recurso de voz] '+warning+'\n';
       for(const warning of job.audioTimingAudit.warnings)job.log += '[Narración] '+warning+'\n';
       if(job.visualAudit?.video?.audioPresent){
         try{
@@ -628,7 +630,7 @@ async function handle(req, res) {
       error: job.error, log: job.log.slice(-1000),
       download: job.status === 'completado' ? `/exports/${job.output}` : null,
       visualAudit:job.visualAudit??null, audioTimingAudit:job.audioTimingAudit??null,
-      audioLoudnessAudit:job.audioLoudnessAudit??null, contactSheet:job.contactSheet??null,
+      audioLoudnessAudit:job.audioLoudnessAudit??null, audioAssetsAudit:job.audioAssetsAudit??null, contactSheet:job.contactSheet??null,
     }) : respond(res, 404, {error: 'Trabajo no encontrado.'});
   }
   if (req.method === 'GET' && pathname === '/preview') {
