@@ -19,6 +19,7 @@ import {searchFreeMedia, downloadFreeMedia, transcribeWithGroq} from './cloud-in
 import {aiPlannerConfig, requestAiPlan, requestSceneCode, requestFullVideoCode} from './ai-planner.mjs';
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
+import {auditVisualDirection} from './src/visual-direction-audit.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -562,9 +563,10 @@ async function handle(req, res) {
       const project = validateProject(await bodyJson(req));
       if (!project.scenes.length) throw new Error('Añade escenas antes de revisar.');
       const preflight=checkCustomScenePreflight(project);
-      if(!preflight.passed)return respond(res,200,{passed:false,errors:preflight.errors,warnings:preflight.warnings});
+      if(!preflight.passed)return respond(res,200,{passed:false,errors:preflight.errors,warnings:preflight.warnings,visualAudit:auditVisualDirection(project)});
       const {reviewExplainer} = await import('./scripts/review-explainer.mjs');
-      return respond(res, 200, await reviewExplainer(project, {root, publicDir, capture:false}));
+      const review=await reviewExplainer(project, {root, publicDir, capture:false});
+      return respond(res,200,{...review,visualAudit:auditVisualDirection(project)});
     }
   if (req.method === 'PUT' && pathname === '/api/project') {
     const project = validateProject(await bodyJson(req));
