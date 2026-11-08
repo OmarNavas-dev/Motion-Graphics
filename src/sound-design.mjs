@@ -5,20 +5,9 @@ import path from 'node:path';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
 const exec=promisify(execFile);
-export const SOUND_KINDS=Object.freeze(['whoosh','impact','click','pop','riser','chime','pad','wind']);
-const finite=Number.isFinite;
+import {SOUND_KINDS,normalizeSoundDesign} from './motion-capabilities.mjs';
+export {SOUND_KINDS,normalizeSoundDesign};
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
-export function normalizeSoundDesign(raw,duration){
- if(!raw||raw.enabled!==true)return {enabled:false,cues:[]};
- if(!Array.isArray(raw.cues)||raw.cues.length>150)throw Error('El diseño sonoro admite hasta 150 eventos.');
- const cues=raw.cues.map((cue,i)=>{
-  const at=cue?.at,span=cue?.duration,gain=cue?.gain??.2;
-  if(!SOUND_KINDS.includes(cue?.type)||!finite(at)||at<0||!finite(span)||span<=0||span>10||
-     at+span>duration+.001||!finite(gain)||gain<0||gain>1)throw Error('Evento sonoro inválido: '+(i+1));
-  return {at,duration:span,type:cue.type,gain};
- });
- return {enabled:true,cues};
-}
 const tau=Math.PI*2;
 const noise=x=>{let y=(x|0)+0x6D2B79F5;y=Math.imul(y^(y>>>15),y|1);y^=y+Math.imul(y^(y>>>7),y|61);return ((y^(y>>>14))>>>0)/2147483648-1;};
 export function soundAt(kind,u,span,index,rate=24000){
