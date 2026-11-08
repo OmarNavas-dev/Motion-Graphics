@@ -31,3 +31,33 @@ jobs:
           name: acceptance-five-topics
           path: out/acceptance-five-topics/
           if-no-files-found: warn
+
+  render-acceptance:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci --include=dev
+      - name: Check video prerequisites
+        run: |
+          node --version
+          ffmpeg -version | head -1
+          ffprobe -version | head -1
+          google-chrome --version || true
+      - name: Render and inspect five real MP4s
+        run: npm run accept:five:render
+      - name: Upload rendered evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-five-topics-mp4
+          path: out/acceptance-five-topics/
+          if-no-files-found: warn
+          retention-days: 7
