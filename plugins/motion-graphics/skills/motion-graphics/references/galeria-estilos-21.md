@@ -1,0 +1,3 @@
+# Galería integrada de 21 estilos
+
+Contiene 21 documentos `styles/*.md` de https://github.com/ItsssssJack/claude-video-2 bajo licencia MIT (consultar LICENSE-CLAUDE-VIDEO-2.md). La selección se representa como `stylePreset` en el JSON. El sistema devuelve la lista en `GET /api/styles` y una especificación textual en `GET /api/styles/{id}`. Cada estilo tiene reglas propias de paleta, tipografía, movimiento, composición y prohibiciones. La integración del catálogo no convierte automáticamente un SVG arbitrario a ese estilo: el complemento tiene que **generar las escenas desde su especificación** y luego comprobar los fotogramas. Evitar dependencia de fuentes o MP4 alojados remotamente en los proyectos exportados.
