@@ -20,6 +20,7 @@ import {aiPlannerConfig, requestAiPlan, requestSceneCode, requestFullVideoCode} 
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
 import {auditVisualDirection} from './src/visual-direction-audit.mjs';
+import {auditRenderedVideo} from './src/render-quality-audit.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -482,6 +483,16 @@ async function beginHyperframesRender(project) {
         throw new Error('HyperFrames terminó, pero no se encontró un MP4 válido.');
       }
       await fsp.copyFile(workspaceOutput, output);
+      try {
+        job.visualAudit = await auditRenderedVideo(output,{
+          expectedAudio:Boolean(project.audioAsset||project.voiceClips?.length||project.musicAsset),
+        });
+        job.log += `\nAuditoría de fotogramas: ${job.visualAudit.metrics.sampledFrames} muestras, ${job.visualAudit.warnings.length} observaciones.\n`;
+        for(const warning of job.visualAudit.warnings)job.log += `- ${warning}\n`;
+        job.log += 'La auditoría automática no certifica calidad artística.\n';
+      } catch(error) {
+        job.log += `\nNo se pudo completar la auditoría visual del MP4: ${error.message}. La exportación sigue disponible.\n`;
+      }
       job.status = 'completado';
       job.progress = 100;
       job.log += `\nMP4 creado: ${name}\n`;
