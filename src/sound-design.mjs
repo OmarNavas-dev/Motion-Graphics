@@ -1,6 +1,7 @@
 // Deterministic, sample-free Foley. Inspired by whaleyxbt/claude-motion (MIT), original implementation.
 // Explicit user/authoring cues only: no surprise sound in silent projects.
 import fs from 'node:fs/promises';
+import {Buffer} from 'node:buffer';
 import path from 'node:path';
 import {execFile} from 'node:child_process';
 import {promisify} from 'node:util';
@@ -10,7 +11,7 @@ export {SOUND_KINDS,normalizeSoundDesign};
 const clamp=(n,min,max)=>Math.max(min,Math.min(max,n));
 const tau=Math.PI*2;
 const noise=x=>{let y=(x|0)+0x6D2B79F5;y=Math.imul(y^(y>>>15),y|1);y^=y+Math.imul(y^(y>>>7),y|61);return ((y^(y>>>14))>>>0)/2147483648-1;};
-export function soundAt(kind,u,span,index,rate=24000){
+export function soundAt(kind,u,span,index){
  if(u<0||u>=span)return 0;
  const q=u/span,grain=noise(index);
  if(kind==='whoosh')return Math.sin(Math.PI*q)*(grain*.4+Math.sin(tau*(230*u+210*u*u))*.13);
@@ -46,7 +47,7 @@ export async function renderSoundWav(soundDesign,out,{rate=24000,seconds}={}){
    for(let i=0;i<count;i++){
     const index=offset+i,t=index/rate;
     let value=0;
-    for(const c of active)value+=c.gain*soundAt(c.type,t-c.at,c.duration,index,rate);
+    for(const c of active)value+=c.gain*soundAt(c.type,t-c.at,c.duration,index);
     buffer.writeInt16LE(Math.round(clamp(value,-.96,.96)*32767),i*2);
    }
    await handle.write(buffer);
