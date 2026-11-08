@@ -12,6 +12,8 @@ export const MOTION_STUDIO_CONTRACT=Object.freeze({
  captionModes:['embedded','global','none'],
  wordTimings:{timeBase:'global seconds',fields:['text','start','end','emphasis']},
  motionCheckpoints:{version:1,timeBase:'seconds relative to action.at',fields:['at','state','phase'],verification:['forward seek','backward seek']},
+ directionCompiler:{version:2,shots:['at','duration','scale','x','y'],actionMotion:['from','to','ease'],safeCameraTarget:'CSS class',manualAnimationsPreserved:true},
+ qualityReview:{postRenderContactSheet:true,audioLoudness:true,visualApprovalRequired:true},
  remotionCustomScene:false,
  approval:{technicalChecksAreVisualApproval:false,technicalChecksVerifyAudioAlignment:false},
 });

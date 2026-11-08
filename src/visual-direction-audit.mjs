@@ -1,3 +1,4 @@
+import {compileSceneDirection} from './direction-compiler.mjs';
 // Advisory, evidence-based checks of the storyboard against executable scene
 // code. These findings are not a substitute for watching the rendered video.
 const scriptText = scene => String(scene?.customScene?.script ?? '');
@@ -15,13 +16,14 @@ export function auditVisualDirection(project) {
     const shots = scene.direction?.shots ?? [];
     const actions = scene.direction?.actions ?? [];
     const html = String(scene.customScene?.html ?? '');
-    const timelineCamera = code.split(';').some(step => cameraTarget.test(step) && cameraMotion.test(step));
+    const compiled=compileSceneDirection(scene);
+    const timelineCamera = code.split(';').some(step => cameraTarget.test(step) && cameraMotion.test(step)) || compiled.cameraGenerated;
 
     if (shots.length > 1 && !timelineCamera)
       push(scene, 'SHOT_PLAN_NOT_EXECUTED', 'warning',
         'La ficha propone varios encuadres, pero la animación no contiene un movimiento de cámara identificable.',
         `${shots.length} encuadres previstos; sin objetivo de cámara detectado en GSAP.`);
-    if (actions.length && !code.trim())
+    if (actions.length && !code.trim() && compiled.actionsGenerated===0)
       push(scene, 'ACTIONS_WITHOUT_TIMELINE', 'warning',
         'Hay acciones planificadas, pero la escena no contiene una secuencia GSAP personalizada.',
         `${actions.length} acciones declaradas.`);

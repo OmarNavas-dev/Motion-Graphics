@@ -21,6 +21,8 @@ import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
 import {auditVisualDirection} from './src/visual-direction-audit.mjs';
 import {auditRenderedVideo} from './src/render-quality-audit.mjs';
+import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
+import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -334,7 +336,24 @@ async function beginRender(project) {
     if (job.status !== 'error' && code === 0) {
       const stat = await fsp.stat(output).catch(() => null);
       if (stat?.isFile() && stat.size > 15000) {
-        job.status = 'completado';
+        // Independent evidence: speech timing, sound level, and scene contact sheets.
+      job.audioTimingAudit = auditTimelineAudio(project);
+      job.audioAssetsAudit=await auditAudioAssets(project,assetsDir);
+      for(const warning of job.audioAssetsAudit.warnings)job.log += '[Recurso de voz] '+warning+'\n';
+      for(const warning of job.audioTimingAudit.warnings)job.log += '[Narración] '+warning+'\n';
+      if(job.visualAudit?.video?.audioPresent){
+        try{
+          job.audioLoudnessAudit = await measureAudioLoudness(output);
+          for(const warning of job.audioLoudnessAudit.warnings)job.log += '[Sonoridad] '+warning+'\n';
+        }catch(error){job.log += '[Sonoridad] No se pudo medir: '+error.message+'\n';}
+      }
+      try {
+        const reviewDir=path.join(outDir,'quality-reviews',id);
+        const sheet=await createFrameContactSheet(output,project,reviewDir,{maxFrames:24});
+        job.contactSheet={captured:sheet.captured,requested:sheet.totalRequested,errors:sheet.errors.length,url:'/reviews/'+id+'/index.html'};
+        job.log += '[Fotogramas] '+sheet.captured+' capturas; hoja de contactos: '+job.contactSheet.url+'\n';
+      }catch(error){job.log += '[Fotogramas] Revisión parcial: '+error.message+'\n';}
+      job.status = 'completado';
         job.progress = 100;
       } else {
         job.status = 'error';
@@ -610,6 +629,8 @@ async function handle(req, res) {
       id: job.id, engine: job.engine || 'remotion', status: job.status, progress: job.progress,
       error: job.error, log: job.log.slice(-1000),
       download: job.status === 'completado' ? `/exports/${job.output}` : null,
+      visualAudit:job.visualAudit??null, audioTimingAudit:job.audioTimingAudit??null,
+      audioLoudnessAudit:job.audioLoudnessAudit??null, audioAssetsAudit:job.audioAssetsAudit??null, contactSheet:job.contactSheet??null,
     }) : respond(res, 404, {error: 'Trabajo no encontrado.'});
   }
   if (req.method === 'GET' && pathname === '/preview') {
@@ -627,6 +648,10 @@ async function handle(req, res) {
   const assetMatch = pathname.match(/^\/user-assets\/([0-9a-f-]{36}\.[a-z0-9]+)$/);
   if (req.method === 'GET' && assetMatch) {
     return sendFile(res, assetsDir, assetMatch[1], false, req);
+  }
+  const reviewMatch=pathname.match(/^\/reviews\/([0-9a-f-]{36})\/(index\.html|report\.json|[0-9]{3}\.png)$/);
+  if(req.method==='GET'&&reviewMatch){
+    return sendFile(res,path.join(outDir,'quality-reviews',reviewMatch[1]),reviewMatch[2],false);
   }
   const exportMatch = pathname.match(/^\/exports\/(studio-[0-9a-f-]{36}\.mp4)$/);
   if (req.method === 'GET' && exportMatch) {

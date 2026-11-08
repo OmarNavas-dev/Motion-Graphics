@@ -1,3 +1,4 @@
+import {compileSceneDirection} from './direction-compiler.mjs';
 import {chooseConcept, identities, supportingLine, visualHeadline} from './semantic-director.mjs';
 import {directMediaScene} from './media-director.mjs';
 import {wordCaptionTrack, WORD_CAPTION_CSS} from './word-captions.mjs';
@@ -249,7 +250,7 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
     return {html: customClip, id: sceneId, start, duration, visualDuration,
       media: false, video: false, graphics: scene.motionGraphics || [], cues: scene.cues || [], captions: [],
       graphicMarkupList, transition, styleName, camera: cameraMove(scene, styleName),
-      focus, subtitle: false, customScript: customScene.script + '\n' + wordTrack.script, custom: true};
+      focus, subtitle: false, customScript: customScene.script + '\n' + compileSceneDirection(scene).script + '\n' + wordTrack.script, custom: true};
   }
   const sceneVisualClass = authoredScene ? ' hf-authored-scene' : (subject.kind === 'venice' && !media && !video ? ' hf-venice' : '');
   const visualClip = video
@@ -275,7 +276,7 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
     // Reserve a short overlap so the next scene can reveal over the previous one
     // without shortening the narration or the total composition duration.
     const isCustom = Boolean(scene.customScene?.html?.trim() || scene.authored);
-    const visualDuration = duration + (!only && index < scenes.length - 1 && !isCustom ? 0.42 : 0);
+    const visualDuration = duration + (!only && index < scenes.length - 1 && (!isCustom || scenes[index+1]?.transition==='fade') ? 0.42 : 0);
     const originalIndex = only ? project.scenes.indexOf(only) : index;
     const wordStart = only && originalIndex >= 0 ? project.scenes.slice(0, originalIndex).reduce((sum,s) => sum+s.duration,0) : start;
     return {start, wordStart, duration, visualDuration, track: index * 10};
@@ -294,7 +295,10 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
     const enterDuration = Math.min(0.58, Math.max(0.28, item.duration * 0.22));
     if (item.custom) {
       // Transition overlay never shifts scene time or transforms the caption track.
-      if (item.transition !== 'cut') {
+      if (item.transition === 'fade' && index>0) {
+        // Previous custom scene stays visible for 0.42 s while this one fades in.
+        tweens.push(`tl.fromTo('${id}',{opacity:0},{opacity:1,duration:${Math.min(.42,enterDuration)},ease:'power2.inOut'},${at(0)});`);
+      } else if (item.transition !== 'cut') {
         const color = item.transition === 'flash' ? '#fff' : '#000';
         tweens.push(`tl.set('${id} .hf-custom-transition',{background:'${color}',opacity:1},${at(0)});tl.to('${id} .hf-custom-transition',{opacity:0,duration:${enterDuration},ease:'power2.out'},${at(0)});`);
       }
