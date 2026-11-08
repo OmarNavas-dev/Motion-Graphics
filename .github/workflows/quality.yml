@@ -22,6 +22,8 @@ jobs:
         run: npm run lint
       - name: Build Studio
         run: npm run studio:build
+      - name: Record source-integration parity (informational)
+        run: npm run integration:status
       - name: Five-domain contract acceptance
         run: npm run accept:five
       - name: Upload acceptance JSON and report
