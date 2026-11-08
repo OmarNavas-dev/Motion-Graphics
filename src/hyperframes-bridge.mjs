@@ -1,3 +1,4 @@
+import {compileSceneDirection} from './direction-compiler.mjs';
 import {chooseConcept, identities, supportingLine, visualHeadline} from './semantic-director.mjs';
 import {directMediaScene} from './media-director.mjs';
 import {wordCaptionTrack, WORD_CAPTION_CSS} from './word-captions.mjs';
@@ -249,7 +250,7 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
     return {html: customClip, id: sceneId, start, duration, visualDuration,
       media: false, video: false, graphics: scene.motionGraphics || [], cues: scene.cues || [], captions: [],
       graphicMarkupList, transition, styleName, camera: cameraMove(scene, styleName),
-      focus, subtitle: false, customScript: customScene.script + '\n' + wordTrack.script, custom: true};
+      focus, subtitle: false, customScript: customScene.script + '\n' + compileSceneDirection(scene).script + '\n' + wordTrack.script, custom: true};
   }
   const sceneVisualClass = authoredScene ? ' hf-authored-scene' : (subject.kind === 'venice' && !media && !video ? ' hf-venice' : '');
   const visualClip = video
