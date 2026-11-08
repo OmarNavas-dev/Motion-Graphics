@@ -1,3 +1,4 @@
+import {inspectContactSamples} from '../src/contact-motion-audit.mjs';
 import fs from "node:fs/promises";
 import path from "node:path";
 import http from "node:http";
@@ -159,7 +160,7 @@ export async function reviewExplainer(
       return [...bad];
     });
     if (ids.length) errors.push("IDs HTML duplicados: " + ids.join(", "));
-    const samples = [],captionSamples=[],motionSamples=[];
+    const samples = [],captionSamples=[],motionSamples=[],contactSamples=[];
     const captionRegion={x:0,y:Math.floor(height*.055),width,height:Math.round(height*.13)};
     const wordFrames=(project.wordTimings||[]).map((word,wordIndex)=>{
       const frame=Math.max(0,Math.min(Math.ceil(total*project.fps)-1,Math.round((word.start+word.end)*project.fps/2)));
@@ -271,6 +272,15 @@ export async function reviewExplainer(
         const motion=await page.evaluate(observeMotionCheckpoints,{sceneIndex:index,local,actions:scene.direction?.actions??[]});
         errors.push(...motion.errors.map(e=>`${scene.id} @${local.toFixed(4)}: ${e}`));
         if(motion.observations.length)motionSamples.push({scene:scene.id,sceneIndex:index,time:start+local,local,observations:motion.observations});
+        const feet=await page.evaluate(index=>{
+          const root=document.getElementById('hf-scene-'+index);
+          return [...(root?.querySelectorAll('[data-dvj-foot]')||[])].map(n=>{
+            const r=n.getBoundingClientRect();
+            return {id:n.getAttribute('data-dvj-foot'),x:r.x+r.width/2,y:r.y+r.height/2,
+              contact:n.getAttribute('data-dvj-contact')||'unknown'};
+          });
+        },index);
+        if(feet.length)contactSamples.push({scene:scene.id,time:start+local,feet});
         const sample = { scene: scene.id, time: start + local, local };
         if (capture && outputDir && captureTimes.has(local)) {
           const response = await page.screenshot({type:'png'});
@@ -300,6 +310,8 @@ export async function reviewExplainer(
       errors.push(...result.errors.map(e=>`${sample.scene} busqueda inversa: ${e}`));
       sample.backwardPassed=!result.errors.length;
     }
+    const contactAudit=inspectContactSamples(contactSamples);
+    warnings.push(...contactAudit.findings.map(f=>f.scene+' @'+f.time.toFixed(3)+': '+f.code+' '+f.foot+' ('+f.pixels+' px)'));
     const report = {
       projectHash: createHash("sha256")
         .update(JSON.stringify(project))
@@ -309,6 +321,7 @@ export async function reviewExplainer(
       warnings: [...new Set(warnings)],
       samples,
       motionSamples,
+      contactAudit,
       captionSamples,
       captionRegion,
       expectedDuration: total,
