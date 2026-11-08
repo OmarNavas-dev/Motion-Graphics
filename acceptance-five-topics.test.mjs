@@ -9,3 +9,10 @@ test('cinco temas independientes con escenas y dirección ejecutable',()=>{
   assert.match(x.project.scenes[0].customScene.html,/class="world"/);
  }
 });
+
+test('acceptance spans style presets, Foley and looping',()=>{
+ const f=makeAcceptanceFixtures();
+ assert.ok(f.every(x=>x.project.stylePreset));
+ assert.equal(f.find(x=>x.topic==='volcanes').project.soundDesign.cues.length,3);
+ assert.equal(f.find(x=>x.topic==='graficos').project.loop,true);
+});
