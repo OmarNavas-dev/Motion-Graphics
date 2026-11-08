@@ -1,3 +1,4 @@
+export const STYLE_PRESET_IDS=Object.freeze(["paper-world","ink-line","weather-widget","data-story","swiss-kinetic","particle-field","growing-city","explainer-diagram","time-travel","editor-ui","motion-app-ui","design-app-ui","audio-app-ui","swiss-grid","editorial-paper","midnight-grid","paper-cut","risograph","blueprint","graphite-ui","poster-pop"]);
 import {CUSTOM_SCENE_LIMITS} from './scene-limits.mjs';
 
 // Shared by the local service and the authoring plugin, not a quality certificate.
