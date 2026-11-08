@@ -1,5 +1,9 @@
 import {chooseConcept, identities, supportingLine, visualHeadline} from './semantic-director.mjs';
 import {directMediaScene} from './media-director.mjs';
+import {wordCaptionTrack, WORD_CAPTION_CSS} from './word-captions.mjs';
+import {renderAuthored} from './authored-renderer.mjs';
+import {BUNDLED_FONT_FACES} from './project-assets.mjs';
+import {repairLegacyCaptionScript} from './caption-compat.mjs';
 
 const h = (value) => String(value ?? '').replace(/&/g, '&amp;')
   .replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -183,32 +187,6 @@ const cameraMove = (scene, style) => {
   return move;
 };
 
-const authoredSceneMarkup = (authored, sceneId) => {
-  const esc = (v) => h(v);
-  const layers = authored.layers || [];
-  const body = layers.map((layer, i) => {
-    const id = `${sceneId}-authored-${i}`;
-    const x = number(layer.x, 50), y = number(layer.y, 50);
-    const w = number(layer.width, 10), ht = number(layer.height, 10);
-    const opacity = number(layer.opacity, 1);
-    const rotate = number(layer.rotate, number(layer.angle, 0));
-    const fill = esc(layer.fill || 'none');
-    const fill2 = esc(layer.fill2 || fill);
-    const shape = layer.shape || 'rect';
-    const text = layer.text ? esc(layer.text) : '';
-    const enter = layer.enter || {};
-    const delay = number(enter.at, 0);
-    const preset = esc(enter.preset || 'none');
-    const common = `id="${id}" data-enter="${preset}" data-at="${delay}" style="left:${x}%;top:${y}%;width:${w}%;height:${ht}%;opacity:${opacity};transform:translate(-50%,-50%) rotate(${rotate}deg);z-index:${Math.round(number(layer.depth, .5) * 100)}"`;
-    if (layer.type === 'text') return `<div class="hf-authored-text" ${common}>${text}</div>`;
-    if (layer.type === 'caption') return '';
-    const shapeClass = shape === 'circle' || shape === 'ellipse' ? ' hf-authored-round' : '';
-    return `<div class="hf-authored-layer${shapeClass}" ${common}><i style="background:linear-gradient(135deg,${fill},${fill2})"></i></div>`;
-  }).join('');
-  const bg = authored.background || {};
-  return `<div class="hf-authored" style="--auth-bg:${esc(bg.color || '#061526')};--auth-bg2:${esc(bg.color2 || '#102f48')}">${body}</div>`;
-};
-
 const customHtmlScene = (scene, sceneId, media, video) => {
   const custom = scene.customScene;
   if (!custom || typeof custom.html !== 'string' || !custom.html.trim()) return null;
@@ -218,7 +196,7 @@ const customHtmlScene = (scene, sceneId, media, video) => {
     .replaceAll('__VIDEO__', h(video || ''));
   return {
     markup: `${custom.css ? `<style>${fill(custom.css)}</style>` : ''}${fill(custom.html)}`,
-    script: custom.script ? fill(custom.script) : '',
+    script: custom.script ? fill(repairLegacyCaptionScript(custom.script)) : '',
   };
 };
 
@@ -232,25 +210,31 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
   const video = scene.videoAsset ? embeddedAssets[scene.videoAsset] : '';
   const mediaDirection = directMediaScene(scene, project);
   const sceneId = `hf-scene-${index}`;
+  const wordTrack = scene.captionMode === 'global' && showText ? wordCaptionTrack(project.wordTimings || [], record.wordStart ?? start, duration, sceneId) : {html:'',script:''};
   const words = visualHeadline(scene.title || '', project.format === 'vertical' ? 9 : 12).split(/\s+/).filter(Boolean);
   const title = words.map((word, i) => `<span class="word" style="color:${i === words.length - 1 ? theme.accent : theme.ink}">${h(word)}</span>`).join(' ');
   const subtitle = supportingLine(scene);
   const focus = `${clamp(number(scene.focusX, 50), 0, 100)}% ${clamp(number(scene.focusY, 50), 0, 100)}%`;
   const graphicMarkupList = (scene.motionGraphics || []).map((graphic, graphicIndex) => graphicMarkup(graphic, sceneId, graphicIndex)).join('');
   const cueMarkupList = (scene.cues || []).map((cue, cueIndex) => cueMarkup(cue, sceneId, cueIndex)).join('');
-  const captionMarkupList = (scene.captions || []).map((caption, captionIndex) => captionMarkup(caption, sceneId, captionIndex)).join('');
+  const captionList = scene.captionMode === 'none' || scene.captionMode === 'global' ? [] : (scene.captions || []);
+  const captionMarkupList = captionList.map((caption, captionIndex) => captionMarkup(caption, sceneId, captionIndex)).join('') + wordTrack.html;
   const audioCueMarkup = (scene.audioCues || []).map((cue, cueIndex) => `<audio id="${sceneId}-audio-${cueIndex}" data-start="${seconds(start + cue.at)}" data-duration="${seconds(cue.duration)}" data-track-index="230" data-volume="${number(cue.volume, .45)}" src="${h(embeddedAssets[cue.asset] || '')}"></audio>`).join('');
-  const customScene = customHtmlScene(scene, sceneId, media, video);
-  const authoredScene = scene.authored && Array.isArray(scene.authored.layers) ? authoredSceneMarkup(scene.authored, sceneId) : '';
+  const authoredOptions = {time:0, duration, ...getDimensions(project.format, project.resolution), showText, assets:embeddedAssets, theme};
+  const authoredScene = scene.authored ? renderAuthored(scene.authored, authoredOptions) : '';
+  const scriptJson = value => JSON.stringify(value).replaceAll('<', '\\u003c');
+  const customScene = customHtmlScene(scene, sceneId, media, video) || (authoredScene ? {
+    markup: `<div id="${sceneId}-authored" style="position:absolute;inset:0">${authoredScene}</div>`,
+    script: `const state={t:0};const draw=()=>{document.getElementById('${sceneId}-authored').innerHTML=renderAuthored(${scriptJson(scene.authored)},{...${scriptJson(authoredOptions)},time:state.t});};draw();tl.to(state,{t:D,duration:D,ease:'none',onUpdate:draw},T0);`,
+  } : null);
   const commonStyle = `--bg:${theme.background};--ink:${theme.ink};--accent:${theme.accent};--second:${theme.secondary};--font:${project.fontAsset ? "'MotionStudioLocal'," : ''}${theme.display}`;
   const transition = scene.transition || 'cut';
   const flash = transition === 'flash' ? '<div class="hf-flash"></div>' : '';
-  const content = `${showText && !media && !video ? `<div class="kicker"><i></i>${h(subject.label)}<b>${String(index + 1).padStart(2, '0')}</b></div><div class="headline">${title}</div>` : ''}` +
+  const content = `${showText && !media && !video ? `<div class="kicker"><i></i>${h(subject.label)}</div><div class="headline">${title}</div>` : ''}` +
     `${showText && !media && !video && subtitle ? `<div class="subline">${h(subtitle)}</div>` : ''}` +
     `${!media && !video ? (authoredScene || `<div class="art" data-action-type="${h(actionPlan.actionType)}">${figure(subject.kind, subject.detail, theme.accent, theme.secondary, theme.ink, sceneId)}${subject.kind === 'venice' ? '' : visualActionMarkup(actionPlan, sceneId)}</div>`) : ''}` +
     `${showText && media ? `<div class="hf-lowerthird">${h(mediaDirection.headline)}</div>` : ''}` +
     `${showText && video ? `<div class="hf-lowerthird">${h(mediaDirection.headline)}</div>` : ''}` +
-    `${showText && !media && !video && subject.kind !== 'venice' ? `<div class="footer">${h(String(project.name || 'MOTION STUDIO').slice(0, 35).toUpperCase())}<span class="rule"></span>${Math.ceil(duration)}s</div>` : ''}` +
     graphicMarkupList + cueMarkupList + captionMarkupList + audioCueMarkup + flash;
   const mediaMarkup = video
     ? `<div id="${sceneId}-video-wrap" class="hf-video-wrap"><video id="${sceneId}-video" data-start="${seconds(start)}" data-duration="${seconds(visualDuration)}" data-track-index="${track}" data-volume="0" muted playsinline preload="auto" src="${h(video)}"></video></div>`
@@ -261,11 +245,11 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
   if (customScene) {
     // Custom HTML/Canvas draws its own text and timing; do not overlay the global caption track,
     // which otherwise duplicates captions already composited into procedural scenes.
-    const customClip = `<section id="${sceneId}" class="clip hf-scene" data-start="${seconds(start)}" data-duration="${seconds(visualDuration)}" data-track-index="${track}" style="${commonStyle}">${customScene.markup}${graphicMarkupList}${cueMarkupList}${audioCueMarkup}</section>`;
+    const customClip = `<section id="${sceneId}" class="clip hf-scene" data-caption-mode="${scene.captionMode || 'embedded'}" data-start="${seconds(start)}" data-duration="${seconds(visualDuration)}" data-track-index="${track}" style="${commonStyle}">${customScene.markup}${graphicMarkupList}${cueMarkupList}${audioCueMarkup}${wordTrack.html}<div class="hf-custom-transition"></div></section>`;
     return {html: customClip, id: sceneId, start, duration, visualDuration,
       media: false, video: false, graphics: scene.motionGraphics || [], cues: scene.cues || [], captions: [],
       graphicMarkupList, transition, styleName, camera: cameraMove(scene, styleName),
-      focus, subtitle: false, customScript: customScene.script, custom: true};
+      focus, subtitle: false, customScript: customScene.script + '\n' + wordTrack.script, custom: true};
   }
   const sceneVisualClass = authoredScene ? ' hf-authored-scene' : (subject.kind === 'venice' && !media && !video ? ' hf-venice' : '');
   const visualClip = video
@@ -273,7 +257,7 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
     : `<section id="${sceneId}" class="clip hf-scene${media ? ' hf-visual' : ''}${sceneVisualClass}" data-action-type="${h(actionPlan.actionType)}" data-action-plan="${h(actionPlan.action)}" data-start="${seconds(start)}" data-duration="${seconds(visualDuration)}" data-track-index="${track}" style="${commonStyle}">${imageMarkup}<div class="scene-content">${content}</div></section>`;
   return {html: mediaMarkup + visualClip, id: sceneId, start, duration, visualDuration,
     media: Boolean(media || video), video: Boolean(video), visualKind:subject.kind, visualDetail:subject.detail,
-    graphics: scene.motionGraphics || [], cues: scene.cues || [], captions: scene.captions || [],
+    graphics: scene.motionGraphics || [], cues: scene.cues || [], captions: captionList, wordScript: wordTrack.script,
     graphicMarkupList, transition, styleName, camera: cameraMove(scene, styleName),
     focus, subtitle: Boolean(subtitle)};
 };
@@ -290,9 +274,11 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
     elapsed += duration;
     // Reserve a short overlap so the next scene can reveal over the previous one
     // without shortening the narration or the total composition duration.
-    const isCustom = Boolean(scene.customScene?.html?.trim());
+    const isCustom = Boolean(scene.customScene?.html?.trim() || scene.authored);
     const visualDuration = duration + (!only && index < scenes.length - 1 && !isCustom ? 0.42 : 0);
-    return {start, duration, visualDuration, track: index * 10};
+    const originalIndex = only ? project.scenes.indexOf(only) : index;
+    const wordStart = only && originalIndex >= 0 ? project.scenes.slice(0, originalIndex).reduce((sum,s) => sum+s.duration,0) : start;
+    return {start, wordStart, duration, visualDuration, track: index * 10};
   });
   const rendered = scenes.map((scene, index) => renderScene(scene, project, index, records[index], embeddedAssets, showText));
   const clips = rendered.map(item => item.html);
@@ -307,8 +293,11 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
     const actionAt = at(item.duration * actionStart);
     const enterDuration = Math.min(0.58, Math.max(0.28, item.duration * 0.22));
     if (item.custom) {
-      // Custom scenes composite their own captions/art inside Canvas, so avoid overlay fades.
-      // A deterministic cut prevents cross-scene caption and background ghosts.
+      // Transition overlay never shifts scene time or transforms the caption track.
+      if (item.transition !== 'cut') {
+        const color = item.transition === 'flash' ? '#fff' : '#000';
+        tweens.push(`tl.set('${id} .hf-custom-transition',{background:'${color}',opacity:1},${at(0)});tl.to('${id} .hf-custom-transition',{opacity:0,duration:${enterDuration},ease:'power2.out'},${at(0)});`);
+      }
     } else if (item.transition === 'fade') {
       tweens.push(`tl.fromTo('${id}',{opacity:0},{opacity:1,duration:${enterDuration},ease:'power2.out'},${at(0)});`);
     } else if (item.transition === 'dip') {
@@ -322,7 +311,7 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
       if (item.customScript) {
         // Repeats and stagger may run past D. Drive a private scene clock only
         // through its assigned interval; never stretch it (which shifts captions).
-        tweens.push(`try{const sceneTl${index}=gsap.timeline({paused:true});(function(tl,S,T0,D,gsap){${item.customScript}\n})(sceneTl${index},'${id}',0,${seconds(item.duration)},gsap);tl.fromTo(sceneTl${index},{time:0},{time:${seconds(item.duration)},duration:${seconds(item.duration)},ease:'none',immediateRender:false},${item.start.toFixed(3)});}catch(error){console.error('Escena HTML ${index + 1}:',error);}`);
+        tweens.push(`try{const sceneTl${index}=gsap.timeline({paused:true});(function(tl,S,T0,D,gsap){${item.customScript}\n})(sceneTl${index},'${id}',0,${seconds(item.duration)},gsap);const sceneClock${index}={t:0};const drawScene${index}=()=>sceneTl${index}.time(sceneClock${index}.t,false);(window.__motionStudioSceneTimelines??=[]).push({id:'${item.id}',timeline:sceneTl${index},duration:${seconds(item.duration)}});tl.fromTo(sceneClock${index},{t:0},{t:${seconds(item.duration)},duration:${seconds(item.duration)},ease:'none',immediateRender:false,onUpdate:drawScene${index}},${item.start.toFixed(3)});}catch(error){window.__motionStudioErrors.push('Escena HTML ${index + 1}: '+error.message);console.error('Escena HTML ${index + 1}:',error);}`);
       }
     } else if (item.video) {
       const wrap = `#${item.id}-video-wrap`;
@@ -337,7 +326,6 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
         tweens.push(`tl.from('${id} .kicker i',{scaleX:0,transformOrigin:'left center',duration:.48,ease:'back.out(1.5)'},${at(.18)});`);
         tweens.push(`tl.from('${id} .word',{y:58,opacity:0,duration:.56,stagger:.07,ease:'power4.out'},${at(.22)});`);
         if (item.subtitle) tweens.push(`tl.from('${id} .subline',{x:-28,opacity:0,duration:.63,ease:'power3.out'},${at(.61)});`);
-        if (item.visualKind !== 'venice') tweens.push(`tl.from('${id} .footer',{y:20,opacity:0,duration:.57,ease:'sine.out'},${at(.51)});`);
       }
       tweens.push(`tl.from('${id} .art',{scale:.84,opacity:0,duration:.8,ease:'power2.out'},${at(.33)});`);
       const actionType = scene.visualActionPlan?.actionType || 'reveal';
@@ -390,6 +378,7 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
       }
       if (item.styleName === 'finance') tweens.push(`tl.from('${id} .bar',{scaleY:0,transformOrigin:'bottom center',duration:.66,stagger:.13,ease:'power3.out'},${at(.57)});`);
     }
+    if (item.wordScript) tweens.push(`(function(tl,T0){${item.wordScript}})(tl,${item.start});`);
     item.graphics.forEach((graphic, graphicIndex) => {
       const graphicId = `#${item.id}-graphic-${graphicIndex}`;
       const graphicAt = clamp(number(graphic.at), 0, Math.max(0, item.duration - 0.1));
@@ -449,7 +438,12 @@ export const exportHyperframesProject = (project, only, gsapSource = '', embedde
 <html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>${h(project.name)} — Motion Studio 7 / HyperFrames</title>
 ${fontFace}
+<style>${BUNDLED_FONT_FACES.map(([family, file, weight, style]) => `@font-face{font-family:'${family}';src:url('${h(embeddedAssets[file] || '/' + file)}') format('woff2');font-weight:${weight};font-style:${style};font-display:block}`).join('')}</style>
 <style>
+${WORD_CAPTION_CSS}
+[data-caption-mode="global"] .dvj-caption,[data-caption-mode="global"] .spoken-caption{display:none!important}
+.ms-word-caption{font-size:${34*width/720}px}
+.hf-custom-transition{position:absolute;inset:0;pointer-events:none;background:#000;opacity:0;z-index:800}
 *{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;background:#080a10;overflow:hidden}
 #stage{position:relative;width:${width}px;height:${height}px;overflow:hidden;font-family:Arial,Helvetica,sans-serif;background:#080a10}
 .hf-scene{position:absolute;inset:0;overflow:hidden;background:var(--bg);color:var(--ink);isolation:isolate}
@@ -483,6 +477,9 @@ ${audio.join('\n')}
 </main>
 ${gsap}
 <script>
+window.__motionStudioErrors=[];
+window.addEventListener('error',e=>window.__motionStudioErrors.push(e.message));
+const renderAuthored=${renderAuthored.toString()};
 window.__timelines=window.__timelines||{};
 const tl=gsap.timeline({paused:true});
 ${tweens.join('\n')}

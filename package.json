@@ -1,16 +1,18 @@
 {
   "name": "motion-studio-7",
-  "version": "7.1.3",
+  "version": "7.4.0",
   "description": "Motion graphics 2D con HyperFrames como motor principal y Remotion alternativo",
   "repository": {},
   "license": "UNLICENSED",
   "engines": {
-    "node": ">=22"
+    "node": "^22.13.0 || >=24.0.0"
   },
   "private": true,
   "dependencies": {
     "@remotion/cli": "4.0.539",
     "@remotion/player": "4.0.539",
+    "hyperframes": "0.8.225",
+    "puppeteer-core": "25.16.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
     "remotion": "4.0.539"
@@ -31,7 +33,7 @@
     "studio:build": "vite build",
     "studio:start": "node server.mjs",
     "studio:dev": "vite",
-    "test": "node --test visual-action-planner.test.mjs canvas-3d-engine.test.mjs server-utils.test.mjs cloud-integrations.test.mjs auto-graphics.test.mjs ai-planner.test.mjs semantic-director.test.mjs media-director.test.mjs hyperframes-bridge.test.mjs hyperframes-v7.test.mjs hyperframes-server.test.mjs windows-launcher.test.mjs windows-media-path.test.mjs custom-scene.test.mjs export-regressions.test.mjs",
+    "test": "node --test visual-action-planner.test.mjs canvas-3d-engine.test.mjs server-utils.test.mjs cloud-integrations.test.mjs auto-graphics.test.mjs ai-planner.test.mjs semantic-director.test.mjs media-director.test.mjs hyperframes-bridge.test.mjs hyperframes-v7.test.mjs hyperframes-server.test.mjs windows-launcher.test.mjs windows-media-path.test.mjs custom-scene.test.mjs export-regressions.test.mjs explainer.test.mjs motion-ecosystem.test.mjs windows-native-runtime.test.mjs plugins/motion-graphics/skills/motion-graphics/tests/*.test.mjs render-lifecycle.test.mjs hyperframes-progress.test.mjs caption-pixels.test.mjs",
     "test:ai-route": "node --test ai-route.test.mjs",
     "test:audio-cues": "node scripts/verify-audio-cues.mjs",
     "test:smoke": "node scripts/smoke-v2.mjs",
@@ -39,6 +41,10 @@
     "render:motion-test": "remotion render StudioVideo out/motion-studio-v4-test.mp4 --props=scripts/smoke-v31-props.json --codec=h264 --concurrency=1 --hardware-acceleration=disable",
     "check:system": "node scripts/check-system.mjs",
     "upgrade": "remotion upgrade",
-    "lint": "eslint src && tsc"
+    "lint": "eslint src && tsc",
+    "test:explainer": "node --test explainer.test.mjs",
+    "review:explainer": "node scripts/review-explainer.mjs",
+    "review:offline": "node scripts/review-explainer-offline.mjs",
+    "test:ecosystem": "node scripts/check-motion-ecosystem.mjs"
   }
 }

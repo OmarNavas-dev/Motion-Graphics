@@ -1,4 +1,5 @@
 import {audioCueFrames} from './audio-cue-timing.mjs';
+import {GlobalWordCaptions} from './GlobalWordCaptions';
 import {
   AbsoluteFill,
   Audio,
@@ -12,7 +13,6 @@ import {
   useVideoConfig,
 } from 'remotion';
 import {
-  FPS,
   paletteColors,
   resolveSceneStyle,
   type MotionPreset,
@@ -294,7 +294,7 @@ const SceneVisual: React.FC<{
   totalScenes: number;
   showText: boolean;
   style: StyleName;
-}> = ({scene, projectName, palette, sceneNumber, totalScenes, showText, style}) => {
+}> = ({scene, palette, sceneNumber, showText, style}) => {
   const frame = useCurrentFrame();
   const {width, height} = useVideoConfig();
   const isVertical = height > width;
@@ -372,11 +372,6 @@ const SceneVisual: React.FC<{
         </div>
       )}
 
-      {showText && <div style={{
-        position: 'absolute', left: inset, top: isVertical ? 67 : 45,
-        fontSize: isVertical ? 18 : 20, fontWeight: 800,
-        color: colors.accent, letterSpacing: 4,
-      }}>{projectName.toUpperCase()} / {String(sceneNumber).padStart(2, '0')}</div>}
 
       {showText && <div style={{
         position: 'absolute',
@@ -405,20 +400,6 @@ const SceneVisual: React.FC<{
         <EventVisual key={cue.id} cue={cue} index={i}
           accent={colors.accent} second={colors.second} />
       ))}
-      {showText && <div style={{
-        position: 'absolute', left: inset, right: inset, bottom: isVertical ? 66 : 40,
-        display: 'flex', alignItems: 'center', gap: 15,
-        color: colors.text, fontSize: 17, letterSpacing: 2,
-      }}>
-        <span>{String(sceneNumber).padStart(2, '0')}</span>
-        <div style={{flex: 1, height: 2, background: '#FFFFFF33'}}>
-          <div style={{
-            width: `${((frame + 1) / duration) * 100}%`,
-            height: '100%', background: colors.accent,
-          }} />
-        </div>
-        <span>{String(totalScenes).padStart(2, '0')}</span>
-      </div>}
     </AbsoluteFill>
   );
 };
@@ -546,11 +527,11 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
   return (
     <AbsoluteFill>
       {project.scenes.map((scene, index) => {
-        const start = position;
-        const sceneFrames = Math.max(1, Math.round(scene.duration * (project.fps === 30 ? 30 : FPS)));
+        const start = Math.ceil(position*fps-1e-8);
+        const sceneFrames = Math.max(1,Math.ceil((position+scene.duration)*fps-1e-8)-start);
         const style = resolveSceneStyle(project, scene);
         const exit = project.scenes[index + 1]?.transition;
-        position += sceneFrames;
+        position += scene.duration;
         return (
           <Sequence key={scene.id} from={start} durationInFrames={sceneFrames} premountFor={fps}>
             {scene.videoAsset ? (
@@ -583,7 +564,8 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
               <NarrativeScene scene={scene} style={style} showText={showText}
                 sceneNumber={index + 1}/>
             )}
-            {showText && scene.captions?.length ? <CaptionTrack scene={scene}/> : null}
+            {showText && scene.captionMode === 'global' ? <GlobalWordCaptions project={project} index={index}/> : null}
+            {showText && scene.captionMode !== 'global' && scene.captionMode !== 'none' && scene.captions?.length ? <CaptionTrack scene={scene}/> : null}
             {scene.layers?.length ? <SceneLayers scene={scene}/> : null}
             {(scene.audioCues ?? []).map((cue, cueIndex) => {
               const timing = audioCueFrames(cue, fps, sceneFrames);
@@ -600,11 +582,11 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
       })}
       {project.narrationMode === 'dialogues'
         ? (project.voiceClips ?? []).map((clip) => {
-          const from = audioPosition;
-          const frames = Math.max(1, Math.round(clip.duration * (project.fps === 30 ? 30 : FPS)));
-          audioPosition += frames;
+          const from = Math.ceil(audioPosition*fps-1e-8);
+          const frames = Math.max(1,Math.ceil((audioPosition+clip.duration)*fps-1e-8)-from);
+          audioPosition += clip.duration;
           return clip.asset ? (
-            <Sequence key={clip.id} from={from} durationInFrames={frames}>
+            <Sequence key={clip.id} from={from} durationInFrames={frames} premountFor={fps}>
               <Audio src={staticFile(clip.asset)} volume={1} />
             </Sequence>
           ) : null;

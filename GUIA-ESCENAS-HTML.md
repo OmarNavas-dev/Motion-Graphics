@@ -38,7 +38,7 @@ usan la plantilla de siempre, así que puedes mezclar ambas en un mismo video.
    `requestAnimationFrame` ni `fetch`. El servidor rechaza el proyecto si aparecen.
 4. **Sin recursos externos**: nada de `http(s)://` en imágenes o fuentes. Usa `__IMAGE__`
    o SVG/CSS en línea. Tampoco `<script>`, `<iframe>` ni atributos `onclick`.
-5. Tamaños máximos: HTML 30 000, CSS 12 000, script 12 000 caracteres.
+5. Tamaños máximos por escena: HTML 150 000, CSS 50 000, script 100 000 caracteres. Son techos de capacidad, no cantidades que haya que llenar. Los proyectos admiten 1 MiB de base y 2 MiB por escena (máximo 161 MiB con 80 escenas), incluyendo texto, UTF-8 y escapes JSON. Los excesos se rechazan; no se recorta código. Estas capacidades requieren la versión de Motion Studio que incluye esta ampliación; versiones anteriores conservan 30 000 / 12 000 / 12 000.
 6. El lienzo base mide 720×1280 (vertical) o 1280×720 (horizontal); el proyecto puede exportarse a 1080p (1080×1920 o 1920×1080) y a 24/30 FPS.
 7. Una idea por escena; escalona las entradas 60–120 ms (`stagger`) y varía los easings.
 8. Anima solo `transform` y `opacity` siempre que puedas: es lo más fluido en una PC de 8 GB.

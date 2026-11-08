@@ -1,0 +1,51 @@
+{
+  "name": "Laboratorio de acciones",
+  "format": "vertical",
+  "fps": 24,
+  "showText": false,
+  "creativeBrief": "Ejercicios de contacto, bisagra y mecanismo para revisar articulacion, causalidad y busqueda temporal. No es un estilo universal ni un video final narrado.",
+  "scenes": [
+    {
+      "id": "contact",
+      "title": "Contacto y reaccion",
+      "duration": 4,
+      "approved": false,
+      "scriptExcerpt": "",
+      "transition": "cut",
+      "captions": [],
+      "customScene": {
+        "html": "<svg viewBox=\"0 0 720 1280\" xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"contact-sky\" x2=\"0\" y2=\"1\"><stop stop-color=\"#0b1723\"/><stop offset=\"1\" stop-color=\"#273a44\"/></linearGradient><linearGradient id=\"contact-skin\"><stop stop-color=\"#d2b39c\"/><stop offset=\"1\" stop-color=\"#806b63\"/></linearGradient><linearGradient id=\"contact-metal\"><stop stop-color=\"#364954\"/><stop offset=\".5\" stop-color=\"#a9bcc4\"/><stop offset=\"1\" stop-color=\"#384750\"/></linearGradient><radialGradient id=\"contact-light\"><stop stop-color=\"#c3d4cc\" stop-opacity=\".15\"/><stop offset=\"1\" stop-color=\"#c3d4cc\" stop-opacity=\"0\"/></radialGradient></defs><rect width=\"720\" height=\"1280\" fill=\"url(#contact-sky)\"/><ellipse cx=\"460\" cy=\"520\" rx=\"440\" ry=\"600\" fill=\"url(#contact-light)\"/><g transform=\"translate(-260,-360) scale(1.5)\"><g class=\"person\"><path d=\"M326 634Q390 599 479 631L530 1057Q432 1097 306 1060Z\" fill=\"#415758\"/><path d=\"M393 649L399 1030M473 655L488 1046\" stroke=\"#87978a\" stroke-opacity=\".4\" stroke-width=\"5\"/><path d=\"M326 643Q289 672 294 835L320 961L355 950L337 820L360 665\" fill=\"#334a4e\"/><path d=\"M477 645Q520 657 526 814L509 953L474 952L484 818L456 667\" fill=\"#344b4d\"/><path d=\"M378 591L381 650Q417 676 446 643L443 582\" fill=\"url(#contact-skin)\"/><g class=\"head\"><path d=\"M349 500Q340 412 409 409Q478 408 477 506L462 569Q443 619 404 614Q362 603 350 552Z\" fill=\"url(#contact-skin)\"/><path d=\"M345 503Q312 411 392 387Q475 373 487 459L477 509L457 454Q412 481 363 450Z\" fill=\"#151f24\"/><path d=\"M361 510Q377 501 389 508M421 508Q440 495 456 507\" fill=\"none\" stroke=\"#273033\" stroke-width=\"7\"/><ellipse cx=\"379\" cy=\"521\" rx=\"4\" ry=\"5\" fill=\"#15242c\"/><ellipse cx=\"437\" cy=\"520\" rx=\"4\" ry=\"5\" fill=\"#15242c\"/><path d=\"M407 518L397 550L410 552M391 578Q409 568 426 576\" fill=\"none\" stroke=\"#6c5954\" stroke-width=\"4\"/></g></g><ellipse class=\"contact-shadow\" cx=\"350\" cy=\"651\" rx=\"50\" ry=\"15\" fill=\"#08151c\" opacity=\"0\"/><g class=\"arm\"><path d=\"M-80 601L239 606L290 652L256 711L-80 749Z\" fill=\"#b4c2bd\"/><path d=\"M-50 644L228 651L261 677\" fill=\"none\" stroke=\"#7c999c\" stroke-width=\"12\"/><path d=\"M240 621Q267 613 291 625L334 634Q355 631 374 641Q388 647 383 656Q381 666 360 661L324 657L363 672Q375 679 367 689Q362 694 346 688L311 677L341 694Q350 700 343 710Q338 714 324 707L293 691L312 708Q320 717 310 724Q302 729 286 713L263 694Q243 679 229 673Z\" fill=\"#c3cfc9\"/><path d=\"M274 648L316 661M274 661L307 678\" stroke=\"#7f9795\" stroke-width=\"3\" fill=\"none\"/></g></g></svg>",
+        "css": "__SCENE__ > svg{width:100%;height:100%;display:block}__SCENE__ .joint{transform-box:fill-box}",
+        "script": "tl.fromTo(S+' .arm',{x:-230},{x:0,duration:.85,ease:'power2.out',immediateRender:false},T0+.35);tl.to(S+' .contact-shadow',{opacity:.6,duration:.12},T0+1.13);tl.to(S+' .person',{x:13,rotation:2,transformOrigin:'50% 100%',duration:.18,ease:'power2.out'},T0+1.18);tl.to(S+' .head',{rotation:7,svgOrigin:'411 588',duration:.3,ease:'power2.out'},T0+1.23);tl.to(S+' .person',{x:7,rotation:0,duration:.5,ease:'sine.out'},T0+1.43);"
+      }
+    },
+    {
+      "id": "hinge",
+      "title": "Bisagra y objeto solidario",
+      "duration": 4,
+      "approved": false,
+      "scriptExcerpt": "",
+      "transition": "cut",
+      "captions": [],
+      "customScene": {
+        "html": "<svg viewBox=\"0 0 720 1280\" xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"hinge-sky\" x2=\"0\" y2=\"1\"><stop stop-color=\"#0b1723\"/><stop offset=\"1\" stop-color=\"#273a44\"/></linearGradient><linearGradient id=\"hinge-skin\"><stop stop-color=\"#d2b39c\"/><stop offset=\"1\" stop-color=\"#806b63\"/></linearGradient><linearGradient id=\"hinge-metal\"><stop stop-color=\"#364954\"/><stop offset=\".5\" stop-color=\"#a9bcc4\"/><stop offset=\"1\" stop-color=\"#384750\"/></linearGradient><radialGradient id=\"hinge-light\"><stop stop-color=\"#c3d4cc\" stop-opacity=\".15\"/><stop offset=\"1\" stop-color=\"#c3d4cc\" stop-opacity=\"0\"/></radialGradient></defs><rect width=\"720\" height=\"1280\" fill=\"url(#hinge-sky)\"/><ellipse cx=\"460\" cy=\"520\" rx=\"440\" ry=\"600\" fill=\"url(#hinge-light)\"/><rect x=\"135\" y=\"260\" width=\"450\" height=\"800\" rx=\"7\" fill=\"#172126\" stroke=\"#7b887d\" stroke-width=\"17\"/><path d=\"M150 270H570V1050H150Z\" fill=\"#060c12\"/><path d=\"M300 1030L575 700V1060Z\" fill=\"#8ca9a0\" opacity=\".1\"/><g class=\"door\"><rect x=\"151\" y=\"275\" width=\"418\" height=\"772\" fill=\"#495750\"/><path d=\"M182 304H539V645H182ZM182 682H539V1018H182Z\" fill=\"#35443f\" stroke=\"#6c7869\" stroke-width=\"5\"/><rect x=\"195\" y=\"654\" width=\"70\" height=\"17\" rx=\"6\" fill=\"url(#hinge-metal)\"/><circle cx=\"213\" cy=\"664\" r=\"12\" fill=\"#afa684\"/></g><path d=\"M569 286V1048\" stroke=\"#89938a\" stroke-width=\"8\"/><path class=\"light\" d=\"M559 1038L102 1190H707L569 760Z\" fill=\"#b8c9ac\" opacity=\"0\"/></svg>",
+        "css": "__SCENE__ > svg{width:100%;height:100%;display:block}__SCENE__ .joint{transform-box:fill-box}",
+        "script": "tl.to(S+' .door',{scaleX:.14,transformOrigin:'100% 50%',duration:1.25,ease:'power2.inOut'},T0+.65);tl.to(S+' .light',{opacity:.22,duration:1.25,ease:'sine.inOut'},T0+.65);"
+      }
+    },
+    {
+      "id": "piston",
+      "title": "Causa mecanica y resultado",
+      "duration": 4,
+      "approved": false,
+      "scriptExcerpt": "",
+      "transition": "cut",
+      "captions": [],
+      "customScene": {
+        "html": "<svg viewBox=\"0 0 720 1280\" xmlns=\"http://www.w3.org/2000/svg\"><defs><linearGradient id=\"piston-sky\" x2=\"0\" y2=\"1\"><stop stop-color=\"#0b1723\"/><stop offset=\"1\" stop-color=\"#273a44\"/></linearGradient><linearGradient id=\"piston-skin\"><stop stop-color=\"#d2b39c\"/><stop offset=\"1\" stop-color=\"#806b63\"/></linearGradient><linearGradient id=\"piston-metal\"><stop stop-color=\"#364954\"/><stop offset=\".5\" stop-color=\"#a9bcc4\"/><stop offset=\"1\" stop-color=\"#384750\"/></linearGradient><radialGradient id=\"piston-light\"><stop stop-color=\"#c3d4cc\" stop-opacity=\".15\"/><stop offset=\"1\" stop-color=\"#c3d4cc\" stop-opacity=\"0\"/></radialGradient></defs><rect width=\"720\" height=\"1280\" fill=\"url(#piston-sky)\"/><ellipse cx=\"460\" cy=\"520\" rx=\"440\" ry=\"600\" fill=\"url(#piston-light)\"/><path d=\"M280 240V945H510V240\" fill=\"#111e27\" stroke=\"url(#piston-metal)\" stroke-width=\"24\"/><rect x=\"249\" y=\"223\" width=\"290\" height=\"56\" fill=\"url(#piston-metal)\"/><rect x=\"233\" y=\"935\" width=\"320\" height=\"47\" fill=\"url(#piston-metal)\"/><path d=\"M245 681H146V445\" fill=\"none\" stroke=\"#6e929d\" stroke-width=\"12\"/><rect x=\"110\" y=\"400\" width=\"70\" height=\"120\" rx=\"10\" fill=\"#263d4b\" stroke=\"#6f858c\" stroke-width=\"3\"/><rect class=\"fuel\" x=\"127\" y=\"450\" width=\"35\" height=\"52\" fill=\"#bf9c4d\"/><g class=\"charge\" opacity=\"0\"><ellipse cx=\"392\" cy=\"800\" rx=\"92\" ry=\"120\" fill=\"#dc8f45\" opacity=\".45\"/><path d=\"M320 835L348 783L372 824L395 747L419 809L458 772L476 869H316Z\" fill=\"#edc27a\"/></g><g class=\"piston\"><rect x=\"299\" y=\"543\" width=\"190\" height=\"140\" rx=\"5\" fill=\"url(#piston-metal)\"/><path d=\"M300 568H488M300 582H488M300 653H488\" stroke=\"#182a35\" stroke-width=\"5\"/><rect x=\"372\" y=\"280\" width=\"43\" height=\"265\" fill=\"url(#piston-metal)\"/></g><path class=\"exhaust\" d=\"M420 322Q448 264 414 210Q385 151 413 109\" fill=\"none\" stroke=\"#b7cbc6\" stroke-width=\"19\" opacity=\"0\"/></svg>",
+        "css": "__SCENE__ > svg{width:100%;height:100%;display:block}__SCENE__ .joint{transform-box:fill-box}",
+        "script": "tl.to(S+' .fuel',{scaleY:.25,transformOrigin:'50% 100%',duration:.6,ease:'none'},T0+.3);tl.to(S+' .charge',{opacity:1,duration:.12},T0+.95);tl.to(S+' .piston',{y:-225,duration:.55,ease:'power3.out'},T0+1.03);tl.to(S+' .charge',{opacity:0,duration:.55},T0+1.12);tl.to(S+' .exhaust',{opacity:.45,y:-50,duration:.65,ease:'sine.out'},T0+1.55);tl.to(S+' .piston',{y:0,duration:1.15,ease:'sine.inOut'},T0+2.1);tl.to(S+' .exhaust',{opacity:0,duration:.6},T0+2.2);"
+      }
+    }
+  ]
+}

@@ -151,6 +151,20 @@ test('el generador completo devuelve código para todas las escenas', async () =
   assert.equal(result.scenes.length, finance.scenes.length);
 });
 
+test('el generador conserva respuestas de escenas elaboradas superiores a 512 KB', async () => {
+  const project = {...finance, scenes: Array.from({length: 4}, (_, index) =>
+    ({...finance.scenes[0], id: `large-${index}`}))};
+  const html = '<div>' + 'á'.repeat(140000) + '</div>';
+  const response = JSON.stringify({choices: [{message: {content: JSON.stringify({
+    scenes: project.scenes.map((_, index) => ({index: index + 1, html, css: '', script: ''})),
+  })}}]});
+  assert.ok(Buffer.byteLength(response) > 512000);
+  const result = await requestFullVideoCode({project}, {env: {FREELLMAPI_API_KEY: 'x'},
+    fetcher: async () => ({ok: true, headers: new Headers({'content-length': String(Buffer.byteLength(response))}), text: async () => response})});
+  assert.equal(result.scenes.length, 4);
+  assert.ok(result.scenes.every((scene) => scene.html === html));
+});
+
 test('si el proveedor falla, no se modifica el proyecto y se muestra el límite', async () => {
   const snapshot = structuredClone(finance);
   await assert.rejects(() => requestAiPlan(finance, {env: {FREELLMAPI_API_KEY: 'x'},

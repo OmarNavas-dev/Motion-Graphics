@@ -101,12 +101,13 @@ export function normalizeVisualActionPlan(raw, scene = {}, project = {}, index =
       action: clean(beat?.action, 160) || `Ejecuta el beat ${beatIndex + 1} de ${subject}.`,
     })).sort((a, b) => a.at - b.at);
   let beatEnd = 0;
+  const stable = value => Math.round(value * 1e9) / 1e9;
   const beats = requestedBeats.map((beat, beatIndex) => {
-    const at = Math.min(0.99, Math.max(beatEnd, beat.at));
+    const at = stable(Math.min(0.99, Math.max(beatEnd, beat.at)));
     const nextAt = requestedBeats[beatIndex + 1]?.at ?? 1;
     const maxDuration = Math.max(0.01, Math.min(1 - at, nextAt - at || 1 - at));
-    const duration = Math.min(beat.duration, maxDuration);
-    beatEnd = Math.min(1, at + duration);
+    const duration = stable(Math.min(beat.duration, maxDuration));
+    beatEnd = stable(Math.min(1, at + duration));
     return {...beat, at, duration};
   }).filter((beat) => beat.at + beat.duration <= 1.001);
   return {

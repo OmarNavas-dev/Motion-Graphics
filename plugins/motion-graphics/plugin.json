@@ -1,0 +1,40 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "author": {
+    "email": "omarsalome56@gmail.com",
+    "name": "Omar Navas"
+  },
+  "description": "Crea un unico proyecto JSON para Motion Studio a partir de guion y audio adjuntos en ChatGPT, con escenas en SVG, HTML, CSS y GSAP y kits de motion graphics (materiales, camara, efectos, etiquetas y mecanismos).",
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "capabilities": [
+          "Read",
+          "Write"
+        ],
+        "category": "Creativity",
+        "composerIcon": "./assets/icon.svg",
+        "defaultPrompt": [
+          "Crea un unico JSON para Motion Studio con este guion y audio, escenas completas en codigo y titulos sincronizados."
+        ],
+        "developerName": "Omar Navas",
+        "displayName": "Motion Graphics",
+        "logo": "./assets/icon.svg",
+        "longDescription": "Convierte guion y narracion adjuntos en un unico JSON editable para Motion Studio. Construye ilustraciones y animaciones en codigo con materiales texturizados, camara con intencion, efectos (explosion, humo, corte interno), etiquetas informativas y mecanismos, y sincroniza los titulos con la narracion. El video se reproduce y exporta en Motion Studio. La sincronizacion precisa requiere acceso al audio y una herramienta de transcripcion con tiempos.",
+        "shortDescription": "Animación para Motion Studio"
+      }
+    }
+  },
+  "keywords": [
+    "camara",
+    "efectos",
+    "gsap",
+    "guion",
+    "json",
+    "motion-graphics",
+    "motion-studio",
+    "svg"
+  ],
+  "name": "motion-graphics",
+  "version": "1.9.0"
+}

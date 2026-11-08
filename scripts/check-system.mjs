@@ -22,7 +22,11 @@ for (const command of ['ffmpeg', 'ffprobe']) {
   else console.warn(`AVISO: ${command} no aparece en PATH. Ejecuta instalar-ffmpeg.cmd para preparar HyperFrames.`);
 }
 const major = Number(process.versions.node.split('.')[0]);
-if (major < 22) console.warn('AVISO: HyperFrames requiere Node.js 22 o superior.');
+const minor = Number(process.versions.node.split('.')[1]);
+if (major < 22 || major === 23 || (major === 22 && minor < 13)) {
+  console.warn('AVISO: Motion Studio requiere Node.js 22.13 LTS o 24 y superiores.');
+  process.exitCode=1;
+}
 if (os.totalmem() < 6 * (1024 ** 3)) {
   console.warn('ADVERTENCIA: menos de 6 GB de memoria; cierre otros programas.');
 }

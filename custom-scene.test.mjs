@@ -3,6 +3,9 @@ import assert from 'node:assert/strict';
 import {validateProject, sanitizeCustomScene} from './server-utils.mjs';
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {plannerFixture} from './scripts/ai-planner-fixture.mjs';
+import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
+import {normalizeSceneCode, SCENE_LIMITS, sceneCoderSystemPrompt} from './src/scene-library.mjs';
+import {MAX_PROJECT_BYTES, MAX_SCENES, projectByteLimit} from './server-utils.mjs';
 
 const base = (customScene) => ({name: 'T', format: 'vertical', palette: 'aurora', audioAsset: '', musicAsset: '',
   narrationMode: 'single', voiceClips: [], references: [],
@@ -60,7 +63,28 @@ test('el script debe ser determinista y sin red', () => {
 });
 
 test('los límites de tamaño se aplican', () => {
-  assert.throws(() => sanitizeCustomScene({html: 'a'.repeat(30001)}, 1));
+  for (const [key, limit] of Object.entries(CUSTOM_SCENE_LIMITS)) {
+    assert.doesNotThrow(() => sanitizeCustomScene({html: '<p>Escena</p>', [key]: 'a'.repeat(limit)}, 1));
+    assert.throws(() => sanitizeCustomScene({html: '<p>Escena</p>', [key]: 'a'.repeat(limit + 1)}, 1), /supera/);
+    assert.throws(() => normalizeSceneCode({html: '<p>Escena</p>', [key]: 'a'.repeat(limit + 1)}), /supera/);
+  }
+  assert.equal(SCENE_LIMITS, CUSTOM_SCENE_LIMITS);
+  assert.match(sceneCoderSystemPrompt(), /HTML 150000, CSS 50000, script 100000/);
+  assert.equal(MAX_PROJECT_BYTES, projectByteLimit(MAX_SCENES));
+});
+
+test('escenas por encima del límite anterior conservan el código hasta la exportación', () => {
+  const custom = {html: '<div class="x">' + 'á'.repeat(40000) + '</div>',
+    css: '__SCENE__ .x{/*' + 'b'.repeat(15000) + '*/color:red}',
+    script: '/*' + 'c'.repeat(20000) + "*/tl.to(S+' .x',{opacity:1,duration:1},T0);"};
+  const normalized = normalizeSceneCode(custom).customScene;
+  assert.deepEqual(normalized, custom);
+  const project = validateProject(base(normalized));
+  assert.deepEqual(project.scenes[0].customScene, custom);
+  const html = exportHyperframesProject(project, undefined, '', {});
+  assert.ok(html.includes(custom.html));
+  assert.ok(html.includes(custom.script));
+  assert.ok(Buffer.byteLength(JSON.stringify(base(custom))) < projectByteLimit(1));
 });
 
 test('valida escena HTML a medida aislada y la exporta con duración correcta', () => {

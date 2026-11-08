@@ -1,4 +1,11 @@
-# Motion Studio 7.1.3 — HyperFrames + GSAP + Remotion
+# Motion Studio 7.4.0 - HyperFrames + GSAP + Remotion
+
+Motion Graphics 1.9 y Motion Studio 7.4 comparten secuencias y comprobaciones de
+movimiento para cualquier tema. Se retiraron cuotas de efectos y camara automatica;
+ver [MEJORAS-7.4.md](MEJORAS-7.4.md). El acabado visual se revisa en fotogramas reales.
+
+Los videos no llevan pies editoriales, marcas ni numeracion de escenas. Se retiraron
+de las plantillas de ambos motores y del generador. Ver [MEJORAS-7.3.2.md](MEJORAS-7.3.2.md).
 
 ### Correcciones de persistencia y exportación
 
@@ -39,7 +46,7 @@ El editor recupera el último proyecto guardado al reiniciar. Si todavía no hay
 - **Sin APIs ni créditos de pago:** el render se realiza localmente. La primera
   ejecución instala HyperFrames desde npm y prepara su navegador Chrome.
 
-**Requisitos de HyperFrames:** Node.js 22 o superior y FFmpeg/FFprobe.
+**Requisitos de HyperFrames:** Node.js 22.13 LTS o 24 y superiores y FFmpeg/FFprobe.
 En Windows, si faltan, haz doble clic en `instalar-ffmpeg.cmd`: instalará el paquete gratuito de Gyan mediante WinGet y verificará ambos ejecutables. Motion Studio reconoce la ruta portable de WinGet y las rutas locales habituales; no tienes que editar manualmente las variables de entorno. Si WinGet no está disponible, el instalador muestra la alternativa manual desde [gyan.dev/ffmpeg/builds](https://www.gyan.dev/ffmpeg/builds/). La primera instalación necesita conexión a Internet; después, el render se realiza en el equipo.
 El motor usa 24 FPS y un trabajador por defecto para reducir el uso de memoria; opcionalmente admite 30 FPS y salida 1080p desde el inspector.
 
@@ -280,7 +287,7 @@ y renderiza a 24 FPS con
 `--workers 1`.
 
 - **Primera ejecución:** requiere Internet para descargar el CLI y Chrome.
-- **Requisitos locales:** Node.js 22+ y FFmpeg/FFprobe disponibles en PATH.
+- **Requisitos locales:** Node.js 22.13 LTS o 24 y superiores, y FFmpeg/FFprobe disponibles en PATH.
 - **Medios:** el render directo copia al proyecto temporal imágenes, MP4, voz,
   diálogos y música. Se permite un máximo combinado de 512 MB por exportación.
 - **Audio:** la narración y los diálogos se colocan en pistas separadas; la música

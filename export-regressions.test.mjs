@@ -109,6 +109,12 @@ test('servidor real: GSAP, fuentes, reinicio con proyecto y arranque limpio con 
     assert.equal(gsap.status,200);
     assert.match(gsap.headers.get('content-type'),/javascript/);
     assert.equal(await gsap.text(),await fs.readFile(path.join(root,'public/hyperframes/gsap.min.js'),'utf8'));
+    for (const name of ['anton.woff2','inter-500.woff2','inter-800.woff2','playfair-800-italic.woff2','caveat-700.woff2']) {
+      const font=await fetch(address+'/fonts/'+name);
+      assert.equal(font.status,200,name);
+      assert.match(font.headers.get('content-type'),/font\/woff2/);
+      assert.deepEqual(Buffer.from(await font.arrayBuffer()),await fs.readFile(path.join(root,'public/fonts',name)));
+    }
     for (const [ext,header,mime] of [['woff2','774f4632','font/woff2'],['ttf','00010000','font/ttf'],['otf','4f54544f','font/otf']]) {
       const response = await fetch(address+`/api/assets?name=font.${ext}`,{method:'PUT',body:Buffer.from(header+'00'.repeat(20),'hex')});
       assert.equal(response.status,201);

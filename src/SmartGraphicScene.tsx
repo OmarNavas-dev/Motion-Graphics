@@ -37,7 +37,7 @@ const IconArt: React.FC<{icon: GraphicIcon; color: string; size: number}> = ({ic
 };
 
 export const SmartGraphicScene: React.FC<{scene: StudioScene; style: StyleName;
-  projectName: string}> = ({scene, style, projectName}) => {
+  projectName: string}> = ({scene, style}) => {
   const frame = useCurrentFrame();
   const {width, height} = useVideoConfig();
   const vertical = height > width;
@@ -62,9 +62,6 @@ export const SmartGraphicScene: React.FC<{scene: StudioScene; style: StyleName;
     backgroundSize: `${Math.round(width * 0.09)}px ${Math.round(width * 0.09)}px`}}/>
     {image && <Img src={image} style={{position: 'absolute', inset: 0, width: '100%', height: '100%',
       objectFit: 'cover', opacity: 0.10, filter: 'grayscale(1) blur(3px)'}}/>}
-    <div style={{position: 'absolute', top: height * 0.075, left: widthInset,
-      color: colors.accent, fontSize: vertical ? 20 : 18, fontWeight: 800,
-      letterSpacing: 3.2}}>{projectName.toUpperCase().slice(0, 38)}</div>
     <div style={{position: 'absolute', left: widthInset, right: widthInset,
       top: vertical ? height * 0.20 : height * 0.18}}>
       <div style={{height: 8, width: 90, background: colors.accent, borderRadius: 10, marginBottom: 33}}/>
@@ -180,12 +177,5 @@ export const SmartGraphicScene: React.FC<{scene: StudioScene; style: StyleName;
       })}
     </div>}
 
-    <div style={{position: 'absolute', bottom: vertical ? 56 : 35,
-      left: widthInset, right: widthInset, display: 'flex', alignItems: 'center',
-      gap: 18, fontSize: 17, color: colors.light, opacity: 0.6}}>
-      <span>MOTION STUDIO</span><div style={{flex: 1, height: 2,
-        background: `${colors.light}30`}}><div style={{width: `${Math.min(100, 100 * frame /
-        Math.max(1, scene.duration * FPS - 1))}%`, height: '100%', background: colors.accent}}/></div>
-    </div>
   </AbsoluteFill>;
 };

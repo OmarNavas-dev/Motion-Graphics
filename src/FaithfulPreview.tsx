@@ -1,3 +1,4 @@
+/* eslint-disable @remotion/warn-native-media-tag -- Editor-only srcDoc player; never rendered in a composition. */
 import {forwardRef, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {buildPreviewHtml} from '../preview-player.mjs';
 import {getDimensions, type StudioProject} from './studio-schema';

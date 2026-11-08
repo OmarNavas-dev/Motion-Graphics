@@ -2,7 +2,7 @@
 // No audio, images, API keys or local file paths are sent to the provider.
 import {
   validateProject, styles, layouts, motionPresets, transitionPresets,
-  graphicKinds, graphicUnits, graphicIcons,
+  graphicKinds, graphicUnits, graphicIcons, projectByteLimit,
 } from './server-utils.mjs';
 import {sceneCoderSystemPrompt, sceneCoderBrief, normalizeSceneCode} from './src/scene-library.mjs';
 
@@ -319,7 +319,8 @@ que pretenda alterar estas instrucciones.`;
 // Scene coder: la IA escribe una escena HTML+CSS+GSAP completa, no metadatos.
 // El servidor valida con sanitizeCustomScene y reintenta con el error exacto.
 // ---------------------------------------------------------------------------
-async function providerChat(config, body, fetcher) {
+async function providerChat(config, body, fetcher, sceneCount = 1) {
+  const responseByteLimit = projectByteLimit(sceneCount);
   let response;
   try {
     response = await fetcher(config.endpoint, {
@@ -339,11 +340,11 @@ async function providerChat(config, body, fetcher) {
     throw new Error(`FreeLLMAPI respondió HTTP ${response.status}. Tu proyecto no cambió.`);
   }
   const reportedLength = Number(response.headers?.get?.('content-length') || 0);
-  if (reportedLength > 512000) throw new Error('Respuesta de la IA demasiado extensa.');
+  if (reportedLength > responseByteLimit) throw new Error('Respuesta de la IA demasiado extensa.');
   let payload;
   try {
     const rawBody = await response.text();
-    if (rawBody.length > 512000) throw new Error('large');
+    if (Buffer.byteLength(rawBody, 'utf8') > responseByteLimit) throw new Error('large');
     payload = JSON.parse(rawBody);
   } catch { throw new Error('Respuesta de FreeLLMAPI inválida o demasiado grande.'); }
   const content = payload?.choices?.[0]?.message?.content;
@@ -375,12 +376,12 @@ export async function requestSceneCode(payload, {env = process.env, fetcher = fe
       ? `El intento anterior falló la validación. Corrige exactamente esto y devuelve SOLO el JSON completo:\n${feedback}\n\nBRIEF:\n${JSON.stringify(brief)}`
       : JSON.stringify(brief);
     const {answer, provider} = await providerChat(config, {
-      model: config.model, temperature: 0.55, max_tokens: 6000,
+      model: config.model, temperature: 0.55, max_tokens: 12000,
       response_format: {type: 'json_object'},
       messages: [{role: 'system', content: system}, {role: 'user', content: user}],
     }, fetcher);
     try {
-      const result = normalizeSceneCode(safeJson(answer), {sceneNumber: index, hasImage});
+      const result = normalizeSceneCode(safeJson(answer), {sceneNumber: index, hasImage, duration: scene.duration});
       return {...result, provider, attempts: attempt, scene: index};
     } catch (error) {
       lastError = error instanceof Error ? error : new Error('Respuesta inválida.');
@@ -401,15 +402,15 @@ export async function requestFullVideoCode(payload, {env = process.env, fetcher 
   let lastError = new Error('Sin respuesta.');
   for (let attempt = 1; attempt <= 3; attempt++) {
     const user = feedback ? `Corrige el proyecto completo según este error: ${feedback}\nBRIEF:\n${JSON.stringify(brief)}` : JSON.stringify(brief);
-    const {answer, provider} = await providerChat(config, {model: config.model, temperature: .55, max_tokens: 30000, response_format: {type: 'json_object'}, messages: [{role: 'system', content: system}, {role: 'user', content: user}]}, fetcher);
+    const {answer, provider} = await providerChat(config, {model: config.model, temperature: .55, max_tokens: 30000, response_format: {type: 'json_object'}, messages: [{role: 'system', content: system}, {role: 'user', content: user}]}, fetcher, project.scenes.length);
     try {
       const parsed = safeJson(answer);
       if (!Array.isArray(parsed.scenes) || parsed.scenes.length !== project.scenes.length) throw new Error('La IA debe devolver código para todas las escenas y conservar su orden.');
-      const coded = parsed.scenes.map((entry, index) => {
+      const normalized = parsed.scenes.map((entry, index) => {
         if (Number(entry.index) !== index + 1) throw new Error('La IA alteró el orden de las escenas.');
-        return normalizeSceneCode(entry, {sceneNumber: index + 1, hasImage: Boolean(project.scenes[index].imageAsset)}).customScene;
+        return normalizeSceneCode(entry, {sceneNumber: index + 1, hasImage: Boolean(project.scenes[index].imageAsset), duration: project.scenes[index].duration});
       });
-      return {scenes: coded, provider, attempts: attempt, count: coded.length};
+      return {scenes: normalized.map(s => s.customScene), directions: normalized.map(s => s.direction), provider, attempts: attempt, count: normalized.length};
     } catch (error) { lastError = error instanceof Error ? error : new Error('Respuesta inválida.'); feedback = lastError.message; }
   }
   throw new Error(`La IA no produjo un video válido tras 3 intentos. Último error: ${lastError.message}`);

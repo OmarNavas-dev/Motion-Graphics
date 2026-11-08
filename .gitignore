@@ -1,4 +1,6 @@
 node_modules/
+.task-work/
+.motion-studio-cache/
 .env
 .env.*
 !.env.example

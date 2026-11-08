@@ -7,7 +7,9 @@ import {randomUUID} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
 import {pipeline} from 'node:stream/promises';
 import {buildPreviewHtml} from './preview-player.mjs';
-import {collectProjectAssets} from './src/project-assets.mjs';
+import {collectProjectAssets, BUNDLED_FONT_FACES} from './src/project-assets.mjs';
+import {MOTION_STUDIO_CONTRACT} from './src/motion-capabilities.mjs';
+import {hyperframesProgress} from './src/hyperframes-progress.mjs';
 import {Transform} from 'node:stream';
 import {
   MAX_ASSET_BYTES, MAX_PROJECT_BYTES, assetExtension,
@@ -280,6 +282,7 @@ const latestLog = (value, incoming) =>
   (value + incoming.toString('utf8')).slice(-4500);
 
 async function beginRender(project) {
+  if (project.scenes.some(scene => scene.customScene?.html)) throw new Error('Las escenas HTML/GSAP requieren exportar con HyperFrames. Remotion no las sustituirá por una plantilla.');
   if (creatingJob || currentJob?.status === 'renderizando') {
     throw new Error('Ya hay un render en curso. Espera a que termine.');
   }
@@ -346,25 +349,23 @@ async function beginRender(project) {
 function appendJobLog(job, data) {
   job.log = latestLog(job.log, data);
   if (job.phase !== 'render') return;
-  const matches = [...job.log.matchAll(/(?:Rendered|Capturing frames[^\n]*?)\s*(\d+)\s*\/\s*(\d+)/g)];
-  if (matches.length) {
-    const [, done, total] = matches[matches.length - 1];
-    const ratio = Number(total) > 0 ? Number(done) / Number(total) : 0;
-    job.progress = Math.max(job.progress, Math.min(99, 10 + Math.floor(ratio * 88)));
-  }
+  job.progress=hyperframesProgress(job.log,job.progress);
 }
 
 function runHyperframesCli(args, cwd, job) {
   return new Promise((resolve, reject) => {
     const npmCommand = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+    const localCli=path.join(root,'node_modules','hyperframes','bin','hyperframes.mjs');
+    const localManifest=path.join(root,'node_modules','hyperframes','package.json');
+    const useLocal=fs.existsSync(localCli)&&fs.existsSync(localManifest)&&JSON.parse(fs.readFileSync(localManifest,'utf8')).version===HYPERFRAMES_VERSION;
     job.phase = args[0] === 'render' ? 'render' : 'setup';
-    const cliArgs = ['exec', '--yes', `--package=hyperframes@${HYPERFRAMES_VERSION}`,
+    const cliArgs = useLocal ? [localCli,...args] : ['exec', '--yes', '--prefer-offline', '--fetch-retries=0', '--fetch-timeout=20000', `--package=hyperframes@${HYPERFRAMES_VERSION}`,
       '--', 'hyperframes', ...args];
-    const child = spawn(npmCommand, cliArgs, {
+    const child = spawn(useLocal?process.execPath:npmCommand, cliArgs, {
       cwd,
       env: {...process.env, HYPERFRAMES_NO_UPDATE_CHECK: '1', HYPERFRAMES_NO_TELEMETRY: '1'},
       windowsHide: true,
-      shell: process.platform === 'win32',
+      shell: !useLocal&&process.platform === 'win32',
     });
     child.stdout.on('data', (data) => appendJobLog(job, data));
     child.stderr.on('data', (data) => appendJobLog(job, data));
@@ -378,7 +379,8 @@ function runHyperframesCli(args, cwd, job) {
 
 function assertHyperframesRequirements() {
   const major = Number(process.versions.node.split('.')[0]);
-  if (major < 22) throw new Error('HyperFrames requiere Node.js 22 o superior. Puedes usar Remotion como alternativa.');
+  const minor = Number(process.versions.node.split('.')[1]);
+  if (major < 22 || major === 23 || (major === 22 && minor < 13)) throw new Error('Motion Studio requiere Node.js 22.13 LTS o 24 y superiores.');
   const missing = ['ffmpeg', 'ffprobe'].filter((command) => {
     const result = spawnSync(command, ['-version'], {stdio: 'ignore', windowsHide: true});
     return Boolean(result.error) || result.status !== 0;
@@ -426,6 +428,16 @@ async function beginHyperframesRender(project) {
       embeddedAssets[asset] = `assets/${filename}`;
     }
     const gsapSource = await fsp.readFile(path.join(root, 'public', 'hyperframes', 'gsap.min.js'), 'utf8');
+    for (const [, file] of BUNDLED_FONT_FACES) {
+      const filename = path.basename(file);
+      try {
+        await fsp.copyFile(path.join(root, 'public', file), path.join(workspace, 'assets', filename));
+        embeddedAssets[file] = `assets/${filename}`;
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw error;
+        job.log += `Fuente opcional ${filename} ausente; se usará la fuente de respaldo.\n`;
+      }
+    }
     const html = exportHyperframesProject(project, undefined, gsapSource, embeddedAssets);
     await fsp.writeFile(path.join(workspace, 'index.html'), html, 'utf8');
     jobs.set(id, job);
@@ -441,6 +453,13 @@ async function beginHyperframesRender(project) {
   void (async () => {
     try {
       job.progress = 3;
+      if (project.scenes.some(scene => scene.customScene || scene.authored)) {
+        job.log += 'Revisando ejecución, tiempos y selectores antes del render...\n';
+        const {reviewExplainer} = await import('./scripts/review-explainer.mjs');
+        const review = await reviewExplainer(project, {root, publicDir, outputDir:path.join(workspace,'review'), capture:false});
+        if (!review.passed) throw new Error('La revisión de ejecución falló: ' + review.errors.slice(0,6).join(' | '));
+        job.log += `${review.samples.length} estados comprobados. La revisión técnica no certifica calidad artística ni sincronía de oído.\n`;
+      }
       job.log += 'Validando la composición HTML con HyperFrames lint...\n';
       await runHyperframesCli(['lint'], workspace, job);
       job.progress = Math.max(job.progress, 5);
@@ -453,7 +472,7 @@ async function beginHyperframesRender(project) {
       const fps = project.fps === 30 ? 30 : 24;
       job.log += `\nRenderizando MP4 a ${fps} FPS, calidad estándar y un trabajador...\n`;
       await runHyperframesCli(['render', '--output', 'motion-studio-output.mp4', '--fps', String(fps),
-        '--quality', 'standard', '--workers', '1'], workspace, job);
+        '--quality', 'standard', '--workers', '1', '--no-browser-gpu'], workspace, job);
       const stat = await fsp.stat(workspaceOutput).catch(() => null);
       if (!stat?.isFile() || stat.size < 15000) {
         throw new Error('HyperFrames terminó, pero no se encontró un MP4 válido.');
@@ -477,6 +496,9 @@ async function beginHyperframesRender(project) {
 async function handle(req, res) {
   const url = new URL(req.url || '/', 'http://127.0.0.1');
   const pathname = url.pathname;
+  if (req.method === 'GET' && BUNDLED_FONT_FACES.some(([, file]) => pathname === '/' + file)) {
+    return sendFile(res, path.join(root, 'public', 'fonts'), path.basename(pathname));
+  }
   if (req.method === 'GET' && pathname === '/hyperframes/gsap.min.js') {
     return sendFile(res, path.join(root, 'public', 'hyperframes'), 'gsap.min.js');
   }
@@ -496,7 +518,7 @@ async function handle(req, res) {
   }
   if (req.method === 'GET' && pathname === '/api/integrations') {
     const llm = aiPlannerConfig();
-    return respond(res, 200, {version: appVersion, customScene: true, openverse: true,
+    return respond(res, 200, {version: appVersion, sceneContract:MOTION_STUDIO_CONTRACT, customScene: true, openverse: true,
       pixabay: Boolean(process.env.PIXABAY_API_KEY),
       groq: Boolean(process.env.GROQ_API_KEY),
       ollama: {enabled:llm.ollamaConfigured, model:llm.ollamaModel, endpoint:llm.ollamaEndpoint},
@@ -532,7 +554,13 @@ async function handle(req, res) {
   }
   if (req.method === 'GET' && pathname === '/api/media/search') return searchMedia(url, res);
   if (req.method === 'POST' && pathname === '/api/media/import') return importMedia(req, res);
-  if (req.method === 'POST' && pathname === '/api/transcribe') return transcribeAsset(req, res);
+    if (req.method === 'POST' && pathname === '/api/transcribe') return transcribeAsset(req, res);
+    if (req.method === 'POST' && pathname === '/api/review') {
+      const project = validateProject(await bodyJson(req));
+      if (!project.scenes.length) throw new Error('Añade escenas antes de revisar.');
+      const {reviewExplainer} = await import('./scripts/review-explainer.mjs');
+      return respond(res, 200, await reviewExplainer(project, {root, publicDir, capture:false}));
+    }
   if (req.method === 'PUT' && pathname === '/api/project') {
     const project = validateProject(await bodyJson(req));
     await saveProject(project);

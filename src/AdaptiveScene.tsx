@@ -314,7 +314,6 @@ export const AdaptiveScene:React.FC<{scene:StudioScene; project:StudioProject;
   const subtitle = supportingLine(scene);
   const words = title.split(/\s+/).filter(Boolean);
   const pad = portrait?width*0.078:width*0.062;
-  const unit = portrait?width:height;
   const headSize = Math.round(Math.max(portrait?49:42,Math.min(portrait?77:70,
     (portrait?76:65)-(Math.max(0,words.length-5)*4))));
   const inArt = emerge(frame,5,24);
@@ -326,19 +325,15 @@ export const AdaptiveScene:React.FC<{scene:StudioScene; project:StudioProject;
   const artScale = (.88 + .12 * inArt) * shotScale * (1 - camera.z);
   const artX = -camera.x * width * .85;
   const artY = -camera.y * height * .85;
-  const count = String(sceneNumber).padStart(2,'0');
   const pale = color.soft;
   return <AbsoluteFill style={{background:color.background,color:color.ink,
     overflow:'hidden',fontFamily:'Arial, Helvetica, sans-serif'}}>
     <AbsoluteFill style={{background:`radial-gradient(circle at ${sceneNumber%2?80:20}% 63%, ${pale}DD, transparent 62%)`}}/>
-    {showText && <div style={{position:'absolute',right:-width*0.19,top:portrait?height*.12:height*.09,
-      fontSize:Math.round(unit*.7),fontWeight:900,letterSpacing:'-0.1em',lineHeight:1,
-      color:color.secondary,opacity:.095,fontFamily:color.display}}>{count}</div>}
     {showText && <div style={{position:'absolute',left:pad,right:pad,top:portrait?height*.076:height*.087,
       display:'flex',alignItems:'center',gap:15,fontSize:portrait?20:18,fontWeight:800,
       letterSpacing:'0.13em',opacity:emerge(frame,1,10)}}>
       <div style={{width:45,height:8,background:color.accent,borderRadius:8}}/>
-      <span>{concept.label}</span><span style={{marginLeft:'auto',fontVariantNumeric:'tabular-nums'}}>{count}</span>
+      <span>{concept.label}</span>
     </div>}
     {showText && <div style={{position:'absolute',left:pad,right:pad,top:portrait?height*.172:height*.27,zIndex:2}}>
       <div style={{fontFamily:color.display,fontWeight:900,fontSize:headSize,
@@ -363,13 +358,5 @@ export const AdaptiveScene:React.FC<{scene:StudioScene; project:StudioProject;
       <SemanticFigure concept={concept} color={color} frame={frame}/>
       <ActionMotionLayer plan={plan} progress={actionProgress} color={color}/>
     </div>
-    {showText && <div style={{position:'absolute',left:pad,right:pad,bottom:portrait?height*.077:height*.075,
-      display:'flex',alignItems:'center',gap:18,opacity:.85}}>
-      <span style={{fontSize:portrait?18:16,fontWeight:800,letterSpacing:'0.11em'}}>{project.name.slice(0,25).toUpperCase()}</span>
-      <div style={{flex:1,height:5,background:color.soft,borderRadius:8,overflow:'hidden'}}>
-        <div style={{width:`${Math.min(100,100*frame/Math.max(1,end-1))}%`,height:'100%',background:color.accent}}/>
-      </div>
-      <span style={{fontSize:portrait?18:16,fontWeight:800}}>{Math.max(1,Math.ceil(scene.duration))}s</span>
-    </div>}
   </AbsoluteFill>;
 };

@@ -10,7 +10,7 @@ echo MOTION STUDIO 7 - HYPERFRAMES + REMOTION
 echo =========================================
 where node >nul 2>nul
 if errorlevel 1 (
-  echo Necesitas Node.js 22 LTS de 64 bits: https://nodejs.org/
+  echo Necesitas Node.js 22.13 LTS o 24 y superiores de 64 bits: https://nodejs.org/
   goto fail
 )
 call node scripts\check-system.mjs
@@ -21,6 +21,8 @@ if errorlevel 1 (
   goto fail
 )
 set "NECESITA_INSTALAR="
+call node scripts\check-installed-dependencies.mjs
+if errorlevel 1 set "NECESITA_INSTALAR=1"
 if not exist "node_modules\.bin\vite.cmd" set "NECESITA_INSTALAR=1"
 if not exist "node_modules\vite\package.json" set "NECESITA_INSTALAR=1"
 if not exist "node_modules\@remotion\player\package.json" set "NECESITA_INSTALAR=1"

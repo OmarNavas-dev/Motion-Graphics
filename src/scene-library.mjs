@@ -2,6 +2,8 @@
 // Es texto puro: no toca disco, red ni el navegador. El servidor la usa para
 // construir el prompt y para normalizar la respuesta antes de guardarla.
 import {sanitizeCustomScene} from '../server-utils.mjs';
+import {CUSTOM_SCENE_LIMITS} from './scene-limits.mjs';
+import {wordsForScene, normalizeDirection} from './explainer-contract.mjs';
 
 // Lienzo de diseño. HyperFrames escala este lienzo al tamaño de salida.
 export const DESIGN_CANVAS = {
@@ -9,7 +11,7 @@ export const DESIGN_CANVAS = {
   horizontal: {width: 1280, height: 720, margin: 75, safeTop: 54, safeBottom: 54},
 };
 
-export const SCENE_LIMITS = {html: 30000, css: 12000, script: 12000};
+export const SCENE_LIMITS = CUSTOM_SCENE_LIMITS;
 
 // Sistema de diseño obligatorio: escala tipográfica, rejilla, color y ritmo.
 export const DESIGN_SYSTEM = {
@@ -47,9 +49,7 @@ const MOTIFS = [
     summary: 'Tres o cuatro líneas de titular a pantalla completa con entrada escalonada.',
     when: 'Afirmaciones cortas, ganchos, cifras convertidas en frase.',
     html: `<div class="ks">
-  <div class="ks-top"><span class="ks-kicker">ARCHIVO 01</span><span class="ks-num">24 FPS</span></div>
   <h1 class="ks-title"><span>LA CIUDAD</span><span class="ks-accent">RESPIRA</span><span>DE NOCHE</span></h1>
-  <div class="ks-foot"><i></i><span>MOTION STUDIO</span></div>
 </div>`,
     css: `__SCENE__ .ks{position:absolute;inset:0;padding:96px 56px 128px;display:flex;flex-direction:column;justify-content:center;background:#0B0B0C;color:#F4F1EA;font-family:var(--font,Arial)}
 __SCENE__ .ks-top{display:flex;justify-content:space-between;align-items:center;font-size:15px;font-weight:700;letter-spacing:.14em;color:#8E8A82;margin-bottom:28px}
@@ -58,9 +58,9 @@ __SCENE__ .ks-title span{display:block}
 __SCENE__ .ks-accent{color:#E4572E;font-style:italic}
 __SCENE__ .ks-foot{position:absolute;left:56px;right:56px;bottom:128px;display:flex;align-items:center;gap:14px;font-size:15px;letter-spacing:.12em;color:#8E8A82}
 __SCENE__ .ks-foot i{flex:1;height:2px;background:#2A2A2C}`,
-    script: `tl.from(S+' .ks-top',{opacity:0,y:-14,duration:.4,ease:'power3.out'},T0+.1);
+    script: `
 tl.from(S+' .ks-title span',{yPercent:110,opacity:0,duration:.62,stagger:.09,ease:'power4.out'},T0+.22);
-tl.from(S+' .ks-foot',{opacity:0,duration:.5,ease:'sine.out'},T0+.7);`,
+`,
   },
   {
     id: 'editorial-rule',
@@ -69,10 +69,8 @@ tl.from(S+' .ks-foot',{opacity:0,duration:.5,ease:'sine.out'},T0+.7);`,
     when: 'Documental, historia, explicación serena, entrevistas.',
     html: `<div class="ed">
   <div class="ed-rule"></div>
-  <div class="ed-kicker">CAPÍTULO DOS</div>
   <h2 class="ed-title">Lo que el río<br/>se llevó</h2>
   <p class="ed-body">Una historia de agua, oficio y memoria.</p>
-  <div class="ed-foot"><span>01</span><div class="ed-line"></div><span>04</span></div>
 </div>`,
     css: `__SCENE__ .ed{position:absolute;inset:0;padding:120px 64px 140px;background:#F2EDE3;color:#14110F;font-family:Georgia,'Times New Roman',serif}
 __SCENE__ .ed-rule{height:8px;background:#C8402F;margin-bottom:34px}
@@ -82,10 +80,10 @@ __SCENE__ .ed-body{margin:34px 0 0;font:400 27px/1.35 Georgia,serif;color:#3A342
 __SCENE__ .ed-foot{position:absolute;left:64px;right:64px;bottom:140px;display:flex;align-items:center;gap:18px;font:700 15px/1 Arial,sans-serif;color:#8A8177}
 __SCENE__ .ed-line{flex:1;height:1px;background:#C9C1B4}`,
     script: `tl.from(S+' .ed-rule',{scaleX:0,transformOrigin:'left center',duration:.5,ease:'power3.inOut'},T0+.1);
-tl.from(S+' .ed-kicker',{opacity:0,y:10,duration:.4,ease:'power2.out'},T0+.25);
+
 tl.from(S+' .ed-title',{opacity:0,y:26,duration:.7,ease:'power3.out'},T0+.34);
 tl.from(S+' .ed-body',{opacity:0,duration:.6,ease:'sine.out'},T0+.62);
-tl.from(S+' .ed-foot',{opacity:0,duration:.5,ease:'sine.out'},T0+.72);`,
+`,
   },
   {
     id: 'halftone-disc',
@@ -96,7 +94,6 @@ tl.from(S+' .ed-foot',{opacity:0,duration:.5,ease:'sine.out'},T0+.72);`,
   <div class="hd-disc"></div>
   <div class="hd-ring"></div>
   <h2 class="hd-title">RUIDO<br/><em>BLANCO</em></h2>
-  <div class="hd-tag">SESIÓN 04 · EN VIVO</div>
 </div>`,
     css: `__SCENE__ .hd{position:absolute;inset:0;background:#0B0B0C;color:#F4F1EA;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
 __SCENE__ .hd-disc{position:absolute;width:560px;height:560px;left:80px;top:260px;border-radius:50%;background-color:#E4572E;background-image:radial-gradient(circle at 50% 50%,#0B0B0C 1.6px,transparent 1.7px);background-size:9px 9px}
@@ -107,7 +104,7 @@ __SCENE__ .hd-tag{position:absolute;left:56px;bottom:150px;font-size:15px;letter
     script: `tl.from(S+' .hd-disc',{scale:.55,opacity:0,duration:.8,ease:'power3.out'},T0+.1);
 tl.from(S+' .hd-ring',{scale:.8,opacity:0,duration:.7,ease:'sine.out'},T0+.2);
 tl.from(S+' .hd-title',{y:60,opacity:0,duration:.7,ease:'power4.out'},T0+.36);
-tl.from(S+' .hd-tag',{opacity:0,duration:.5},T0+.66);`,
+`,
   },
   {
     id: 'technical-grid',
@@ -117,9 +114,7 @@ tl.from(S+' .hd-tag',{opacity:0,duration:.5},T0+.66);`,
     html: `<div class="tg">
   <div class="tg-grid"></div>
   <div class="tg-cross tg-c1"></div><div class="tg-cross tg-c2"></div>
-  <div class="tg-head"><span>SISTEMA / 07</span><span>ESCALA 1:1</span></div>
   <div class="tg-title">PROCESO<br/>CONTROLADO</div>
-  <div class="tg-meta">X 720 · Y 1280</div>
 </div>`,
     css: `__SCENE__ .tg{position:absolute;inset:0;background:#08131B;color:#DCEBF2;font-family:'Courier New',monospace}
 __SCENE__ .tg-grid{position:absolute;inset:0;background-image:linear-gradient(#1B3444 1px,transparent 1px),linear-gradient(90deg,#1B3444 1px,transparent 1px);background-size:60px 60px;opacity:.7}
@@ -129,11 +124,11 @@ __SCENE__ .tg-meta{position:absolute;left:56px;bottom:140px;font-size:15px;lette
 __SCENE__ .tg-cross{position:absolute;width:54px;height:54px;border-top:2px solid #0F9D8C;border-left:2px solid #0F9D8C}
 __SCENE__ .tg-c1{left:56px;bottom:220px}
 __SCENE__ .tg-c2{right:56px;top:150px;transform:rotate(180deg)}`,
-    script: `tl.from(S+' .tg-head',{opacity:0,y:-10,duration:.4},T0+.1);
+    script: `
 tl.from(S+' .tg-grid',{opacity:0,duration:.6},T0+.1);
 tl.from(S+' .tg-title',{opacity:0,y:24,duration:.7,ease:'power3.out'},T0+.3);
 tl.from(S+' .tg-cross',{scale:0,opacity:0,stagger:.12,duration:.45,ease:'back.out(1.6)'},T0+.5);
-tl.from(S+' .tg-meta',{opacity:0,duration:.5},T0+.72);`,
+`,
   },
   {
     id: 'duotone-mask',
@@ -166,7 +161,6 @@ tl.from(S+' .dm-copy h2',{y:30,opacity:0,duration:.7,ease:'power4.out'},T0+.58);
   <div class="od-kicker">PERSONAS ATENDIDAS</div>
   <div class="od-value"><span class="od-num">0</span><span class="od-unit">personas</span></div>
   <div class="od-bar"><i></i></div>
-  <div class="od-note">Dato tomado del guion</div>
 </div>`,
     css: `__SCENE__ .od{position:absolute;inset:0;padding:0 64px;display:flex;flex-direction:column;justify-content:center;background:#EAF0F4;color:#0E1A24;font-family:Arial,Helvetica,sans-serif}
 __SCENE__ .od-kicker{font-size:16px;font-weight:800;letter-spacing:.16em;color:#5E7180}
@@ -180,7 +174,7 @@ __SCENE__ .od-note{margin-top:16px;font-size:15px;letter-spacing:.06em;color:#5E
 tl.to(c,{v:1280,duration:1.1,ease:'power2.out',onUpdate:function(){var el=document.querySelector(S+' .od-num');if(el)el.textContent=Math.round(c.v).toString().replace(/\\B(?=(\\d{3})+(?!\\d))/g,'.');}},T0+.2);
 tl.from(S+' .od-kicker',{opacity:0,y:12,duration:.45},T0+.1);
 tl.from(S+' .od-bar i',{scaleX:0,duration:.8,ease:'power3.out'},T0+.3);
-tl.from(S+' .od-note',{opacity:0,duration:.5},T0+.8);`,
+`,
   },
   {
     id: 'barcode-strip',
@@ -189,7 +183,6 @@ tl.from(S+' .od-note',{opacity:0,duration:.5},T0+.8);`,
     when: 'Transiciones, capítulos, ritmo entre planos.',
     html: `<div class="bc">
   <div class="bc-bars"></div>
-  <div class="bc-label"><span>SECUENCIA</span><span>03 / 08</span></div>
   <div class="bc-title">ANTES<br/>DEL SILENCIO</div>
 </div>`,
     css: `__SCENE__ .bc{position:absolute;inset:0;background:#101010;color:#FAFAF7;font-family:Arial,Helvetica,sans-serif}
@@ -241,12 +234,12 @@ export function motifBlock(motif) {
 export function designSystemBlock() {
   const {type, palettes, motion} = DESIGN_SYSTEM;
   return [
-    'SISTEMA DE DISEÑO (obligatorio)',
+    'SISTEMA DE DISEÑO (base adaptable, no una plantilla obligatoria)',
     `Rejilla: ${DESIGN_SYSTEM.grid.columns} columnas, margen ${DESIGN_SYSTEM.grid.margin}px, linea base ${DESIGN_SYSTEM.grid.baseline}px.`,
     'Escala tipografica:',
     ...Object.entries(type).map(([role, value]) =>
       `- ${role}: ${value.size}px, interlineado ${value.lineHeight}, tracking ${value.tracking}, peso ${value.weight}`),
-    'Paletas con roles (elige una, no inventes colores sueltos):',
+    'Paletas de referencia con roles (adapta o define otra coherente con el contenido):',
     ...Object.entries(palettes).map(([name, palette]) =>
       `- ${name}: ink ${palette.ink}, paper ${palette.paper}, accent ${palette.accent}, muted ${palette.muted}`),
     'Movimiento:',
@@ -257,17 +250,24 @@ export function designSystemBlock() {
 }
 
 export const SCENE_RULES = [
-  'Devuelve SOLO un objeto JSON con las claves html, css, script, rationale y motifs.',
+  `Limites por escena: HTML ${SCENE_LIMITS.html}, CSS ${SCENE_LIMITS.css}, script ${SCENE_LIMITS.script} caracteres. Son techos, no objetivos de longitud.`,
+  'Devuelve SOLO un objeto JSON con html, css, script, rationale, motifs y direction.',
+  'direction: {objective,before:{actorId:estado},after:{actorId:estado},actions:[{id,actor,at,duration,description,result,selector}],shots:[{at,duration,scale:wide|medium|close|macro,target,purpose}],holdReason,materials,lighting,transition}. Los tiempos de acciones y planos son locales y deben caber en D.',
+  'Cada acción importante muestra preparación, contacto o transformación y consecuencia. Conserva actores, piezas y estados entre planos. Una cámara ambiental no sustituye una acción. Justifica las pausas, no fuerces cortes ni movimiento constante.',
+  'Usa grupos separados para colocación fija, movimiento y articulaciones. Los objetos sujetos pertenecen al grupo de su mano. La cámara reencuadra el punto que explica el proceso; el texto queda fuera del grupo de cámara.',
+  'Cuando captionMode=global, el motor añade las palabras del brief: no dibujes otros subtítulos. Cuando captionMode=embedded conserva el tratamiento existente y usa exclusivamente wordTimings; si faltan tiempos no inventes alineación.',
+  'Las acciones pueden incluir checkpoints:[{at:segundosDesdeLaAccion,state:{x,y,rotation,scale,opacity,attr:{width:valor}},phase:descripcion}]. Incluye solo propiedades realmente animadas y sus estados exactos; el motor los verifica al avanzar y retroceder. Son opcionales para codigo legado.',
   'El CSS debe ir prefijado con __SCENE__ en todos los selectores (__SCENE__ .clase{...}).',
   'Todos los tiempos del script son relativos a T0: T0+0.4 es 0,4 s tras empezar la escena.',
   'S es el selector unico de la escena: tl.from(S+" .titular",{...},T0+.2).',
   'No uses Math.random, Date, setTimeout, setInterval, requestAnimationFrame, fetch, XMLHttpRequest, localStorage, eval ni new Function.',
   'No uses recursos externos: ni http(s)://, ni @import, ni url() remoto, ni <script>, <iframe>, <link> ni atributos onclick.',
-  'Anima solo transform, opacity, clip-path, stroke-dashoffset y filter: es lo que sostiene 24 FPS en una PC de 8 GB.',
-  'Una idea por escena. Escalona las entradas 60-100 ms y varia los easings; no repitas el mismo zoom en todo.',
+  'Prioriza transform y opacity por rendimiento; anima atributos SVG como d, width, height y stroke-dashoffset cuando expliquen la accion. Canvas puede dibujarse desde estado GSAP con onUpdate puro, sin acumular pasos. No uses onComplete como requisito para reconstruir un fotograma.',
+  'Construye acciones y encuadres con preparacion, cambio y resultado. El ritmo y las pausas dependen del significado. No impongas stagger, zoom, textura, etiquetas ni una cantidad minima de efectos.',
   'El texto visible debe ser breve (maximo 8 palabras por titular) y legible a tamano de telefono.',
   'Si no hay imagen disponible, no incluyas <img> ni __IMAGE__: resuelve la escena con CSS y SVG en linea.',
   'No inventes cifras: si el brief no aporta numeros, no dibujes numeros.',
+  'No dibujes pies editoriales, firmas, marcas de agua, numeros de escena, barras de progreso de montaje ni metadatos de produccion. Conserva solo subtitulos y etiquetas pertinentes a la narracion.',
 ];
 
 export function sceneCoderSystemPrompt() {
@@ -293,8 +293,15 @@ export function sceneCoderBrief(project, scene, index) {
     durationSeconds: scene.duration,
     title: scene.title,
     subtitle: scene.subtitle,
-    scriptExcerpt: (scene.scriptExcerpt || '').slice(0, 700),
-    creativeBrief: (project.creativeBrief || '').slice(0, 600),
+    scriptExcerpt: scene.scriptExcerpt || '',
+    creativeBrief: project.creativeBrief || '',
+    actors: project.actors || [],
+    direction: scene.direction,
+    captionMode: scene.captionMode || 'embedded',
+    wordTimings: wordsForScene(project, index),
+    wordTimeBase: 'scene-local (converted once from global; negative starts are carry-over words)',
+    previousState: project.scenes[index - 1]?.direction?.after || {},
+    nextState: project.scenes[index + 1]?.direction?.before || {},
     style: scene.style || project.style || 'modern',
     hasImage: Boolean(scene.imageAsset),
     hasVideo: Boolean(scene.videoAsset),
@@ -325,19 +332,26 @@ export function namespacedCss(css) {
 
 const clean = (value, max) => String(value ?? '').trim().slice(0, max);
 
-export function normalizeSceneCode(data, {sceneNumber = 1, hasImage = false} = {}) {
+export function normalizeSceneCode(data, {sceneNumber = 1, hasImage = false, duration = 60} = {}) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) {
     throw new Error('La IA devolvio algo distinto de un objeto JSON con html, css y script.');
   }
   const source = data.customScene && typeof data.customScene === 'object'
     ? data.customScene : data;
-  const html = clean(source.html, SCENE_LIMITS.html);
-  if (!html) throw new Error('La escena propuesta no incluye HTML.');
-  if (String(source.html ?? '').length > SCENE_LIMITS.html) {
-    throw new Error(`El HTML supera ${SCENE_LIMITS.html} caracteres.`);
+  // Do not slice authored code: a truncated selector or tween can silently
+  // lose the action's final state. Validate all channels before normalization.
+  const code = {};
+  for (const key of ['html', 'css', 'script']) {
+    const value = String(source[key] ?? '');
+    if (value.length > SCENE_LIMITS[key]) {
+      throw new Error(`El ${key} supera ${SCENE_LIMITS[key]} caracteres.`);
+    }
+    code[key] = value.trim();
   }
-  const css = namespacedCss(clean(source.css, SCENE_LIMITS.css));
-  const script = clean(source.script, SCENE_LIMITS.script);
+  const html = code.html;
+  if (!html) throw new Error('La escena propuesta no incluye HTML.');
+  const css = namespacedCss(code.css);
+  const script = code.script;
   if (!hasImage && /__IMAGE__/.test(`${html}${css}${script}`)) {
     throw new Error('La escena usa __IMAGE__ pero no hay imagen asignada. Resuelvela con CSS y SVG.');
   }
@@ -345,6 +359,7 @@ export function normalizeSceneCode(data, {sceneNumber = 1, hasImage = false} = {
   if (!customScene) throw new Error('La escena propuesta quedo vacia tras la validacion.');
   return {
     customScene,
+    direction: normalizeDirection(data.direction, duration),
     rationale: clean(data.rationale, 400),
     motifs: Array.isArray(data.motifs)
       ? data.motifs.map((motif) => clean(motif, 40)).filter((motif) => motifIds.includes(motif)).slice(0, 4)

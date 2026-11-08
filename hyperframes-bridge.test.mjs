@@ -2,6 +2,14 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {exportHyperframesProject, exportHyperframesScene} from './src/hyperframes-bridge.mjs';
 
+test('las plantillas no dibujan marcas, numeros de escena ni pies de montaje', () => {
+  const html = exportHyperframesProject({name:'MARCA_INTERNA', format:'vertical', showText:true,
+    scenes:[{id:'a',title:'El agua sube',duration:3,scriptExcerpt:'El agua sube'}]}, undefined, '');
+  const body = html.slice(html.indexOf('<body'));
+  assert.doesNotMatch(body, /MARCA_INTERNA|class="footer"|<b>01<\/b>|tl\.from\('[^']* \.footer'/);
+  assert.match(body, /El|agua|sube/);
+});
+
 test('puente HyperFrames V7 genera composiciones compatibles y HTML seguro', () => {
   const project = {name: '<Prueba & Ciencia>', format: 'vertical', style: 'playful',
     scenes: [

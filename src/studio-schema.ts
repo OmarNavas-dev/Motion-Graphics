@@ -82,9 +82,11 @@ export type LeavePreset = 'none' | 'fade' | 'drop' | 'shrink';
 export type SpringName = 'smooth' | 'soft' | 'snappy' | 'bouncy' | 'heavy';
 export type IdleKind = 'none' | 'float' | 'sway' | 'breathe' | 'pulse' | 'spin' | 'blink' | 'talk';
 export type AuthoredLayer = {id:string; type:'image'|'text'|'shape'|'particles'|'caption'|'svg'|'path'|'group'|'video'|'gradient'|'glow'|'mask'|'wave'|'arrow'|'icon'; parent?:string; x?:number;y?:number;width?:number;height?:number;rotate?:number;ax?:number;ay?:number;depth?:number;opacity?:number;flip?:boolean;shadow?:boolean;blend?:string;fixed?:boolean;enter?:{preset:EnterPreset;at:number;spring?:SpringName};leave?:{preset:LeavePreset;at:number;duration:number};idle?:{kind:IdleKind;amount?:number;speed?:number;phase?:number;from?:number;to?:number};asset?:string;text?:string;size?:number;weight?:number;font?:string;align?:string;color?:string;mode?:string;stagger?:number;wordTimes?:number[];emphasize?:number[];upper?:boolean;fillAsset?:string;words?:{w:string;s:number;e:number;box?:boolean}[];shape?:string;fill?:string;fill2?:string;angle?:number;stroke?:string;strokeWidth?:number;radius?:number;particles?:{kind:string;count:number;speed:number;size:number;seed:number}; points?:{x:number;y:number}[]; path?:string; icon?:string; videoAsset?:string; mask?:string; blur?:number; glow?:number; dash?:number; dashGap?:number; wave?:{amplitude:number;frequency:number;phase?:number}; arrow?:{head?:number;start?:number;end?:number}; gradient?:{stops:{color:string;offset:number}[];angle?:number}};
-export type AuthoredSpec = {layers: AuthoredLayer[]; background?:{color?:string;color2?:string;angle?:number}; camera?:Record<string, unknown>; grade?:Record<string, unknown>; sfx?:unknown[]};
+export type AuthoredSpec = {layers: (AuthoredLayer & {svg?:string;viewBox?:string;keyframes?:{at:number;x?:number;y?:number;rotate?:number;scale?:number;opacity?:number}[]})[]; background?:{color?:string;color2?:string;angle?:number}; camera?:Record<string, unknown>; grade?:Record<string, unknown>; sfx?:unknown[]};
 
 export type StudioScene = {
+  direction?: SceneDirection;
+  captionMode?: 'embedded' | 'global' | 'none';
   id: string;
   layout: SceneLayout;
   duration: number;
@@ -114,6 +116,8 @@ export type StudioScene = {
 };
 
 export type StudioProject = {
+  actors?: ActorDefinition[];
+  wordTimings?: WordTiming[];
   name: string;
   format: FormatName;
   resolution?: '720p' | '1080p';
@@ -136,16 +140,27 @@ export type StudioProject = {
 };
 
 export type StudioProps = {project: StudioProject};
+export type WordTiming = {text: string; start: number; end: number; emphasis?: boolean};
+export type ActorDefinition = {id: string; name: string; appearance: string; parts: string[]; initialState: string};
+export type SceneDirection = {objective: string; before: Record<string,string>; after: Record<string,string>;
+  actions: {id:string;actor:string;at:number;duration:number;description:string;result:string;selector:string;
+    checkpoints?:{at:number;phase:string;state:Record<string,number|string|Record<string,number|string>>}[];
+    narration?:{wordIndex:number;offset:number;edge:'start'|'end';phrase:string}}[];
+  shots: {at:number;duration:number;scale:'wide'|'medium'|'close'|'macro';target:string;purpose:string;fixed?:boolean}[];
+  holdReason: string; materials: string; lighting: string; transition: string};
 export const FPS = 24;
 export const getProjectFps = (project: StudioProject) => project.fps === 30 ? 30 : FPS;
 export const getProjectResolution = (project: StudioProject) => project.resolution === '1080p' ? '1080p' : '720p';
 export const defaultStudioProject = defaultData as StudioProject;
 
-export const getSceneFrames = (scene: StudioScene, project?: StudioProject) =>
-  Math.max(1, Math.round(scene.duration * getProjectFps(project ?? defaultStudioProject)));
+export const getSceneFrames = (scene: StudioScene, project?: StudioProject) => {
+  const fps = getProjectFps(project ?? defaultStudioProject), index = project?.scenes.findIndex(s=>s.id===scene.id) ?? -1;
+  const start = index < 0 ? 0 : project!.scenes.slice(0,index).reduce((n,s)=>n+s.duration,0);
+  return Math.max(1,Math.ceil((start+scene.duration)*fps-1e-8)-Math.ceil(start*fps-1e-8));
+};
 
 export const getTotalFrames = (project: StudioProject) =>
-  project.scenes.length === 0 ? 1 : project.scenes.reduce((n, scene) => n + getSceneFrames(scene, project), 0);
+  project.scenes.length === 0 ? 1 : Math.ceil(project.scenes.reduce((n,scene)=>n+scene.duration,0)*getProjectFps(project)-1e-8);
 
 export const getNarrationSeconds = (project: StudioProject) =>
   project.narrationMode === 'dialogues'

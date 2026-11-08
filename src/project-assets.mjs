@@ -1,4 +1,11 @@
 // Lista compartida por validación, vista previa y exportaciones.
+export const BUNDLED_FONT_FACES = [
+  ['MS Anton', 'fonts/anton.woff2', 400, 'normal'],
+  ['MS Playfair', 'fonts/playfair-800-italic.woff2', 800, 'italic'],
+  ['MS Inter', 'fonts/inter-800.woff2', 800, 'normal'],
+  ['MS Inter', 'fonts/inter-500.woff2', 500, 'normal'],
+  ['MS Caveat', 'fonts/caveat-700.woff2', 700, 'normal'],
+];
 export function collectProjectAssets(project, {scenes = project.scenes ?? [], includeNarration = true, includeReferences = false} = {}) {
   const assets = new Set();
   const add = (asset) => { if (typeof asset === 'string' && asset) assets.add(asset); };

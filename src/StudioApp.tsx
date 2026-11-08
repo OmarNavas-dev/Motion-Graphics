@@ -1,4 +1,5 @@
 import {collectProjectAssets} from './project-assets.mjs';
+import {inspectExplainer, normalizeActors, normalizeDirection, normalizeWordTimings, parseWordSrt} from './explainer-contract.mjs';
 import {useEffect, useRef, useState, type ChangeEvent} from 'react';
 import {createRoot} from 'react-dom/client';
 import {FaithfulPreview, type PreviewHandle} from './FaithfulPreview';
@@ -13,7 +14,7 @@ import {
   type SceneLayout, type StudioCue, type StudioProject, type StudioScene,
   type StyleName, type VoiceClip, type MotionPreset, type TransitionPreset,
   type MotionGraphic, type GraphicKind, type GraphicUnit, type GraphicIcon,
-  type ImageFit, type CaptionCue,
+  type ImageFit, type CaptionCue, type SceneDirection, type WordTiming,
 } from './studio-schema';
 import './studio-app.css';
 
@@ -252,7 +253,7 @@ const makeScene = (project: StudioProject = defaultStudioProject): StudioScene =
 
 const ClaudePrompt = (project: StudioProject) => `Actúa como director de motion graphics.
 Crea un objeto JSON para el editor local Motion Studio. Responde SOLO con JSON válido, sin markdown.
-No incluyas enlaces, código ejecutable, imágenes externas ni servicios de pago.
+Incluye escenas completas customScene con HTML, CSS prefijado __SCENE__ y GSAP determinista; no uses recursos remotos ni servicios de pago.
 El JSON debe tener exactamente esta estructura:
 {
   "name": "Nombre del video",
@@ -306,10 +307,15 @@ los videoAsset ya importados del proyecto. Para un clip HyperFrames, usa
 videoAsset solo después de que el usuario haya renderizado y cargado el MP4.
 Marca toda escena nueva con approved: false; la persona debe revisarla antes de exportar.
 No agregues subtítulos visibles salvo petición expresa.
+Planifica actores estables en actors y cada escena con direction: objective, before/after por actor, actions con id/actor/at/duration/description/result/selector, shots con at/duration/scale/target/purpose, holdReason, materials, lighting y transition. Estas fichas describen la intención; el script debe ejecutarla. No sustituyas acciones por zooms. Mantén contactos y transformaciones fijas en grupos distintos.
+Conserva wordTimings globales exactamente. Con captionMode=global no dibujes otros subtítulos; el motor los reproduce. Con embedded conserva los existentes. Sin tiempos por palabra no inventes alineación. Conserva fps y resolution; no cambies duración, audio ni medios.
 Proyecto de referencia: ${JSON.stringify(project)}`;
 
 function StudioApp() {
   const [project, setProject] = useState<StudioProject>({...defaultStudioProject, scenes:[]});
+  const latestProject = useRef(project); latestProject.current = project;
+  const [runtimeReview, setRuntimeReview] = useState<{projectHash:string;passed:boolean;errors:string[];warnings:string[]}|null>(null);
+  const [reviewBusy, setReviewBusy] = useState(false);
   const [selected, setSelected] = useState(0);
   const [idea, setIdea] = useState('');
   const [jsonToImport, setJsonToImport] = useState('');
@@ -354,6 +360,7 @@ function StudioApp() {
     !project.audioAsset && !(project.voiceClips?.length && project.narrationMode === 'dialogues')
       ? 'No has importado narración. El video puede exportarse sin voz.' : '',
   ].filter(Boolean);
+  const directionNotes = inspectExplainer(project);
 
   useEffect(() => {
     api<{project: StudioProject}>('/api/project')
@@ -415,13 +422,14 @@ function StudioApp() {
   }, [renderJobId]);
 
   const changeProject = (next: StudioProject) => {
+    setRuntimeReview(null);
     setProject(next);
     setDirty(true);
   };
   const patchProject = (patch: Partial<StudioProject>) => {
     const requiresReview = Object.keys(patch).some((name) =>
       ['format', 'palette', 'style', 'visualEngine', 'creativeBrief', 'showText', 'characterMode', 'script',
-        'references', 'audioAsset', 'musicVolume', 'voiceClips', 'narrationMode'].includes(name));
+        'references', 'audioAsset', 'musicVolume', 'voiceClips', 'narrationMode', 'fps', 'resolution', 'actors', 'wordTimings'].includes(name));
     changeProject({...project, ...patch,
       scenes: requiresReview ? markForReview(project.scenes) : project.scenes});
   };
@@ -625,7 +633,7 @@ function StudioApp() {
     const sceneStart = project.scenes.slice(0, selected)
       .reduce((sum, scene) => sum + getSceneFrames(scene, project), 0);
     const playerFrame = playerRef.current?.getCurrentFrame() ?? sceneStart;
-    const at = Math.max(0, Math.min(currentScene.duration - 0.2, (playerFrame - sceneStart) / FPS));
+    const at = Math.max(0, Math.min(currentScene.duration - 0.2, (playerFrame - sceneStart) / (project.fps ?? FPS)));
     const cue: StudioCue = {
       id: crypto.randomUUID(), at: Math.round(at * 10) / 10,
       duration: 1.3, shape: 'ring', label: '',
@@ -679,10 +687,12 @@ function StudioApp() {
     if (!currentScene) return;
     setSceneCodeBusy(true);
     try {
-      const answer = await api<{customScene: {html: string; css?: string; script?: string}; provider: string; attempts: number}>('/api/ai/scene', {
+      const snapshot = JSON.stringify(project);
+      const answer = await api<{customScene: {html: string; css?: string; script?: string}; direction?:SceneDirection; provider: string; attempts: number}>('/api/ai/scene', {
         method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({project, index: selected + 1}),
       });
-      patchScene({customScene: answer.customScene});
+      if (JSON.stringify(latestProject.current) !== snapshot) throw new Error('El proyecto cambió mientras se generaba la escena; no se sobrescribieron tus cambios.');
+      patchScene({customScene: answer.customScene, direction:answer.direction ?? currentScene.direction});
       setNotice(`Escena ${selected + 1} escrita con código por ${answer.provider} tras ${answer.attempts} intento(s). Revisa Vista previa fiel y aprueba.`);
     } catch (error) { setNotice(`No se pudo escribir la escena: ${(error as Error).message}`); }
     finally { setSceneCodeBusy(false); }
@@ -692,11 +702,13 @@ function StudioApp() {
     if (!project.scenes.length) return;
     setFullVideoCodeBusy(true);
     try {
-      const answer = await api<{scenes: {html: string; css?: string; script?: string}[]; provider: string; attempts: number}>('/api/ai/full-video', {
+      const snapshot = JSON.stringify(project);
+      const answer = await api<{scenes: {html: string; css?: string; script?: string}[]; directions?:(SceneDirection|undefined)[]; provider: string; attempts: number}>('/api/ai/full-video', {
         method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({project}),
       });
       if (answer.scenes.length !== project.scenes.length) throw new Error('La respuesta no contiene todas las escenas.');
-      changeProject({...project, scenes: project.scenes.map((scene, index) => ({...scene, customScene: answer.scenes[index], approved: false}))});
+      if (JSON.stringify(latestProject.current) !== snapshot) throw new Error('El proyecto cambió mientras se generaba el video; no se sobrescribieron tus cambios.');
+      changeProject({...project, scenes: project.scenes.map((scene, index) => ({...scene, customScene: answer.scenes[index], direction:answer.directions?.[index] ?? scene.direction, approved: false}))});
       setSelected(0);
       setNotice(`Video completo escrito con código: ${answer.scenes.length} escenas, ${answer.provider}, ${answer.attempts} intento(s). Revisa Vista previa fiel y aprueba cada escena.`);
     } catch (error) { setNotice(`No se pudo escribir el video completo: ${(error as Error).message}`); }
@@ -720,7 +732,7 @@ function StudioApp() {
         visualQuery: idea.visualQuery, visualPlan: idea.visualPlan,
         visualActionPlan: undefined, layout: idea.layout,
         style: idea.style, motion: idea.motion,
-        motionStrength: idea.motionStrength, transition: idea.transition, // eslint-disable-line @remotion/non-pure-animation
+        motionStrength: idea.motionStrength, transition: idea.transition,
         motionGraphics: idea.motionGraphics, captions: idea.captions ?? scene.captions ?? [], approved: false};
     });
     const planProject = {...project, style: aiProposal.plan.style, creativeBrief: aiProposal.plan.creativeBrief};
@@ -734,6 +746,28 @@ function StudioApp() {
     setSelected(0);
     playerRef.current?.seekTo(0);
     setNotice(`Dirección artística aplicada a ${next.scenes.length} escenas. Edita y aprueba cada escena antes de exportar.`);
+  };
+
+  const reviewExecution = async () => {
+    const snapshot = JSON.stringify(project); setReviewBusy(true);
+    try {
+      const result = await api<{projectHash:string;passed:boolean;errors:string[];warnings:string[]}>('/api/review', {
+        method:'POST', headers:{'Content-Type':'application/json'}, body:snapshot,
+      });
+      if (JSON.stringify(latestProject.current) !== snapshot) throw new Error('El proyecto cambió; revisa la versión actual.');
+      setRuntimeReview(result);
+      setNotice(result.passed ? 'Ejecución comprobada. Revisa las imágenes y escucha el audio antes de aprobar.' : 'La revisión encontró errores de ejecución.');
+    } catch (error) {setNotice((error as Error).message);} finally {setReviewBusy(false);}
+  };
+
+  const importWordSrt = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]; if (!file) return;
+    try {
+      if (file.size > 2*1024*1024) throw new Error('El SRT supera 2 MB.');
+      const words = parseWordSrt(await file.text(), project.scenes.reduce((n,s)=>n+s.duration,0));
+      changeProject({...project,wordTimings:words,scenes:markForReview(project.scenes)});
+      setNotice(`${words.length} palabras importadas con sus tiempos globales. Elige la pista global en las escenas donde quieras usarlas.`);
+    } catch (error) {setNotice((error as Error).message);} finally {event.target.value='';}
   };
 
   const importStockVisual = async (candidate: MediaCandidate) => {
@@ -756,7 +790,7 @@ function StudioApp() {
     if (!window.confirm('La narración se enviará a Groq para transcribirla. ¿Continuar?')) return;
     setBusy(true);
     try {
-      const result = await api<{text: string; segments: {at: number; text: string}[]}>('/api/transcribe', {
+      const result = await api<{text: string; segments: {at: number; text: string}[]; words?:WordTiming[]}>('/api/transcribe', {
         method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({asset}),
       });
       const clips = project.narrationMode === 'dialogues' ? project.voiceClips ?? [] : [];
@@ -778,9 +812,14 @@ function StudioApp() {
         if (hasCaptions && !window.confirm('Ya hay subtítulos. ¿Reemplazarlos con los segmentos de esta transcripción?')) return;
         scenes = captionsFromTranscript(project.scenes, result.segments, offset, false);
       }
-      if (result.segments.length) changeProject({...project, script: nextScript, scenes: markForReview(scenes)});
+      if (result.words?.length) {
+        const global = result.words.map(w=>({...w,start:w.start+offset,end:w.end+offset}));
+        const retained = clips.length ? (project.wordTimings??[]).filter(w=>w.end<=offset||w.start>=offset+(clips[position]?.duration??0)) : [];
+        const wordTimings=normalizeWordTimings([...retained,...global].sort((a,b)=>a.start-b.start),project.scenes.reduce((n,c)=>n+c.duration,0));
+        changeProject({...project,script:nextScript,wordTimings,scenes:markForReview(scenes)});
+      } else if (result.segments.length) changeProject({...project, script: nextScript, scenes: markForReview(scenes)});
       else patchProject({script: nextScript});
-      setNotice(result.segments.length
+      setNotice(result.words?.length ? 'Palabras del reconocimiento importadas. Revisa su alineación con el audio; activa la pista global donde corresponda.' : result.segments.length
         ? 'Transcripción y subtítulos por frase importados. Los tiempos son aproximados: edítalos y revisa la sincronía.'
         : 'Transcripción importada sin segmentos temporizados; no se generaron subtítulos.');
     } catch (error) { setNotice(`Falló la transcripción: ${(error as Error).message}`); }
@@ -1180,6 +1219,16 @@ function StudioApp() {
               ? <p>Sin alertas básicas. Revisa visualmente los planos y escucha la narración.</p>
               : <ul>{preflightNotes.map((note) => <li key={note}>{note}</li>)}</ul>}
           </div>
+          <details className="review-alert">
+            <summary>Acciones y continuidad: {directionNotes.length} observaciones</summary>
+            <p>Las fichas describen la intención. La comprobación técnica no sustituye revisar las imágenes y escuchar la voz.</p>
+            <ul>{directionNotes.map((note,i)=><li key={i}>Escena {note.index+1}: {note.message}</li>)}</ul>
+            <button disabled={reviewBusy} onClick={()=>void reviewExecution()}>{reviewBusy?'Comprobando escenas…':'Comprobar ejecución y tiempos'}</button>
+            {runtimeReview && <div role="status"><strong>{runtimeReview.passed?'Comprobación técnica superada':'Errores de ejecución'}</strong>
+              <ul>{runtimeReview.errors.map((message,i)=><li key={i}>{message}</li>)}</ul>
+              <p>{runtimeReview.warnings.length} observaciones de planificación.</p>
+            </div>}
+          </details>
           <div className="preview-frame">
             <div className={`video-stage ${project.format}`}>
               <FaithfulPreview ref={playerRef} project={project}/>
@@ -1240,6 +1289,24 @@ function StudioApp() {
               <button onClick={() => moveScene(1)} disabled={selected === project.scenes.length - 1}>Mover →</button>
               <button onClick={removeScene} disabled={project.scenes.length === 1}>Eliminar</button>
             </div>
+            <details className="cue-card">
+              <summary>Ficha explicativa de la escena</summary>
+              <p>Objetivo, estados, acciones y encuadres. El código debe llevarlos a la imagen.</p>
+              {(currentScene.direction?.actions??[]).map(action=><div key={action.id}>
+                <strong>{action.at.toFixed(2)}–{(action.at+action.duration).toFixed(2)} s</strong> {action.description} → {action.result}
+                <button onClick={()=>playerRef.current?.seekTo(Math.round((project.scenes.slice(0,selected).reduce((n,c)=>n+c.duration,0)+action.at+action.duration*.5)*(project.fps??24)))}>Ver acción</button>
+              </div>)}
+              <label>Plan de la escena (JSON)
+                <textarea key={currentScene.id+JSON.stringify(currentScene.direction)} rows={12}
+                  defaultValue={JSON.stringify(currentScene.direction??{objective:'',before:{},after:{},actions:[],shots:[],holdReason:'',materials:'',lighting:'',transition:''},null,2)}
+                  onBlur={event=>{try{const direction=normalizeDirection(JSON.parse(event.target.value),currentScene.duration);if(JSON.stringify(direction)!==JSON.stringify(currentScene.direction))patchScene({direction});}catch(error){setNotice((error as Error).message);}}}/>
+              </label>
+            </details>
+            <label>Pista de subtítulos
+              <select value={currentScene.captionMode??'embedded'} onChange={event=>patchScene({captionMode:event.target.value as 'embedded'|'global'|'none'})}>
+                <option value="embedded">Conservar subtítulos de la escena</option><option value="global">Usar palabras globales</option><option value="none">Sin pista añadida</option>
+              </select>
+            </label>
             <label>Título
               <textarea rows={2} maxLength={80} value={currentScene.title}
                 onChange={(e) => patchScene({title: e.target.value})}/>
@@ -1332,7 +1399,6 @@ function StudioApp() {
               <label>Entrada / corte
                 <select value={currentScene.transition ?? 'cut'}
                   // Editor control, not animation code inside the composition.
-                  // eslint-disable-next-line @remotion/non-pure-animation
                   onChange={(e) => patchScene({transition: e.target.value as TransitionPreset})}>
                   {Object.entries(transitionNames).map(([id, name]) =>
                     <option key={id} value={id}>{name}</option>)}
@@ -1682,6 +1748,15 @@ function StudioApp() {
               </div>
             </div>)}
           </div>
+          <details className="cue-card">
+            <summary>Personajes, objetos y palabras sincronizadas</summary>
+            <label>Importar SRT con una palabra por bloque<input type="file" accept=".srt" onChange={event=>void importWordSrt(event)}/></label>
+            <p>{project.wordTimings?.length??0} palabras. Los tiempos se conservan; no se estiman repartiendo frases.</p>
+            <label>Personajes y objetos recurrentes (JSON)
+              <textarea key={JSON.stringify(project.actors)} rows={8} defaultValue={JSON.stringify(project.actors??[],null,2)}
+                onBlur={event=>{try{const actors=normalizeActors(JSON.parse(event.target.value));if(JSON.stringify(actors)!==JSON.stringify(project.actors))patchProject({actors});}catch(error){setNotice((error as Error).message);}}}/>
+            </label>
+          </details>
           <div className="panel-heading spaced"><h2>Transcribir audio en la nube</h2></div>
           <p>Groq/Whisper puede transformar un MP3 en texto con tiempos aproximados.
             El audio se envía únicamente cuando lo confirmas.</p>
@@ -1710,7 +1785,7 @@ function StudioApp() {
             <button className="secondary" disabled={busy || renderJobId !== null || pendingApproval > 0}
               onClick={() => void render('remotion')}>{project.visualEngine === 'canvas' ? 'Renderizar Canvas 3D con Remotion' : 'Usar Remotion como alternativa'}</button>
           </div>
-          {project.visualEngine === 'canvas' ? <small>Modo experimental Canvas 3D: el monitor del editor y la exportación Remotion dibujan la misma geometría con perspectiva. HyperFrames/HTML no soporta este renderer. CPU, sin dependencias ni GPU.</small> : <small>El primer render instala HyperFrames automáticamente desde npm y prepara Chrome. Requiere conexión a Internet solo para esa instalación inicial, Node.js 22 o superior y FFmpeg. Después el render es local, sin API ni créditos de pago. Se limita a 24 FPS y un trabajador para reducir el consumo de memoria.</small>}
+          {project.visualEngine === 'canvas' ? <small>Modo experimental Canvas 3D: el monitor del editor y la exportación Remotion dibujan la misma geometría con perspectiva. HyperFrames/HTML no soporta este renderer. CPU, sin dependencias ni GPU.</small> : <small>La instalación incluye HyperFrames; el primer uso puede preparar Chrome. Requiere conexión a Internet para esa preparación inicial, Node.js 22.13 LTS o 24 y superiores y FFmpeg. Después el render es local, sin API ni créditos de pago. Se renderiza a 24 o 30 FPS según el proyecto y con un trabajador para reducir el consumo de memoria.</small>}
         </div>
         <div className="assistant-box">
           <div className="panel-heading"><h2>Colaborar con Claude</h2><span>Opcional</span></div>

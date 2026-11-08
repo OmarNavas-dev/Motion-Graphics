@@ -1,18 +1,59 @@
-import {Fragment, useMemo, useState} from 'react';
-import {AbsoluteFill, Img, continueRender, delayRender, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
-import {FPS, type AuthoredLayer, type AuthoredSpec, type StudioProject, type StudioScene, type StyleName} from './studio-schema';
-import {identities, type Identity} from './semantic-director.mjs';
-import {cameraAt, captionState, enterState, idleState, makeParticles, particleState} from './motion-math';
-import {FONT_FAMILIES, useBundledFonts} from './fonts';
+import {
+  AbsoluteFill,
+  Img,
+  staticFile,
+  useCurrentFrame,
+  useVideoConfig,
+} from "remotion";
+import { renderAuthored } from "./authored-renderer.mjs";
+import { identities } from "./semantic-director.mjs";
+import { useBundledFonts } from "./fonts";
+import type { StudioProject, StudioScene, StyleName } from "./studio-schema";
 
-type CameraPose={x:number;y:number;zoom:number;rotate:number;tx?:number;ty?:number;scale?:number};
-type Ctx={t:number;frame:number;W:number;H:number;theme:Identity;showText:boolean;cam:CameraPose;children:Map<string,AuthoredLayer[]>};
-const colorOf=(v:string|undefined,t:Identity,f:string)=>v?.startsWith('@')?({accent:t.accent,secondary:t.secondary,ink:t.ink,bg:t.background,soft:t.soft} as Record<string,string>)[v.slice(1)]??f:v||f;
-const fontOf=(f:string|undefined,t:Identity)=>f==='impact'||f==='serifit'||f==='sansbold'||f==='hand'?FONT_FAMILIES[f]:f==='serif'?'Georgia, serif':f==='mono'?'Courier New, monospace':t.display;
-const GRAIN='url("data:image/svg+xml;utf8,'+encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>")+'")';
-const Shape=({l,c}:{l:AuthoredLayer;c:Ctx})=>{const fill=colorOf(l.fill,c.theme,c.theme.accent);const background=l.fill2?`linear-gradient(${l.angle??180}deg,${fill},${colorOf(l.fill2,c.theme,fill)})`:fill;const common={position:'absolute' as const,inset:0,background};if(l.shape==='circle')return <div style={{...common,borderRadius:'50%'}}/>;if(l.shape==='ring')return <div style={{...common,borderRadius:'50%',background:'transparent',border:`${(l.strokeWidth??1)/100*c.W}px solid ${fill}`}}/>;if(l.shape==='triangle')return <div style={{...common,clipPath:'polygon(50% 0,100% 100%,0 100%)'}}/>;if(l.shape==='line')return <div style={{...common,height:`${l.strokeWidth??2}%`,top:'50%',borderRadius:999}}/>;if(l.shape==='blob')return <div style={{...common,borderRadius:'60% 40% 55% 45% / 50% 60% 40% 50%'}}/>;return <div style={{...common,borderRadius:(l.radius??0)/100*c.W}}/>;};
-const TextBody=({l,c}:{l:AuthoredLayer;c:Ctx})=>{const [handle]=useState(()=>{if(!l.fillAsset)return null;const value=delayRender('font image');const image=new window.Image();image.onload=()=>continueRender(value);image.onerror=()=>continueRender(value);image.src=staticFile(l.fillAsset);return value;});void handle;const style={fontFamily:fontOf(l.font,c.theme),fontWeight:l.weight??800,fontSize:(l.size??7)/100*c.W,lineHeight:1.04,textAlign:(l.align??'center') as 'left'|'center'|'right',color:colorOf(l.color,c.theme,c.theme.ink),textShadow:l.shadow?'0 4px 18px #0007':undefined};return <div style={style}>{(l.text??'').split(/\s+/).filter(Boolean).map((word,index)=><Fragment key={index}>{index?' ':''}<span style={l.emphasize?.includes(index)?{color:colorOf(l.fill,c.theme,c.theme.accent),fontFamily:FONT_FAMILIES.impact,fontSize:'1.42em'}:undefined}>{word.replace(/\*/g,'')}</span></Fragment>)}</div>;};
-const Caption=({l,c}:{l:AuthoredLayer;c:Ctx})=>{const shown=captionState(l.words??[],c.t);if(!shown)return null;const size=(l.size??4.4)/100*c.W;return <div style={{fontFamily:FONT_FAMILIES.sansbold,fontSize:size,textAlign:'center',color:colorOf(l.fill,c.theme,'#ffffff88'),textShadow:'0 2px 14px #000'}}>{shown.map((word,index)=><Fragment key={index}>{index?' ':''}<span style={{color:word.active?colorOf(l.color,c.theme,'#fff'):undefined,fontWeight:word.active?800:500,border:word.box&&word.active?`2px solid ${colorOf(l.stroke,c.theme,'#4c8dff')}`:undefined}}>{word.w}</span></Fragment>)}</div>;};
-const Particles=({l,c}:{l:AuthoredLayer;c:Ctx})=>{const spec=l.particles;const items=useMemo(()=>makeParticles({seed:spec?.seed,count:spec?.count}),[spec?.seed,spec?.count]);if(!spec)return null;const enter=enterState(l.enter?.preset??'fade',c.t-(l.enter?.at??0),l.enter?.spring);return <AbsoluteFill style={{opacity:enter.opacity*(l.opacity??1)}}>{items.map((particle,index)=>{const state=particleState(spec.kind,particle,c.t,spec.speed),size=spec.size/100*c.W*particle.size;return <div key={index} style={{position:'absolute',left:`${state.x*100}%`,top:`${state.y*100}%`,width:size,height:size,borderRadius:'50%',background:colorOf(l.fill,c.theme,c.theme.accent),opacity:state.opacity}}/>})}</AbsoluteFill>;};
-const Node=({l,c,baseW}:{l:AuthoredLayer;c:Ctx;baseW:number})=>{const enter=enterState(l.enter?.preset??'fade',c.t-(l.enter?.at??0),l.enter?.spring);const idle=idleState(l.idle,c.t);if(c.t<(l.enter?.at??0)||((l.type==='text'||l.type==='caption')&&!c.showText))return null;const width=(l.width??(l.type==='text'?80:10))/100*baseW;const height=l.type==='shape'?(l.height??l.width??10)/100*baseW:undefined;const kids=c.children.get(l.id)??[];return <div style={{position:'absolute',left:`${l.x??50}%`,top:`${l.y??50}%`,width,height,opacity:(l.opacity??1)*enter.opacity*idle.opacity,transformOrigin:`${l.ax??50}% ${l.ay??50}%`,mixBlendMode:l.blend as React.CSSProperties['mixBlendMode'],transform:`translate(${(enter.x+idle.x)*c.W}px,${(enter.y+idle.y)*c.H}px) rotate(${(l.rotate??0)+(idle.rotate??0)}deg) scale(${enter.scale*idle.scale*(l.flip?-1:1)}) translate(-50%,-50%)`}}>{l.type==='shape'&&<Shape l={l} c={c}/>} {l.type==='text'&&<TextBody l={l} c={c}/>} {l.type==='caption'&&<Caption l={l} c={c}/>} {l.type==='image'&&l.asset&&<Img src={staticFile(l.asset)} style={{width:'100%'}}/>}{kids.map(child=><Node key={child.id} l={child} c={c} baseW={width}/>)}</div>;};
-export const AuthoredScene=({scene,style,showText}:{scene:StudioScene;project?:StudioProject;style:StyleName;showText:boolean})=>{useBundledFonts();const frame=useCurrentFrame();const {width:W,height:H}=useVideoConfig();const spec=scene.authored as AuthoredSpec|undefined;const theme=identities[style]??identities.modern;const t=frame/FPS;const cam=cameraAt(spec?.camera,frame/Math.max(1,Math.round(scene.duration*FPS)-1));const children=useMemo(()=>{const map=new Map<string,AuthoredLayer[]>();for(const layer of spec?.layers??[])if(layer.parent)map.set(layer.parent,[...(map.get(layer.parent)??[]),layer]);return map;},[spec?.layers]);if(!spec)return null;const context:Ctx={t,frame,W,H,theme,showText,cam,children};const backgroundSpec=spec.background;const background=backgroundSpec?.color2?`linear-gradient(${backgroundSpec.angle??180}deg,${colorOf(backgroundSpec.color,theme,theme.background)},${colorOf(backgroundSpec.color2,theme,theme.background)})`:colorOf(backgroundSpec?.color,theme,theme.background);const grade=spec.grade??{};const tint=typeof grade.tint==='string'?grade.tint:'';const vignette=Number(grade.vignette??0);const grain=Number(grade.grain??0);return <AbsoluteFill style={{background,overflow:'hidden'}}>{spec.layers.filter(layer=>!layer.parent).map(layer=><AbsoluteFill key={layer.id} style={{transform:`translate(${(cam.tx??0)*W}px,${(cam.ty??0)*H}px) scale(${cam.scale??cam.zoom??1}) rotate(${cam.rotate}deg)`}}>{layer.type==='particles'?<Particles l={layer} c={context}/>:<Node l={layer} c={context} baseW={W}/>}</AbsoluteFill>)}{tint&&<AbsoluteFill style={{background:tint,opacity:Number(grade.tintAmount??0),mixBlendMode:'soft-light' as React.CSSProperties['mixBlendMode']}}/>}{vignette>0&&<AbsoluteFill style={{background:`radial-gradient(ellipse at 50% 45%,transparent 35%,rgba(0,0,0,${Math.min(.95,vignette*.85)}))`}}/>}{grain>0&&<AbsoluteFill style={{backgroundImage:GRAIN,opacity:grain*.5,mixBlendMode:'overlay' as React.CSSProperties['mixBlendMode']}}/>}</AbsoluteFill>;};
+export const AuthoredScene = ({
+  scene,
+  style,
+  showText,
+}: {
+  scene: StudioScene;
+  project?: StudioProject;
+  style: StyleName;
+  showText: boolean;
+}) => {
+  useBundledFonts();
+  const frame = useCurrentFrame(),
+    { width, height, fps } = useVideoConfig();
+  if (!scene.authored) return null;
+  const paths = [
+    ...new Set(
+      scene.authored.layers
+        .flatMap((l) => [l.asset, l.fillAsset])
+        .filter((s): s is string => Boolean(s)),
+    ),
+  ];
+  const assets = Object.fromEntries(paths.map((p) => [p, staticFile(p)]));
+  const html = renderAuthored(scene.authored, {
+    time: frame / fps,
+    duration: scene.duration,
+    width,
+    height,
+    showText,
+    assets,
+    theme: identities[style],
+  });
+  return (
+    <AbsoluteFill>
+      {paths.map((p) => (
+        <Img
+          key={p}
+          src={assets[p]}
+          style={{ position: "absolute", width: 1, height: 1, opacity: 0 }}
+        />
+      ))}
+      <div
+        style={{ position: "absolute", inset: 0 }}
+        dangerouslySetInnerHTML={{ __html: html }}
+      />
+    </AbsoluteFill>
+  );
+};

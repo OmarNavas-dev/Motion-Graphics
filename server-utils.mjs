@@ -1,15 +1,15 @@
 import path from 'node:path';
 import {ensureDistinctVisualActionPlan, normalizeVisualActionPlan} from './src/visual-action-planner.mjs';
+import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
+import {normalizeActors, normalizeDirection, normalizeWordTimings} from './src/explainer-contract.mjs';
 
-export const MAX_PROJECT_BYTES = 8 * 1024 * 1024;
 export const MAX_ASSET_BYTES = 50 * 1024 * 1024;
 export const MAX_SCENES = 80;
 export const MAX_VIDEO_SECONDS = 900;
-// Presupuesto real del proyecto: 1 MB de base y 96 KB por escena. Una escena
-// HTML a medida puede ocupar hasta ~54 KB, así que 80 escenas caben sin
-// truncar y un proyecto de plantilla sigue limitado a cifras razonables.
+// Allow the larger custom scenes, including UTF-8 and JSON escaping overhead.
 export const PROJECT_BASE_BYTES = 1024 * 1024;
-export const PROJECT_BYTES_PER_SCENE = 96 * 1024;
+export const PROJECT_BYTES_PER_SCENE = 2 * 1024 * 1024;
+export const MAX_PROJECT_BYTES = PROJECT_BASE_BYTES + MAX_SCENES * PROJECT_BYTES_PER_SCENE;
 export const projectByteLimit = (sceneCount) =>
   PROJECT_BASE_BYTES + Math.max(1, Number(sceneCount) || 1) * PROJECT_BYTES_PER_SCENE;
 export const formats = new Set(['vertical', 'horizontal']);
@@ -32,9 +32,33 @@ const safeAsset = /^user-assets\/[0-9a-f-]{36}\.(?:png|jpg|jpeg|webp|mp3|wav|m4a
 const text = (value, max = 90) => String(value ?? '').trim().slice(0, max);
 const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(value) : fallback;
 
-const normalizeAuthored = (authored) => {
+const normalizeAuthored = (authored, duration) => {
   if (!authored || typeof authored !== 'object' || !Array.isArray(authored.layers)) return undefined;
-  // authored es una composición completa: no reducir ni reinterpretar sus capas.
+  if (authored.layers.length > 500) throw Error('La composición admite hasta 500 capas.');
+  const ids = new Set(), supported = new Set(['group','shape','text','caption','image','particles','svg','path','arrow','wave','gradient','glow']);
+  for (const layer of authored.layers) {
+    if (!layer || !/^[A-Za-z][\w-]*$/.test(layer.id || '') || ids.has(layer.id)) throw Error('Identificador de capa inválido o duplicado.');
+    ids.add(layer.id);
+    for (const key of ['x','y','width','height','rotate','ax','ay','depth','opacity','size','blur']) if (layer[key] !== undefined && !Number.isFinite(layer[key])) throw Error(`Valor numérico inválido en ${layer.id}.${key}.`);
+    if (layer.width !== undefined && layer.width <= 0 || layer.height !== undefined && layer.height <= 0) throw Error('Las capas necesitan dimensiones positivas.');
+    if (!supported.has(layer.type)) throw Error(`La capa ${layer.id} usa ${layer.type}, que no tiene un renderer compartido. Usa customScene o videoAsset para ese contenido.`);
+    for (const key of ['fill','fill2','stroke','color','font','blend','align','viewBox']) if (layer[key] && /[<>;{}]|url\s*\(|https?:|\/\//i.test(layer[key])) throw Error(`Estilo no permitido en ${layer.id}.`);
+    if (layer.asset) validateAsset(layer.asset, 'image');
+    if (layer.fillAsset) throw Error('fillAsset no tiene paridad entre motores; usa una capa image y una máscara en customScene.');
+    if (layer.svg) sanitizeCustomScene({html:layer.svg,css:'',script:''}, layer.id);
+    let previous = -1;
+    if (layer.keyframes && (!Array.isArray(layer.keyframes) || layer.keyframes.length > 100)) throw Error('Lista de keyframes inválida.');
+    for (const k of layer.keyframes || []) {
+      if (!Number.isFinite(k.at) || k.at < previous || k.at < 0 || k.at > duration) throw Error(`Keyframe fuera de tiempo en ${layer.id}.`);
+      for (const prop of ['x','y','rotate','scale','opacity']) if (k[prop] !== undefined && !Number.isFinite(k[prop])) throw Error('Keyframe no numérico.');
+      previous = k.at;
+    }
+  }
+  const map = new Map(authored.layers.map(l => [l.id,l]));
+  for (const layer of authored.layers) {
+    const seen = new Set([layer.id]); let parent = layer.parent;
+    while (parent) {if (!map.has(parent) || seen.has(parent)) throw Error('La jerarquía de capas tiene un padre ausente o un ciclo.'); seen.add(parent); parent = map.get(parent).parent;}
+  }
   return structuredClone(authored);
 };
 
@@ -92,7 +116,7 @@ export function validateProject(raw) {
     }),
     scenes: raw.scenes.map((rawScene, index) => {
       const scene = rawScene && typeof rawScene === 'object' ? rawScene : {};
-      const duration = Math.min(60, Math.max(0.5, Math.round(number(scene.duration, 4) * 100) / 100));
+      const duration = Math.min(60, Math.max(0.5, Math.round(number(scene.duration, 4) * 1000) / 1000));
       const hadVisualActionPlan = scene.visualActionPlan?.version === 1 && typeof scene.visualActionPlan.action === 'string';
       const normalizedPlan = normalizeVisualActionPlan(scene.visualActionPlan, scene, raw, index, visualActionPlans[index - 1]);
       const visualActionPlan = ensureDistinctVisualActionPlan(normalizedPlan, visualActionPlans, index);
@@ -120,6 +144,8 @@ export function validateProject(raw) {
         visualQuery: text(scene.visualQuery, 100),
         visualPlan: text(scene.visualPlan, 320),
         visualActionPlan,
+        direction: normalizeDirection(scene.direction, duration),
+        captionMode: ['global', 'none'].includes(scene.captionMode) ? scene.captionMode : 'embedded',
         style: styles.has(scene.style) ? scene.style : undefined,
         motion: motionPresets.has(scene.motion) ? scene.motion : 'auto',
         motionStrength: Math.round(Math.min(100, Math.max(0, number(scene.motionStrength, 40)))),
@@ -127,7 +153,7 @@ export function validateProject(raw) {
         focusX: Math.round(Math.min(100, Math.max(0, number(scene.focusX, 50)))),
         focusY: Math.round(Math.min(100, Math.max(0, number(scene.focusY, 50)))),
         customScene: sanitizeCustomScene(scene.customScene, index + 1),
-         authored: normalizeAuthored(scene.authored),
+        authored: normalizeAuthored(scene.authored, duration),
         layers: (Array.isArray(scene.layers) ? scene.layers : []).slice(0, 8).map((rawLayer, layerIndex) => {
           const layer = rawLayer && typeof rawLayer === 'object' ? rawLayer : {};
           return {id: text(layer.id || `layer-${layerIndex + 1}`, 45).replace(/[^a-zA-Z0-9-_]/g, ''), asset: validateAsset(layer.asset, 'image'), depth: Math.round(Math.min(100, Math.max(-100, number(layer.depth, 0)))), x: Math.round(Math.min(100, Math.max(0, number(layer.x, 50)))), y: Math.round(Math.min(100, Math.max(0, number(layer.y, 50)))), scale: Math.round(Math.min(3, Math.max(0.1, number(layer.scale, 1))) * 100) / 100, opacity: Math.round(Math.min(1, Math.max(0, number(layer.opacity, 1))) * 100) / 100};
@@ -183,6 +209,9 @@ export function validateProject(raw) {
     }),
   };
   const length = project.scenes.reduce((acc, scene) => acc + scene.duration, 0);
+  project.actors = normalizeActors(raw.actors);
+  project.wordTimings = normalizeWordTimings(raw.wordTimings, length);
+  if (new Set(project.scenes.map(s => s.id)).size !== project.scenes.length) throw new Error('Las escenas deben tener identificadores únicos.');
   if (length > MAX_VIDEO_SECONDS) throw new Error('El video no puede superar 15 minutos.');
   if (project.voiceClips.reduce((sum, clip) => sum + clip.duration, 0) > MAX_VIDEO_SECONDS) {
     throw new Error('La suma de audios por dialogo no puede superar 15 minutos.');
@@ -193,7 +222,7 @@ export function validateProject(raw) {
   return project;
 }
 
-const CUSTOM_LIMITS = {html: 30000, css: 12000, script: 12000};
+const CUSTOM_LIMITS = CUSTOM_SCENE_LIMITS;
 const BLOCKED_HTML = /<\s*(script|iframe|object|embed|link|meta|base|form|style\b[^>]*\bsrc)\b|\son[a-z]+\s*=|javascript:|data:text\/html/i;
 const BLOCKED_REMOTE = /(?:src|href)\s*=\s*["']?\s*(?:https?:)?\/\/|url\(\s*["']?\s*(?:https?:)?\/\/|@import/i;
 const BLOCKED_SCRIPT = /\b(?:fetch|XMLHttpRequest|WebSocket|EventSource|importScripts|eval|localStorage|sessionStorage|indexedDB|requestAnimationFrame|setTimeout|setInterval|require|process|globalThis)\b|\bnew\s+Function\b|\bimport\s*[(\s{*]|\bMath\.random\b|\bDate\.now\b|\bnew\s+Date\b|\bperformance\.now\b|document\.(?:cookie|write)|window\.(?:open|location|parent|top)|\blocation\b|\bpostMessage\b|\bnavigator\b/;

@@ -107,6 +107,8 @@ export async function transcribeWithGroq(bytes, filename, apiKey, {fetcher = fet
   form.set('file', new Blob([bytes]), `narracion.${ext}`);
   form.set('model', 'whisper-large-v3-turbo');
   form.set('response_format', 'verbose_json');
+  form.append('timestamp_granularities[]', 'word');
+  form.append('timestamp_granularities[]', 'segment');
   let response;
   try {
     response = await fetcher('https://api.groq.com/openai/v1/audio/transcriptions', {
@@ -119,5 +121,8 @@ export async function transcribeWithGroq(bytes, filename, apiKey, {fetcher = fet
   const segments = Array.isArray(result.segments) ? result.segments
     .filter((s) => Number.isFinite(s.start) && typeof s.text === 'string')
     .slice(0, 1000).map((s) => ({at: Math.max(0, s.start), text: safeText(s.text, 500)})) : [];
-  return {text: safeText(result.text, 45000), segments};
+  const words = Array.isArray(result.words) ? result.words.filter(w =>
+    typeof w.word === 'string' && Number.isFinite(w.start) && Number.isFinite(w.end) && w.start >= 0 && w.end > w.start)
+    .slice(0, 15000).map(w => ({text:safeText(w.word,160),start:w.start,end:w.end})) : [];
+  return {text: safeText(result.text, 45000), segments, words, alignment: words.length ? 'model-estimated' : 'segments-only'};
 }

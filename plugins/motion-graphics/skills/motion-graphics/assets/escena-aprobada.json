@@ -1,0 +1,79 @@
+{
+  "name": "El hijo pródigo · versión completa",
+  "format": "vertical",
+  "palette": "aurora",
+  "audioAsset": "",
+  "musicAsset": "",
+  "musicVolume": 0.18,
+  "script": "Acérquense un momento. Quiero contarles una historia que tiene una de las enseñanzas más hermosas sobre el amor y el perdón.",
+  "creativeBrief": "Ilustración editorial SVG con 20 escenas, continuidad anatómica y texto de la narración con énfasis por palabra.",
+  "style": "cinematic",
+  "visualEngine": "adaptive",
+  "resolution": "720p",
+  "fps": 24,
+  "fontAsset": "",
+  "fontFamily": "",
+  "showText": true,
+  "characterMode": "new",
+  "references": [],
+  "narrationMode": "single",
+  "voiceClips": [],
+  "scenes": [
+    {
+      "id": "prodigo-01",
+      "layout": "hero",
+      "duration": 8.06,
+      "title": "Escena 1",
+      "subtitle": "",
+      "imageAsset": "",
+      "imageFit": "auto",
+      "videoAsset": "",
+      "approved": false,
+      "scriptExcerpt": "Acérquense un momento. Quiero contarles una historia que tiene una de las enseñanzas más hermosas sobre el amor y el perdón.",
+      "visualQuery": "",
+      "visualPlan": "",
+      "visualActionPlan": {
+        "version": 1,
+        "subject": "Escena 1",
+        "evidence": "Acérquense un momento. Quiero contarles una historia que tiene una de las enseñanzas más hermosas sobre el amor y el perdón.",
+        "actionType": "establish",
+        "action": "Abre con un plano general de «Escena 1»; presenta el lugar y orienta la mirada hacia el detalle que se explicará.",
+        "shotScale": "wide",
+        "camera": "push",
+        "confidence": "grounded",
+        "beats": [
+          {
+            "at": 0,
+            "duration": 0.18,
+            "action": "Establece Escena 1 en el encuadre."
+          },
+          {
+            "at": 0.18,
+            "duration": 0.64,
+            "action": "Abre con un plano general de «Escena 1»; presenta el lugar y orienta la mirada hacia el detalle que se explicará."
+          },
+          {
+            "at": 0.82,
+            "duration": 0.18,
+            "action": "Sostén el resultado y prepara el corte siguiente."
+          }
+        ]
+      },
+      "motion": "auto",
+      "motionStrength": 40,
+      "transition": "cut",
+      "focusX": 50,
+      "focusY": 50,
+      "customScene": {
+        "html": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 720 1280\" aria-label=\"Ilustración narrativa del hijo pródigo\"><defs>\n<linearGradient id=\"p0-sky\" x2=\"0\" y2=\"1\"><stop stop-color=\"#709399\"/><stop offset=\".64\" stop-color=\"#D2D4B9\"/><stop offset=\"1\" stop-color=\"#F3EBD9\"/></linearGradient>\n<linearGradient id=\"p0-wall\" x2=\"1\" y2=\".3\"><stop stop-color=\"#F3EBD9\"/><stop offset=\".65\" stop-color=\"#DEC9A1\"/><stop offset=\"1\" stop-color=\"#BA9669\"/></linearGradient>\n<linearGradient id=\"p0-skin\" x2=\"1\" y2=\".4\"><stop stop-color=\"#E5B98F\"/><stop offset=\".65\" stop-color=\"#C58A61\"/><stop offset=\"1\" stop-color=\"#A26749\"/></linearGradient>\n<linearGradient id=\"p0-robe\" x2=\"1\" y2=\"0\"><stop stop-color=\"#C07850\"/><stop offset=\".45\" stop-color=\"#A65035\"/><stop offset=\"1\" stop-color=\"#703C32\"/></linearGradient>\n<linearGradient id=\"p0-linen\" x2=\"1\" y2=\"0\"><stop stop-color=\"#F3EBD9\"/><stop offset=\".5\" stop-color=\"#D5C6A7\"/><stop offset=\"1\" stop-color=\"#A38E72\"/></linearGradient>\n<linearGradient id=\"p0-floor\" x2=\".3\" y2=\"1\"><stop stop-color=\"#D5BD8B\"/><stop offset=\"1\" stop-color=\"#8F775D\"/></linearGradient>\n<radialGradient id=\"p0-sun\"><stop stop-color=\"#FFE7AC\" stop-opacity=\".5\"/><stop offset=\"1\" stop-color=\"#FFE7AC\" stop-opacity=\"0\"/></radialGradient>\n<radialGradient id=\"p0-shade\"><stop offset=\".5\" stop-color=\"#241E1A\" stop-opacity=\"0\"/><stop offset=\"1\" stop-color=\"#241E1A\" stop-opacity=\".4\"/></radialGradient>\n<pattern id=\"p0-paper\" width=\"19\" height=\"23\" patternUnits=\"userSpaceOnUse\"><circle cx=\"3\" cy=\"7\" r=\".8\" fill=\"#241E1A\" opacity=\".1\"/><path d=\"M10 18l5-1\" stroke=\"#F3EBD9\" opacity=\".15\"/></pattern>\n</defs><g class=\"world\"><rect width=\"720\" height=\"1280\" fill=\"url(#p0-sky)\"/>\n<g class=\"clouds\" fill=\"#F3EBD9\" opacity=\".35\"><path d=\"M90 137q52-60 96-17 73-31 105 25H72z\"/><path d=\"M448 95q40-36 72-9 42-16 73 23H424z\"/></g>\n<path d=\"M0 460Q140 360 255 426T720 395V760H0\" fill=\"#7B8D79\"/>\n<path d=\"M0 536Q110 449 220 508T720 459V790H0\" fill=\"#9FA584\"/>\n<path d=\"M0 777H720V1280H0z\" fill=\"url(#p0-floor)\"/>\n<g class=\"house\"><path d=\"M210 328h475v486H210z\" fill=\"url(#p0-wall)\"/><path d=\"M185 328h516v36H185z\" fill=\"#9E7552\"/><path d=\"M187 323l235-114 283 114z\" fill=\"#A87352\"/><path d=\"M215 326l205-95 248 95\" fill=\"none\" stroke=\"#D6A470\" stroke-width=\"10\"/>\n<path d=\"M382 814V539a87 87 0 0 1 174 0v275\" fill=\"#5F5140\" stroke=\"#C2A27B\" stroke-width=\"24\"/>\n<path d=\"M398 814V544a71 71 0 0 1 142 0v270\" fill=\"#4D4438\"/><path d=\"M410 800V546q8-55 56-64v318\" fill=\"#876647\"/>\n<path d=\"M421 522v261m15-278v278m15-285v285m24-303v321\" stroke=\"#A98A63\" stroke-width=\"3\" opacity=\".6\"/><circle cx=\"451\" cy=\"667\" r=\"5\" fill=\"#DDB66E\"/>\n<rect x=\"250\" y=\"447\" width=\"65\" height=\"92\" rx=\"29\" fill=\"#765D45\" stroke=\"#C9AE85\" stroke-width=\"9\"/>\n<path d=\"M270 449v86m22-85v86\" stroke=\"#352E27\" stroke-width=\"5\"/>\n<path d=\"M219 386h52m59 0h91m92 0h89m-381 30h76m62 0h97m-229 199h84m-70 29h47m306-184h55m-43 29h52m-41 238h64\" stroke=\"#AD906A\" stroke-width=\"2\" opacity=\".5\"/>\n<path d=\"M366 820h209l29 23H346z\" fill=\"#8D775B\"/><path d=\"M343 845h263l32 26H319z\" fill=\"#B59B73\"/>\n</g>\n<g class=\"olive\" transform=\"translate(84 455) scale(0.95)\"><path d=\"M-13 300C-7 215 24 170 5 88M2 212l-61-77M8 180l63-84\" fill=\"none\" stroke=\"#65513C\" stroke-width=\"17\" stroke-linecap=\"round\"/><g fill=\"#657453\" stroke=\"#516349\" stroke-width=\"2\"><ellipse cx=\"-40\" cy=\"100\" rx=\"70\" ry=\"51\"/><ellipse cx=\"49\" cy=\"73\" rx=\"77\" ry=\"49\"/><ellipse cy=\"44\" rx=\"83\" ry=\"55\"/><ellipse cx=\"-80\" cy=\"61\" rx=\"49\" ry=\"35\"/></g><g fill=\"#A2AA77\" opacity=\".65\"><ellipse cx=\"-37\" cy=\"28\" rx=\"45\" ry=\"15\"/><ellipse cx=\"54\" cy=\"39\" rx=\"37\" ry=\"12\"/></g><path d=\"M-90 91l29-7m15 54l30-12m39-23l29-15m-4-49l23-5\" stroke=\"#C2BF87\" stroke-width=\"3\" opacity=\".45\"/></g><g transform=\"translate(647 777) scale(0.9)\"><ellipse cy=\"110\" rx=\"48\" ry=\"11\" fill=\"#241E1A\" opacity=\".2\"/><path d=\"M-16 0h32l-4 22c62 48 37 90-11 88-47 0-69-46-13-88z\" fill=\"#A56544\" stroke=\"#734830\" stroke-width=\"3\"/><path d=\"M-12 22c-27 25-37 51-21 66\" fill=\"none\" stroke=\"#D69A63\" stroke-width=\"9\" opacity=\".5\"/><ellipse rx=\"17\" ry=\"5\" fill=\"#563E30\"/><path d=\"M-32 53h66m-73 9h80\" stroke=\"#D7AE76\" stroke-width=\"3\" opacity=\".6\"/></g><g transform=\"translate(606 818) scale(0.6)\"><ellipse cy=\"110\" rx=\"48\" ry=\"11\" fill=\"#241E1A\" opacity=\".2\"/><path d=\"M-16 0h32l-4 22c62 48 37 90-11 88-47 0-69-46-13-88z\" fill=\"#A56544\" stroke=\"#734830\" stroke-width=\"3\"/><path d=\"M-12 22c-27 25-37 51-21 66\" fill=\"none\" stroke=\"#D69A63\" stroke-width=\"9\" opacity=\".5\"/><ellipse rx=\"17\" ry=\"5\" fill=\"#563E30\"/><path d=\"M-32 53h66m-73 9h80\" stroke=\"#D7AE76\" stroke-width=\"3\" opacity=\".6\"/></g>\n<path d=\"M0 1044l720-143M0 1209l720-183M174 840l-92 440m283-447 17 447m185-447 97 447\" stroke=\"#7D6750\" stroke-width=\"2\" opacity=\".28\"/>\n<path d=\"M0 1080Q270 1137 720 959v321H0z\" fill=\"#B89B6B\" opacity=\".2\"/>\n<circle cx=\"632\" cy=\"235\" r=\"390\" fill=\"url(#p0-sun)\"/><g transform=\"translate(363 424) scale(1.3)\"><g class=\"father\">\n<ellipse cx=\"3\" cy=\"432\" rx=\"69\" ry=\"13\" fill=\"#241E1A\" opacity=\".22\"/>\n<g class=\"leg-left\"><path d=\"M-34 285l-5 119h26l17-116\" fill=\"#9C7052\"/><path d=\"M-42 403q-16 12-17 23h51v-18z\" fill=\"#493A2D\"/><path d=\"M-43 411l31 6\" stroke=\"#B9A17B\" stroke-width=\"4\"/></g>\n<g class=\"leg-right\"><path d=\"M13 285l5 119h26L39 283\" fill=\"#B17D57\"/><path d=\"M19 402v24h54q-4-14-32-23z\" fill=\"#493A2D\"/><path d=\"M21 412l25 4\" stroke=\"#B9A17B\" stroke-width=\"4\"/></g>\n<path d=\"M-45 97Q-4 75 43 99l21 243q-58 24-130 0z\" fill=\"url(#p0-linen)\" stroke=\"#513C2D\" stroke-width=\"2.2\"/>\n<path d=\"M-28 115l-14 207m22-195l13 192m29-202l19 206\" stroke=\"#988367\" stroke-width=\"5\" opacity=\".38\"/>\n<path d=\"M-53 183q55 19 109 0l3 13q-61 16-112-1z\" fill=\"#715336\"/><path d=\"M22 185l4 78 12 18-5-90\" fill=\"#554333\"/>\n<path d=\"M-33 91Q-77 99-83 133l28 33 25-29\" fill=\"url(#p0-linen)\" stroke=\"#513C2D\" stroke-width=\"2\"/>\n<g class=\"arm-left\"><path d=\"M-65 139l-18 81 13 15 14-10 9-78\" fill=\"url(#p0-skin)\" stroke=\"#8A5C42\" stroke-width=\"2\"/><path d=\"M-79 222q-13 24-5 30 5 5 10-4l9-18\" fill=\"url(#p0-skin)\"/></g>\n<path d=\"M35 95q35 2 44 38l-26 31-25-37\" fill=\"url(#p0-linen)\" stroke=\"#513C2D\" stroke-width=\"2\"/>\n<g class=\"arm-right\"><path d=\"M62 139l18 81-12 15-14-10-10-78\" fill=\"url(#p0-skin)\" stroke=\"#8A5C42\" stroke-width=\"2\"/><path d=\"M76 222q13 24 5 30-5 5-10-4l-9-18\" fill=\"url(#p0-skin)\"/></g>\n\n<path d=\"M-16 66h32v30q-17 17-33 0z\" fill=\"#B37B56\"/>\n<ellipse cx=\"-30\" cy=\"37\" rx=\"7\" ry=\"12\" fill=\"#BA805B\"/><ellipse cx=\"30\" cy=\"37\" rx=\"7\" ry=\"12\" fill=\"#BA805B\"/>\n<path d=\"M-29 15q-2-36 30-36 34-1 30 38l-1 32q-5 33-30 35-25-4-29-34z\" fill=\"url(#p0-skin)\" stroke=\"#946444\" stroke-width=\"1.5\"/>\n<path d=\"M-30 24q-17-43 18-50Q26-42 35-6l-4 30-9-18Q5 14-14 2l-13 25z\" fill=\"#B8B4A6\"/>\n<path d=\"M-22 31q7-5 14-1m17 0q7-4 13 1\" fill=\"none\" stroke=\"#4C3A2E\" stroke-width=\"3\" stroke-linecap=\"round\"/>\n<ellipse cx=\"-14\" cy=\"37\" rx=\"2.4\" ry=\"3.1\" fill=\"#302B25\"/><ellipse cx=\"15\" cy=\"37\" rx=\"2.4\" ry=\"3.1\" fill=\"#302B25\"/>\n<path d=\"M2 38l-4 15 8 2\" fill=\"none\" stroke=\"#A36846\" stroke-width=\"2\" stroke-linecap=\"round\"/>\n<path d=\"M-9 65q9 5 19-1\" fill=\"none\" stroke=\"#754D3D\" stroke-width=\"2.5\" stroke-linecap=\"round\"/>\n<path d=\"M-28 49q4 21 27 20 25-2 31-21l-5 36Q4 118-23 83z\" fill=\"#C2BDAA\"/><path d=\"M-13 74l5 19m10-20 2 24m11-25-2 19\" stroke=\"#E5DBBF\" stroke-width=\"3\"/><path d=\"M-11 63q10-6 22 0\" fill=\"none\" stroke=\"#DBD1B6\" stroke-width=\"6\"/>\n</g></g><g transform=\"translate(182 1111) scale(0.8)\"><ellipse cy=\"23\" rx=\"63\" ry=\"14\" fill=\"#241E1A\" opacity=\".18\"/><path d=\"M-62 15q-1-68 62-68 68 1 63 68z\" fill=\"#BD8448\" stroke=\"#815730\" stroke-width=\"3\"/><path d=\"M-49 3q7-46 49-45 50-2 51 45\" fill=\"#DDB66E\"/><path d=\"M-26-30l-9 27m35-31L-5-4m31-22-7 24\" stroke=\"#9A693A\" stroke-width=\"7\" stroke-linecap=\"round\"/></g><g transform=\"translate(584 1058) scale(0.75)\"><ellipse cy=\"110\" rx=\"48\" ry=\"11\" fill=\"#241E1A\" opacity=\".2\"/><path d=\"M-16 0h32l-4 22c62 48 37 90-11 88-47 0-69-46-13-88z\" fill=\"#A56544\" stroke=\"#734830\" stroke-width=\"3\"/><path d=\"M-12 22c-27 25-37 51-21 66\" fill=\"none\" stroke=\"#D69A63\" stroke-width=\"9\" opacity=\".5\"/><ellipse rx=\"17\" ry=\"5\" fill=\"#563E30\"/><path d=\"M-32 53h66m-73 9h80\" stroke=\"#D7AE76\" stroke-width=\"3\" opacity=\".6\"/></g></g><rect width=\"720\" height=\"1280\" fill=\"url(#p0-paper)\" opacity=\".28\" pointer-events=\"none\"/><rect width=\"720\" height=\"1280\" fill=\"url(#p0-shade)\" pointer-events=\"none\"/></svg><div class=\"spoken-caption cg0\"><span class=\"spoken-word cw0\">Acérquense</span> <span class=\"spoken-word cw1\">un</span> <span class=\"spoken-word cw2\">momento.</span></div><div class=\"spoken-caption cg1\"><span class=\"spoken-word cw0\">Quiero</span> <span class=\"spoken-word cw1\">contarles</span> <span class=\"spoken-word cw2\">una</span></div><div class=\"spoken-caption cg2\"><span class=\"spoken-word cw0\">historia</span> <span class=\"spoken-word cw1\">que</span> <span class=\"spoken-word cw2\">tiene</span> <span class=\"spoken-word cw3\">una</span></div><div class=\"spoken-caption cg3\"><span class=\"spoken-word cw0\">de</span> <span class=\"spoken-word cw1\">las</span> <span class=\"spoken-word cw2\">enseñanzas</span> <span class=\"spoken-word cw3\">más</span></div><div class=\"spoken-caption cg4\"><span class=\"spoken-word cw0\">hermosas</span> <span class=\"spoken-word cw1\">sobre</span> <span class=\"spoken-word cw2\">el</span> <span class=\"spoken-word cw3\">amor</span></div><div class=\"spoken-caption cg5\"><span class=\"spoken-word cw0\">y</span> <span class=\"spoken-word cw1\">el</span> <span class=\"spoken-word cw2\">perdón.</span></div>",
+        "css": "__SCENE__{background:#F3EBD9;}__SCENE__ > svg{display:block;width:100%;height:100%;}__SCENE__ .world{transform-origin:50% 62%;}__SCENE__ .spoken-caption{position:absolute;z-index:30;top:4%;left:6%;width:88%;height:150px;text-align:center;font:700 46px/1.3 Arial,Helvetica,sans-serif;letter-spacing:-.6px;color:#d7dce0;text-shadow:0 2px 8px #152629,0 0 22px #15262999;opacity:0;visibility:hidden;pointer-events:none;}__SCENE__ .spoken-word{display:inline-block;border:2px solid transparent;padding:0 3px;border-radius:3px;}",
+        "script": "tl.to(S+' .world',{scale:1.025,transformOrigin:'50% 62%',duration:D,ease:'none'},T0);const C=[{\"a\":0,\"b\":1.16,\"w\":[[0,0.6],[0.6,0.7],[0.7,1.12]]},{\"a\":1.68,\"b\":2.58,\"w\":[[1.68,1.86],[1.86,2.38],[2.38,2.58]]},{\"a\":2.58,\"b\":3.76,\"w\":[[2.58,2.96],[2.96,3.22],[3.22,3.48],[3.48,3.76]]},{\"a\":3.76,\"b\":5.2,\"w\":[[3.76,3.88],[3.88,4.04],[4.04,4.84],[4.84,5.2]]},{\"a\":5.2,\"b\":6.66,\"w\":[[5.2,6.02],[6.02,6.28],[6.28,6.44],[6.44,6.66]]},{\"a\":6.66,\"b\":7.48,\"w\":[[6.66,6.84],[6.84,6.94],[6.94,7.44]]}];C.forEach((g,i)=>{const e=document.querySelector(S+' .cg'+i);tl.set(e,{autoAlpha:1},T0+g.a);g.w.forEach((w,j)=>{const n=e.querySelector('.cw'+j);tl.set(n,{color:'#fff',borderColor:'#6DA5F4',backgroundColor:'#294A5866'},T0+w[0]);tl.set(n,{color:'#d7dce0',borderColor:'transparent',backgroundColor:'transparent'},T0+w[1]);});tl.set(e,{autoAlpha:0},T0+g.b);});"
+      },
+      "layers": [],
+      "audioCues": [],
+      "captions": [],
+      "cues": [],
+      "motionGraphics": []
+    }
+  ]
+}

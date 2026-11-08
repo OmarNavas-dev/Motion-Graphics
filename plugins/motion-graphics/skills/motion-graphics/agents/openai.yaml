@@ -1,0 +1,5 @@
+interface:
+  display_name: "Motion Graphics"
+  short_description: "Motion graphics para Motion Studio, con direccion visual adaptada al tema"
+  default_prompt: "Usa $motion-graphics con mi guion y audio para crear un unico proyecto JSON de Motion Studio con escenas en codigo y titulos sincronizados."
+

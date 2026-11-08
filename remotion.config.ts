@@ -6,6 +6,10 @@
  */
 
 import { Config } from "@remotion/cli/config";
+import {prepareWindowsNativeRuntime} from './scripts/windows-native-runtime.mjs';
+
+const nativeRuntime=prepareWindowsNativeRuntime();
+if(nativeRuntime)Config.setBinariesDirectory(nativeRuntime);
 
 Config.setRspack(true);
 Config.setVideoImageFormat("jpeg");

@@ -5,9 +5,13 @@ import {fileURLToPath} from 'node:url';
 import {spawn, execFileSync} from 'node:child_process';
 import net from 'node:net';
 import {validateProject} from '../server-utils.mjs';
+import {MOTION_STUDIO_CONTRACT} from '../src/motion-capabilities.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const temp = await fs.mkdtemp(path.join(os.tmpdir(), 'motion-studio-smoke-'));
+const tempParent = path.resolve(process.env.MOTION_STUDIO_SMOKE_TMP || os.tmpdir());
+await fs.mkdir(tempParent, {recursive: true});
+const temp = await fs.mkdtemp(path.join(tempParent, 'motion-studio-smoke-'));
+if (path.dirname(path.resolve(temp)) !== tempParent) throw new Error('Directorio temporal fuera de su raíz.');
 const project = validateProject({
   name:'Proyecto temporal de smoke', format:'vertical', palette:'aurora',
   audioAsset:'', musicAsset:'', script:'', creativeBrief:'', style:'modern',
@@ -66,7 +70,7 @@ try {
     body: JSON.stringify(project),
   });
   if (saved.status !== 200 || saved.body.project.scenes.length !== 1) {
-    throw new Error('No se pudo guardar el proyecto.');
+    throw new Error(`No se pudo guardar el proyecto (${saved.status}): ${JSON.stringify(saved.body)}`);
   }
   const retrieved = await request('/api/project');
   if (retrieved.body.project.scenes[0].title !== 'PRUEBA COMPLETA') {
@@ -244,6 +248,9 @@ try {
   }
   console.log('OK: clip MP4 importado, integrado y reexportado con Remotion.');
   const cloudStatus = await request('/api/integrations');
+  if (JSON.stringify(cloudStatus.body.sceneContract) !== JSON.stringify(MOTION_STUDIO_CONTRACT)) {
+    throw new Error('El servidor no expone el contrato compartido con el complemento.');
+  }
   if (cloudStatus.status !== 200 || cloudStatus.body.paidApisEnabled !== false || !cloudStatus.body.openverse) {
     throw new Error('La configuración híbrida gratuita no está disponible.');
   }
