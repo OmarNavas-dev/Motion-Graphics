@@ -9,3 +9,8 @@ test('no inventar sincronización cuando no hay voz',()=>{
  assert.equal(r.voicePresent,false);assert.ok(r.warnings.length);
 });
 test('leer LUFS en reporte ebur128',()=>assert.equal(parseLoudnessOutput('Integrated loudness:\n    I:         -16.1 LUFS').integratedLufs,-16.1));
+
+test('detecta efectos de sonido fuera de la escena',()=>{
+ const r=auditTimelineAudio({scenes:[{duration:2,audioCues:[{id:'impact',at:1.8,duration:.6}]}]});
+ assert.ok(r.warnings.some(x=>x.includes('fuera de escena')));
+});
