@@ -1,4 +1,4 @@
-import {STYLE_PRESET_IDS} from './src/motion-capabilities.mjs';
+import {STYLE_PRESET_IDS,normalizeSoundDesign} from './src/motion-capabilities.mjs';
 import path from 'node:path';
 import {ensureDistinctVisualActionPlan, normalizeVisualActionPlan} from './src/visual-action-planner.mjs';
 import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
@@ -213,6 +213,8 @@ export function validateProject(raw) {
     }),
   };
   const length = project.scenes.reduce((acc, scene) => acc + scene.duration, 0);
+  project.soundDesign=normalizeSoundDesign(raw.soundDesign,length);
+  project.loop=raw.loop===true;
   project.actors = normalizeActors(raw.actors);
   project.wordTimings = normalizeWordTimings(raw.wordTimings, length);
   if (new Set(project.scenes.map(s => s.id)).size !== project.scenes.length) throw new Error('Las escenas deben tener identificadores únicos.');
