@@ -22,6 +22,8 @@ import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
 import {auditVisualDirection} from './src/visual-direction-audit.mjs';
 import {auditRenderedVideo} from './src/render-quality-audit.mjs';
+import {auditLoopSeam} from './src/loop-quality-audit.mjs';
+import {renderSoundWav,muxSoundtrack} from './src/sound-design.mjs';
 import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
 import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
@@ -287,6 +289,60 @@ async function transcribeAsset(req, res) {
 const latestLog = (value, incoming) =>
   (value + incoming.toString('utf8')).slice(-4500);
 
+// Shared post-render pipeline: both Remotion and HyperFrames are audited.
+async function reviewCompletedRender(job,project,output,id){
+  const total=project.scenes.reduce((sum,scene)=>sum+scene.duration,0);
+  if(project.soundDesign?.enabled && project.soundDesign.cues.length){
+    const wav=path.join(outDir,'sfx-'+id+'.wav'),mixed=path.join(outDir,'mix-'+id+'.mp4');
+    try{
+      const created=await renderSoundWav(project.soundDesign,wav,{seconds:total});
+      const probe=spawnSync('ffprobe',['-v','error','-select_streams','a:0','-show_entries','stream=index','-of','csv=p=0',output],{encoding:'utf8',windowsHide:true});
+      if(probe.error||probe.status!==0)throw Error('FFprobe no pudo detectar la pista de audio.');
+      await muxSoundtrack(output,wav,mixed,{hasExistingAudio:Boolean(probe.stdout?.trim())});
+      await fsp.rename(mixed,output);
+      job.soundtrackAudit={mixed:true,cues:created.cues,seconds:created.seconds,types:[...new Set(project.soundDesign.cues.map(c=>c.type))]};
+      job.log+='[Efectos] '+created.cues+' eventos sintetizados y mezclados.\\n';
+    }catch(error){
+      job.soundtrackAudit={mixed:false,error:error.message};
+      job.log+='[Efectos] No se pudo mezclar diseño sonoro: '+error.message+'\\n';
+    }finally{
+      await fsp.rm(wav,{force:true}).catch(()=>{});
+      await fsp.rm(mixed,{force:true}).catch(()=>{});
+    }
+  }
+  try{
+    job.visualAudit=await auditRenderedVideo(output,{
+      expectedAudio:Boolean(project.audioAsset||project.voiceClips?.length||project.musicAsset||project.soundDesign?.enabled&&project.soundDesign?.cues.length)});
+    job.log+='[Video] '+job.visualAudit.metrics.sampledFrames+' fotogramas evaluados; '+job.visualAudit.warnings.length+' observaciones.\\n';
+    for(const warning of job.visualAudit.warnings)job.log+='- '+warning+'\\n';
+  }catch(error){job.log+='[Video] Auditoría no disponible: '+error.message+'\\n';}
+  job.audioTimingAudit=auditTimelineAudio(project);
+  for(const warning of job.audioTimingAudit.warnings)job.log+='[Narración] '+warning+'\\n';
+  try{
+    job.audioAssetsAudit=await auditAudioAssets(project,assetsDir);
+    for(const warning of job.audioAssetsAudit.warnings)job.log+='[Audio] '+warning+'\\n';
+  }catch(error){job.log+='[Audio] Inspección de recursos no disponible: '+error.message+'\\n';}
+  if(job.visualAudit?.video?.audioPresent){
+    try{job.audioLoudnessAudit=await measureAudioLoudness(output);
+      for(const warning of job.audioLoudnessAudit.warnings)job.log+='[Sonoridad] '+warning+'\\n';
+    }catch(error){job.log+='[Sonoridad] No disponible: '+error.message+'\\n';}
+  }
+  if(project.loop){
+    try{job.loopAudit=await auditLoopSeam(output);
+      if(!job.loopAudit.seamlessByHeuristic)job.log+='[Loop] Salto en cierre: revisar primera y última imagen.\\n';
+    }catch(error){job.loopAudit={measured:false,error:error.message};}
+  }
+  try{
+    const reviewDir=path.join(outDir,'quality-reviews',id);
+    const sheet=await createFrameContactSheet(output,project,reviewDir,{maxFrames:36});
+    job.contactSheet={captured:sheet.captured,requested:sheet.totalRequested,errors:sheet.errors.length,url:'/reviews/'+id+'/index.html'};
+    job.log+='[Fotogramas] '+sheet.captured+' capturas: '+job.contactSheet.url+'\\n';
+  }catch(error){job.log+='[Fotogramas] Revisión parcial: '+error.message+'\\n';}
+  job.qualityEvidence={rendered:true,visualApproval:false,heuristicsOnly:true,
+    screenshotEvidence:Boolean(job.contactSheet?.captured),audioMeasured:Boolean(job.audioLoudnessAudit),
+    loopMeasured:project.loop?Boolean(job.loopAudit?.fps):null};
+}
+
 async function beginRender(project) {
   if (project.scenes.some(scene => scene.customScene?.html)) throw new Error('Las escenas HTML/GSAP requieren exportar con HyperFrames. Remotion no las sustituirá por una plantilla.');
   if (creatingJob || currentJob?.status === 'renderizando') {
@@ -337,24 +393,8 @@ async function beginRender(project) {
     if (job.status !== 'error' && code === 0) {
       const stat = await fsp.stat(output).catch(() => null);
       if (stat?.isFile() && stat.size > 15000) {
-        // Independent evidence: speech timing, sound level, and scene contact sheets.
-      job.audioTimingAudit = auditTimelineAudio(project);
-      job.audioAssetsAudit=await auditAudioAssets(project,assetsDir);
-      for(const warning of job.audioAssetsAudit.warnings)job.log += '[Recurso de voz] '+warning+'\n';
-      for(const warning of job.audioTimingAudit.warnings)job.log += '[Narración] '+warning+'\n';
-      if(job.visualAudit?.video?.audioPresent){
-        try{
-          job.audioLoudnessAudit = await measureAudioLoudness(output);
-          for(const warning of job.audioLoudnessAudit.warnings)job.log += '[Sonoridad] '+warning+'\n';
-        }catch(error){job.log += '[Sonoridad] No se pudo medir: '+error.message+'\n';}
-      }
-      try {
-        const reviewDir=path.join(outDir,'quality-reviews',id);
-        const sheet=await createFrameContactSheet(output,project,reviewDir,{maxFrames:24});
-        job.contactSheet={captured:sheet.captured,requested:sheet.totalRequested,errors:sheet.errors.length,url:'/reviews/'+id+'/index.html'};
-        job.log += '[Fotogramas] '+sheet.captured+' capturas; hoja de contactos: '+job.contactSheet.url+'\n';
-      }catch(error){job.log += '[Fotogramas] Revisión parcial: '+error.message+'\n';}
-      job.status = 'completado';
+        await reviewCompletedRender(job,project,output,id);
+              job.status = 'completado';
         job.progress = 100;
       } else {
         job.status = 'error';
@@ -503,16 +543,7 @@ async function beginHyperframesRender(project) {
         throw new Error('HyperFrames terminó, pero no se encontró un MP4 válido.');
       }
       await fsp.copyFile(workspaceOutput, output);
-      try {
-        job.visualAudit = await auditRenderedVideo(output,{
-          expectedAudio:Boolean(project.audioAsset||project.voiceClips?.length||project.musicAsset),
-        });
-        job.log += `\nAuditoría de fotogramas: ${job.visualAudit.metrics.sampledFrames} muestras, ${job.visualAudit.warnings.length} observaciones.\n`;
-        for(const warning of job.visualAudit.warnings)job.log += `- ${warning}\n`;
-        job.log += 'La auditoría automática no certifica calidad artística.\n';
-      } catch(error) {
-        job.log += `\nNo se pudo completar la auditoría visual del MP4: ${error.message}. La exportación sigue disponible.\n`;
-      }
+      await reviewCompletedRender(job,project,output,id);
       job.status = 'completado';
       job.progress = 100;
       job.log += `\nMP4 creado: ${name}\n`;
@@ -637,6 +668,7 @@ async function handle(req, res) {
       download: job.status === 'completado' ? `/exports/${job.output}` : null,
       visualAudit:job.visualAudit??null, audioTimingAudit:job.audioTimingAudit??null,
       audioLoudnessAudit:job.audioLoudnessAudit??null, audioAssetsAudit:job.audioAssetsAudit??null, contactSheet:job.contactSheet??null,
+      soundDesignAudit:job.soundtrackAudit??null,loopAudit:job.loopAudit??null,qualityEvidence:job.qualityEvidence??null,
     }) : respond(res, 404, {error: 'Trabajo no encontrado.'});
   }
   if (req.method === 'GET' && pathname === '/preview') {
