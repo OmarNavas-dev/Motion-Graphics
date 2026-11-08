@@ -45,6 +45,8 @@ jobs:
           cache: npm
       - name: Install
         run: npm ci --include=dev
+      - name: Install FFmpeg and FFprobe for real MP4 tests
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
       - name: Check video prerequisites
         run: |
           node --version
