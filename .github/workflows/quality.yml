@@ -1,0 +1,33 @@
+name: Motion Studio quality CI
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci --include=dev
+      - name: Test contracts and quality modules
+        run: npm test
+      - name: Lint and types
+        run: npm run lint
+      - name: Build Studio
+        run: npm run studio:build
+      - name: Five-domain contract acceptance
+        run: npm run accept:five
+      - name: Upload acceptance JSON and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: acceptance-five-topics
+          path: out/acceptance-five-topics/
+          if-no-files-found: warn
