@@ -4,6 +4,8 @@ import {checkNarrationBindings} from './compat/src/motion-sequence.mjs';
 import path from 'node:path';
 import vm from 'node:vm';
 import crypto from 'node:crypto';
+import {runtimeFindings} from './runtime-review-utils.mjs';
+import {auditProjectScenes} from './scene-audit.mjs';
 import {inspectExplainer} from './compat/src/explainer-contract.mjs';
 import {checkCaptionStyle} from './check-caption-style.mjs';
 import {pathToFileURL} from 'node:url';
@@ -14,7 +16,11 @@ export async function checkProject(raw, {duration, repo, words, runtimeReport, r
   const errors = [...checkCaptionStyle(raw, words), ...checkEditorialOverlays(p), ...checkNarrationBindings(p)];
   if(requireNarration)for(const scene of p.scenes??[])if(scene.direction?.actions?.length&&!scene.direction.actions.some(a=>a.narration))errors.push(scene.id+': falta anclar una accion principal a palabras reales.');
   const warnings = inspectExplainer(p).map(w=>`${w.scene}: ${w.message}`);
+  const sceneAudit=auditProjectScenes(p);
+  errors.push(...sceneAudit.errors);
+  warnings.push(...sceneAudit.warnings);
   if(runtimeReport) {
+    const findings=runtimeFindings(runtimeReport);errors.push(...findings.errors);warnings.push(...findings.warnings);
     const hash=crypto.createHash('sha256').update(JSON.stringify(p)).digest('hex');
     if(runtimeReport.projectHash!==hash) errors.push('La revision corresponde a otro JSON; volver a capturar el proyecto final.');
     if(!runtimeReport.runtimePassed || runtimeReport.errors?.length) errors.push('La revision de ejecucion tiene errores.');

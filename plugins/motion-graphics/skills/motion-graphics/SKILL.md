@@ -5,6 +5,14 @@ description: Convierte un guion y su narracion en un unico proyecto JSON importa
 
 # Motion Graphics
 
+## Integración con Motion Studio 7.4 y herramientas 2.7
+
+Leer [references/direccion-creativa-2.6.md](references/direccion-creativa-2.6.md) y [references/produccion-2.7.md](references/produccion-2.7.md) antes de diseñar escenas. Separar referencias LOOK/MOVES; planificar visualmente causa, acción, consecuencia, estados y continuidad antes de generar el primer SVG. El plan se comprueba con `scripts/validate-creative.mjs`, además de los validadores previos de guion, mecánica, audio y escenas. No inventar tiempos de voz ni imponer una estética cerrada.
+
+Las 16 familias SVG+GSAP ejecutables se encuentran en `scripts/kits/effects-16-kit.mjs`; `assets/effects-16-validation.json` es una galería importable para probarlas, **no** una narración completa. `scripts/morph-motion.mjs` permite deformaciones de formas; `scripts/kinematic-motion.mjs` añade IK para manos/piernas y marcha con pie anclado al mundo. Usar estas herramientas solo cuando su geometría sirva a la historia y revisar postura, peso y oclusión. El resultado final sigue siendo un único JSON autosuficiente.
+
+En el repositorio Motion Studio, `src/custom-scene-preflight.mjs` detecta selectores GSAP simples ausentes e IDs repetidos antes del render. Con MP4 exportado, `scripts/compare-video-motion.py` estima diferencias de movimiento respecto a una referencia, pero no certifica dirección artística. Revisar fotogramas y audio reales; jamás afirmar render verificado por pasar pruebas estáticas. Conservar los anclajes de narración de la versión 7.4.
+
 ## Pantalla sin pies editoriales
 No incluir en ningun video o JSON pies de pagina, firmas, marcas de agua, titulos de serie inventados, numeracion de escenas (01 / 16), barras de progreso de montaje ni lineas decorativas que los acompanan. En particular, no repetir "ARCHIVO DE UNA INVENCION" ni variantes. Esta regla se aplica a todas las escenas y estilos.
 Conservar subtitulos sincronizados y etiquetas que expliquen un objeto, una fecha o una accion de la narracion. Un contador de una magnitud de la historia puede ser pertinente; el numero de escena es metadato interno y nunca se dibuja. Los titulos e indices del JSON permanecen como metadatos, fuera del HTML visible.
