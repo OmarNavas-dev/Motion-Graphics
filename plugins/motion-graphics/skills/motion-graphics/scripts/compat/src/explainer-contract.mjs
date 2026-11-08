@@ -77,6 +77,24 @@ export function normalizeDirection(raw, duration) {
   if (raw === undefined || raw === null) return undefined;
   if (typeof raw !== "object" || Array.isArray(raw))
     throw Error("Ficha explicativa inválida.");
+  const normalizeTransform = value => {
+    if(!value || typeof value!=='object' || Array.isArray(value))throw Error('Movimiento de acción requiere from/to numéricos.');
+    const allowed=new Set(['scale','x','y','rotation','opacity']);
+    const out={};
+    for(const [key,num] of Object.entries(value)){
+      if(!allowed.has(key)||!finite(num))throw Error('Transformación inválida: '+key);
+      if(['x','y'].includes(key)&&Math.abs(num)>10000)throw Error('Desplazamiento fuera de límites.');
+      if(key==='scale'&&(num<0.05||num>10))throw Error('Escala fuera de límites.');
+      if(key==='opacity'&&(num<0||num>1))throw Error('Opacidad fuera de límites.');
+      out[key]=num;
+    }
+    return out;
+  };
+  const normalizeMotion=motion=>{
+    if(!motion || typeof motion!=='object')throw Error('Movimiento de acción inválido.');
+    return {from:normalizeTransform(motion.from),to:normalizeTransform(motion.to),
+      ease:['none','power1.inOut','power2.inOut','power2.out','sine.inOut'].includes(motion.ease)?motion.ease:'power2.inOut'};
+  };
   const actions = list(raw.actions, 80, "Acciones").map((a, i) => {
     if (
       !finite(a?.at) ||
@@ -95,6 +113,7 @@ export function normalizeDirection(raw, duration) {
       description: str(a.description),
       result: str(a.result),
       selector: str(a.selector, 160),
+      ...(a.motion===undefined?{}:{motion:normalizeMotion(a.motion)}),
       ...(a.checkpoints===undefined?{}:{checkpoints:normalizeMotionCheckpoints(a.checkpoints,a.duration)}),
       ...(a.narration===undefined?{}:{narration:normalizeNarrationCue(a.narration,a.duration)}),
     };
@@ -113,6 +132,8 @@ export function normalizeDirection(raw, duration) {
     return {
       at: s.at,
       duration: s.duration,
+      ...(finite(s.x)?{x:s.x}:{}),
+      ...(finite(s.y)?{y:s.y}:{}),
       scale: ["wide", "medium", "close", "macro"].includes(s.scale)
         ? s.scale
         : "medium",
@@ -131,6 +152,7 @@ export function normalizeDirection(raw, duration) {
     materials: str(raw.materials),
     lighting: str(raw.lighting),
     transition: str(raw.transition, 400),
+    ...(raw.cameraTarget && /^\.[a-zA-Z][\w-]*$/.test(raw.cameraTarget)?{cameraTarget:raw.cameraTarget}:{}),
   };
 }
 export function wordsForScene(project, index) {
