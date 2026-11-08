@@ -24,9 +24,9 @@ export function makeAcceptanceFixtures(){
  return Object.entries(subjects).map(([topic,theme])=>{
   const scene=i=>({
    id:topic+'-'+i,duration:3,title:theme.title,scriptExcerpt:theme.title,
-   approved:false,transition:'cut',captionMode:'none',
+   approved:false,transition:i===2&&['anatomia','historia'].includes(topic)?'fade':'cut',captionMode:'none',
    customScene:{html:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280"><rect width="720" height="1280" fill="#101d2e"/><g class="world">'+theme.shape+'</g><text x="360" y="290" text-anchor="middle" fill="'+COLOR[topic]+'" font-size="36">'+theme.label+'</text></svg>',css:'',script:i===1?'tl.fromTo(S+\' .pulse\',{opacity:.5},{opacity:1,duration:1.2,yoyo:true,repeat:1},T0+.2);':''},
-   direction:{objective:'Mostrar la relación de causa y efecto: '+theme.title,before:{},after:{},actions:[],shots:[{at:0,duration:1.5,scale:'wide',target:'world',purpose:'Contexto'},{at:1.5,duration:1.5,scale:'close',target:'world',purpose:'Detalle'}],cameraTarget:'.world'}
+   direction:{objective:'Mostrar la relación de causa y efecto: '+theme.title,before:{},after:{},actions:i===2?[{id:'mostrar-'+topic,at:.3,duration:1.2,selector:'.pulse',description:'Revelar foco',result:'Foco visible',motion:{from:{opacity:.2},to:{opacity:1}}}]:[],shots:[{at:0,duration:1.5,scale:'wide',target:'world',purpose:'Contexto'},{at:1.5,duration:1.5,scale:'close',target:'world',purpose:'Detalle'}],cameraTarget:'.world'}
   });
   return {topic,project:{name:'Aceptación '+topic,format:'vertical',resolution:'720p',fps:24,showText:false,script:theme.title,creativeBrief:'Prueba técnica reproducible, no aprobada artísticamente.',scenes:[scene(1),scene(2)]}};
  });
