@@ -1,3 +1,4 @@
+import {STYLE_PRESET_IDS,normalizeSoundDesign,normalizeBrandProfile} from './src/motion-capabilities.mjs';
 import path from 'node:path';
 import {ensureDistinctVisualActionPlan, normalizeVisualActionPlan} from './src/visual-action-planner.mjs';
 import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
@@ -16,6 +17,7 @@ export const formats = new Set(['vertical', 'horizontal']);
 export const palettes = new Set(['aurora', 'sunset', 'mono']);
 export const layouts = new Set(['hero', 'orbit', 'editorial', 'data', 'kinetic', 'collage']);
 export const shapes = new Set(['ring', 'dot', 'bars', 'square']);
+const acceptedStylePresets=new Set(STYLE_PRESET_IDS);
 export const styles = new Set(['modern', 'horror', 'watercolor', 'documentary',
   'cinematic', 'tech', 'minimal', 'energetic', 'playful']);
 export const motionPresets = new Set(['auto', 'static', 'push', 'pull', 'pan-left',
@@ -92,6 +94,8 @@ export function validateProject(raw) {
     script: text(raw.script, 45000),
     creativeBrief: text(raw.creativeBrief, 2000),
     style: styles.has(raw.style) ? raw.style : 'modern',
+    stylePreset: acceptedStylePresets.has(raw.stylePreset)?raw.stylePreset:'',
+    brandProfile: normalizeBrandProfile(raw.brandProfile),
     visualEngine: ['classic', 'canvas'].includes(raw.visualEngine) ? raw.visualEngine : 'adaptive',
     resolution: raw.resolution === '1080p' ? '1080p' : '720p',
     fps: Number(raw.fps) === 30 ? 30 : 24,
@@ -147,6 +151,7 @@ export function validateProject(raw) {
         direction: normalizeDirection(scene.direction, duration),
         captionMode: ['global', 'none'].includes(scene.captionMode) ? scene.captionMode : 'embedded',
         style: styles.has(scene.style) ? scene.style : undefined,
+        stylePreset: acceptedStylePresets.has(scene.stylePreset)?scene.stylePreset:undefined,
         motion: motionPresets.has(scene.motion) ? scene.motion : 'auto',
         motionStrength: Math.round(Math.min(100, Math.max(0, number(scene.motionStrength, 40)))),
         transition: transitionPresets.has(scene.transition) ? scene.transition : 'cut',
@@ -209,6 +214,8 @@ export function validateProject(raw) {
     }),
   };
   const length = project.scenes.reduce((acc, scene) => acc + scene.duration, 0);
+  project.soundDesign=normalizeSoundDesign(raw.soundDesign,length);
+  project.loop=raw.loop===true;
   project.actors = normalizeActors(raw.actors);
   project.wordTimings = normalizeWordTimings(raw.wordTimings, length);
   if (new Set(project.scenes.map(s => s.id)).size !== project.scenes.length) throw new Error('Las escenas deben tener identificadores únicos.');
