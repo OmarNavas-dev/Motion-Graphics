@@ -3,6 +3,7 @@ import http from 'node:http';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
+import vm from 'node:vm';
 import {fileURLToPath} from 'node:url';
 import {randomUUID} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
@@ -176,7 +177,9 @@ async function beginAutonomousVisualReview(session,project,previous,modelConfig)
           s.id===scene.id?{...s,customScene:code}:s)});
         const preflight=checkCustomScenePreflight(candidate);
         if(!preflight.passed)throw Error('Selector de escena inválido: '+preflight.errors.slice(0,3).join(' | '));
-        return candidate.scenes.find(s=>s.id===scene.id).customScene;
+        const valid=candidate.scenes.find(s=>s.id===scene.id).customScene;
+        new vm.Script('(function(tl,S,T0,D,gsap){'+valid.script+'\n})');
+        return valid;
       },
       onProgress:progress=>{session.progress=progress;},
       propose:async (candidate,source,{validationFeedback}={})=>proposeVisionRevisions(candidate,source.visualDefects,

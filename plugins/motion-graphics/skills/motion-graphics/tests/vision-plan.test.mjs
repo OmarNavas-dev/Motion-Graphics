@@ -26,6 +26,8 @@ test('complemento P1 aplica escena visual y preserva JSON original',()=>{
   assert.throws(()=>applyVerifiedVisionPlan(p,r,illegal),/no permitid/);
   const missing=plan(p,r);missing.scenes[0].customScene.script='tl.to(S+" .fantasma",{opacity:0});';
   assert.throws(()=>applyVerifiedVisionPlan(p,r,missing),/sin elemento HTML/);
+  const syntax=plan(p,r);syntax.scenes[0].customScene.script='tl.to(';
+  assert.throws(()=>applyVerifiedVisionPlan(p,r,syntax),SyntaxError);
 });
 test('complemento P1 escribe manifiesto seguro sin sobrescribir',async()=>{
   const dir=await fs.mkdtemp(path.join(os.tmpdir(),'p1-vision-'));
