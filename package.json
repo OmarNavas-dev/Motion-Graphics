@@ -35,6 +35,7 @@
     "studio:dev": "vite",
     "test": "node --test plugin-package.test.mjs brand-profile.test.mjs reference-parity-gate.test.mjs pacing-quality-audit.test.mjs loop-quality-audit.test.mjs sound-design.test.mjs style-catalog.test.mjs acceptance-five-topics.test.mjs contact-motion-audit.test.mjs audio-quality-audit.test.mjs quality-contact-sheet.test.mjs direction-compiler.test.mjs render-quality-audit.test.mjs visual-iteration-video.test.mjs visual-autonomous.test.mjs visual-direction-audit.test.mjs visual-action-planner.test.mjs canvas-3d-engine.test.mjs server-utils.test.mjs cloud-integrations.test.mjs auto-graphics.test.mjs ai-planner.test.mjs semantic-director.test.mjs media-director.test.mjs hyperframes-bridge.test.mjs hyperframes-v7.test.mjs hyperframes-server.test.mjs windows-launcher.test.mjs windows-media-path.test.mjs custom-scene.test.mjs custom-scene-preflight.test.mjs export-regressions.test.mjs explainer.test.mjs motion-ecosystem.test.mjs windows-native-runtime.test.mjs plugins/motion-graphics/skills/motion-graphics/tests/*.test.mjs render-lifecycle.test.mjs hyperframes-progress.test.mjs caption-pixels.test.mjs",
     "test:ai-route": "node --test ai-route.test.mjs",
+    "test:font-compat": "node --test font-path-compat.test.mjs",
     "test:p2": "node --test broll-contract.test.mjs",
     "accept:broll:alpha": "node scripts/acceptance-broll-alpha.mjs",
     "accept:styles:21": "node scripts/acceptance-21-styles.mjs",

@@ -18,6 +18,8 @@ jobs:
         run: npm ci --include=dev
       - name: Test contracts and quality modules
         run: npm test
+      - name: Verify legacy Windows font URL compatibility
+        run: npm run test:font-compat
       - name: Verify B-roll schema and plugin parity
         run: npm run test:p2
       - name: Verify 21 executable style recipes

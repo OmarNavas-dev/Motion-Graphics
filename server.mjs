@@ -10,6 +10,7 @@ import {spawn, spawnSync} from 'node:child_process';
 import {pipeline} from 'node:stream/promises';
 import {buildPreviewHtml} from './preview-player.mjs';
 import {collectProjectAssets, BUNDLED_FONT_FACES} from './src/project-assets.mjs';
+import {legacyFontFilename} from './src/font-path-compat.mjs';
 import {MOTION_STUDIO_CONTRACT} from './src/motion-capabilities.mjs';
 import {hyperframesProgress} from './src/hyperframes-progress.mjs';
 import {Transform} from 'node:stream';
@@ -748,6 +749,11 @@ async function beginHyperframesRender(project,{sourceJobId=null,attempt=1}={}) {
 async function handle(req, res) {
   const url = new URL(req.url || '/', 'http://127.0.0.1');
   const pathname = url.pathname;
+  // Previously generated projects can reference the legacy Inter font URL.
+  const legacyFont = legacyFontFilename(pathname);
+  if (req.method === 'GET' && legacyFont) {
+    return sendFile(res, path.join(root, 'public', 'fonts'), legacyFont);
+  }
   if (req.method === 'GET' && BUNDLED_FONT_FACES.some(([, file]) => pathname === '/' + file)) {
     return sendFile(res, path.join(root, 'public', 'fonts'), path.basename(pathname));
   }
