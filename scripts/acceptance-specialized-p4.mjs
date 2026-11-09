@@ -69,7 +69,9 @@ if((await fs.stat(sheet)).size<8000)throw Error('P4: hoja de contactos vacía.')
 const cover=generateWorkflowProject({workflow:'loop-cover',demo:true,duration:9});
 const coverMp4=path.join(directory,'loop-cover-9s.mp4');
 await render(cover,coverMp4);
-const loopSeam=difference(smallFrame(coverMp4,0.025),smallFrame(coverMp4,8.975));
+// The final 24 fps frame begins at 8.958 s; seeking to 8.975 s is already
+// past the last decoded frame, and ffmpeg legitimately returns no pixels.
+const loopSeam=difference(smallFrame(coverMp4,0.025),smallFrame(coverMp4,8.94));
 if(loopSeam>1.2)throw Error('P4: la portada GIF no cierra su bucle: '+loopSeam);
 const gif=path.join(directory,'loop-cover-180-frames.gif');
 run('ffmpeg',['-v','error','-y','-i',coverMp4,
