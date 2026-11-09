@@ -186,6 +186,63 @@ export function renderAuthored(spec, options = {}) {
     }
     if (l.type === "svg")
       body = `<svg viewBox="${esc(l.viewBox || "0 0 100 100")}" width="100%" height="100%">${l.svg || ""}</svg>`;
+    if(l.type==='character' && l.actor?.poses?.length){
+      // Deterministic 2D two-bone IK. The same declared wrist/ankle targets are
+      // audited before export; no frame-to-frame mutation or browser physics.
+      const poses=l.actor.poses;
+      let prev=poses[0],next=prev;
+      for(let i=1;i<poses.length;i++)if(time<poses[i].at){next=poses[i];break;}else prev=poses[i];
+      const progress=prev===next?0:clamp((time-prev.at)/Math.max(.001,next.at-prev.at));
+      const mix=progress*progress*(3-2*progress);
+      const interpolate=(key)=>n(prev[key])+(n(next[key])-n(prev[key]))*mix;
+      const interpolatePoint=(key)=>prev[key].map((v,i)=>v+(next[key][i]-v)*mix);
+      const p={rootX:interpolate('rootX'),rootY:interpolate('rootY'),
+        headTilt:interpolate('headTilt'),squash:interpolate('squash'),
+        expression:prev.expression,grip:prev.grip,contact:prev.contact,
+        leftHand:interpolatePoint('leftHand'),rightHand:interpolatePoint('rightHand'),
+        leftFoot:interpolatePoint('leftFoot'),rightFoot:interpolatePoint('rightFoot')};
+      const limb=(start,end,upper,lower,bend)=>{
+        const dx=end[0]-start[0],dy=end[1]-start[1],d=Math.hypot(dx,dy)||.001;
+        const a=(upper*upper-lower*lower+d*d)/(2*d),h=Math.sqrt(Math.max(0,upper*upper-a*a))*bend;
+        return [start[0]+a*dx/d-h*dy/d,start[1]+a*dy/d+h*dx/d];
+      };
+      const palette=l.actor.colors||{},skin=color(palette.skin,'#D6A17E'),hair=color(palette.hair,'#283544');
+      const shirt=color(palette.shirt,'#4B8BBE'),pants=color(palette.pants,'#283957');
+      const accent=color(palette.accent,'#F5CC71');
+      const hipY=182+p.squash*35,shoulderY=116+p.squash*16,headY=64+p.squash*25;
+      const line=(start,end,stroke,size)=>`<path d="M${start.join(' ')}L${end.join(' ')}" fill="none" stroke="${stroke}" stroke-width="${size}" stroke-linecap="round"/>`;
+      let limbs='';
+      for(const side of ['left','right']){
+        const left=side==='left',hip=[left?104:136,hipY],ankle=p[side+'Foot'];
+        const knee=limb(hip,ankle,66,67,left?-1:1);
+        const shoulder=[left?88:152,shoulderY],wrist=p[side+'Hand'];
+        const elbow=limb(shoulder,wrist,64,62,left?1:-1);
+        limbs+=line(hip,knee,pants,20)+line(knee,ankle,pants,17)+
+          `<circle data-dvj-joint="${side}-knee" cx="${knee[0]}" cy="${knee[1]}" r="8" fill="${pants}"/>`+
+          line(shoulder,elbow,shirt,21)+line(elbow,wrist,skin,13)+
+          `<circle data-dvj-joint="${side}-elbow" cx="${elbow[0]}" cy="${elbow[1]}" r="7" fill="${shirt}"/>`+
+          `<circle data-dvj-hand="${side}" cx="${wrist[0]}" cy="${wrist[1]}" r="9" fill="${skin}"/>`+
+          `<ellipse data-dvj-foot="${side}" data-dvj-contact="${p.contact[side]}" cx="${ankle[0]+(left?-4:4)}" cy="${ankle[1]}" rx="15" ry="6" fill="#111C2A"/>`;
+      }
+      const eye=p.expression==='blink'?'<path d="M-12 -3L-5 -3M6 -3L13 -3" stroke="#192530" stroke-width="2.6"/>':
+        '<ellipse cx="-8" cy="-5" rx="2.8" ry="4" fill="#182530"/><ellipse cx="9" cy="-5" rx="2.8" ry="4" fill="#182530"/>';
+      const eyebrows=p.expression==='angry'?'<path d="M-16 -12L-4 -8M5 -8L17 -12" stroke="#28313B" stroke-width="3"/>':
+        '<path d="M-16 -13L-5 -14M5 -14L16 -13" stroke="#28313B" stroke-width="2.5"/>';
+      const mouth=p.expression==='surprised'?'<ellipse cx="1" cy="17" rx="6" ry="9" fill="#78363D"/>':
+        p.expression==='happy'?'<path d="M-12 12Q0 29 13 12" fill="none" stroke="#78363D" stroke-width="3"/>':
+        p.expression==='sad'?'<path d="M-11 22Q0 8 12 22" fill="none" stroke="#78363D" stroke-width="3"/>':
+        '<path d="M-9 17Q0 19 10 17" fill="none" stroke="#78363D" stroke-width="2.5"/>';
+      const head=`<g transform="translate(120 ${headY}) rotate(${p.headTilt})"><ellipse cx="0" cy="0" rx="28" ry="36" fill="${skin}"/>`+
+        `<path d="M-28 -7Q-38 -40 -10 -39Q7 -51 26 -29L29 -6Q13 -27 -4 -24Q-16 -13 -28 -7Z" fill="${hair}"/>`+
+        eye+eyebrows+mouth+'</g>';
+      const held=p.grip?`<g data-dvj-held="right" transform="translate(${p.rightHand[0]+7} ${p.rightHand[1]-8})">`+
+        `<rect x="-3" y="-19" width="18" height="25" rx="3" fill="${accent}"/><rect x="0" y="-15" width="12" height="4" fill="#244761"/></g>`:'';
+      body=`<svg viewBox="0 0 240 320" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" data-dvj-rig="${esc(l.actor.id)}">`+
+        `<g transform="translate(${p.rootX} ${p.rootY})">`+
+        `<ellipse cx="120" cy="286" rx="55" ry="5" fill="#000" opacity=".17"/>`+
+        `<path d="M89 ${shoulderY-10}Q120 ${shoulderY-28} 151 ${shoulderY-10}L145 ${hipY}Q120 ${hipY+8} 95 ${hipY}Z" fill="${shirt}"/>`+
+        limbs+head+held+'</g></svg>';
+    }
     if (l.type === "particles") {
       let seed = n(l.particles?.seed, 7) >>> 0;
       const rnd = () => {

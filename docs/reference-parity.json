@@ -319,9 +319,13 @@
       "status": "partial",
       "evidence": [
         "plugins/motion-graphics/skills/motion-graphics/scripts/kinematic-motion.mjs",
-        "src/contact-motion-audit.mjs"
+        "src/contact-motion-audit.mjs",
+        "src/character-motion.mjs",
+        "src/authored-renderer.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/generate-character-project.mjs"
       ],
-      "blocker": "Physical weight, expressions and credible acting lack robust visual evaluation"
+      "tests": ["character-motion-p5.test.mjs", "scripts/acceptance-characters-p5.mjs"],
+      "blocker": "P5 implementa rig 2D articulado, expresiones, agarre y auditoría objetiva de pies con cinco renders; aún falta homologación de peso corporal creíble, oclusión/anatomía compleja y actuación natural frente a referencias reales"
     },
     {
       "source": "Motion Studio (target)",

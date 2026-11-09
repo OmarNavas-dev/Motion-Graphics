@@ -6,6 +6,7 @@ import {normalizeActors, normalizeDirection, normalizeWordTimings} from './src/e
 import {normalizeBroll} from './src/broll-timeline.mjs';
 import {createStyleComposition} from './src/style-recipes.mjs';
 import {getSpecializedFlow} from './src/specialized-workflows.mjs';
+import {inspectCharacterMotion,validateCharacterRig} from './src/character-motion.mjs';
 
 export const MAX_ASSET_BYTES = 50 * 1024 * 1024;
 export const MAX_SCENES = 80;
@@ -52,7 +53,7 @@ const normalizeAuthored = (authored, duration) => {
       last=key.at;
     }
   }
-  const ids = new Set(), supported = new Set(['group','shape','text','caption','image','particles','svg','path','arrow','wave','gradient','glow']);
+  const ids = new Set(), supported = new Set(['group','shape','text','caption','image','particles','svg','path','arrow','wave','gradient','glow','character']);
   for (const layer of authored.layers) {
     if (!layer || !/^[A-Za-z][\w-]*$/.test(layer.id || '') || ids.has(layer.id)) throw Error('Identificador de capa inválido o duplicado.');
     ids.add(layer.id);
@@ -63,6 +64,11 @@ const normalizeAuthored = (authored, duration) => {
     if (layer.asset) validateAsset(layer.asset, 'image');
     if (layer.fillAsset) throw Error('fillAsset no tiene paridad entre motores; usa una capa image y una máscara en customScene.');
     if (layer.svg) sanitizeCustomScene({html:layer.svg,css:'',script:''}, layer.id);
+    if (layer.type === 'character') {
+      const rig=validateCharacterRig(layer.actor,duration);
+      const report=inspectCharacterMotion(rig,{duration,width:1280});
+      if(!report.passed)throw Error('P5: personaje con problemas de contacto: '+report.findings.map(f=>f.code+' '+f.foot).join(', '));
+    }
     let previous = -1;
     if (layer.keyframes && (!Array.isArray(layer.keyframes) || layer.keyframes.length > 100)) throw Error('Lista de keyframes inválida.');
     for (const k of layer.keyframes || []) {

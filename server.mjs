@@ -32,6 +32,7 @@ import {assertVisionModel,visionModelConfig,proposeVisionRevisions,judgeVisionRe
 import {runVisualAutoLoop} from './src/visual-auto-loop.mjs';
 import {inspectAlphaMov,compositeBrollAlpha} from './src/broll-export.mjs';
 import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
+import {inspectCharacterMotion} from './src/character-motion.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
 const root = path.dirname(fileURLToPath(import.meta.url));
@@ -449,6 +450,17 @@ async function reviewCompletedRender(job,project,output,id){
       if(!job.loopAudit.seamlessByHeuristic)job.log+='[Loop] Salto en cierre: revisar primera y última imagen.\\n';
     }catch(error){job.loopAudit={measured:false,error:error.message};}
   }
+  const characterScenes=project.scenes.flatMap((scene,index)=>scene.authored?.layers
+    ?.filter(layer=>layer.type==='character').map(layer=>({scene:scene.id,index,
+      action:layer.actor?.action||'custom',duration:scene.duration,rig:layer.actor}))||[]);
+  if(characterScenes.length){
+    const results=characterScenes.map(({scene,index,action,duration,rig})=>({scene,index,action,
+      ...inspectCharacterMotion(rig,{duration,width:project.format==='vertical'?720:1280,fps:project.fps})}));
+    job.characterMotionAudit={measured:true,rigs:results.length,
+      passed:results.every(r=>r.passed),results};
+    job.log+='[P5] '+results.length+' personaje(s) articulado(s) medidos; '+
+      results.reduce((n,r)=>n+r.findings.length,0)+' defectos de contacto.\n';
+  }else job.characterMotionAudit={measured:false,rigs:0,passed:null,results:[]};
   const reviewDir=path.join(outDir,'quality-reviews',id);
   let sheet=null;
   try{
@@ -463,6 +475,7 @@ async function reviewCompletedRender(job,project,output,id){
     if(previous)job.iterationComparison=compareVisualReports(previous,job.visualDefects);
   }
   await fsp.mkdir(reviewDir,{recursive:true});
+  await fsp.writeFile(path.join(reviewDir,'character-audit.json'),JSON.stringify(job.characterMotionAudit,null,2));
   await fsp.writeFile(path.join(reviewDir,'defects.json'),JSON.stringify(job.visualDefects,null,2));
   job.log+='[P1] Informe de defectos: /reviews/'+id+'/defects.json ('+job.visualDefects.defects.length+' observaciones).\n';
   job.qualityEvidence={rendered:true,visualApproval:false,heuristicsOnly:true,
@@ -870,6 +883,7 @@ async function handle(req, res) {
       visualAudit:job.visualAudit??null, audioTimingAudit:job.audioTimingAudit??null,
       audioLoudnessAudit:job.audioLoudnessAudit??null, audioAssetsAudit:job.audioAssetsAudit??null, contactSheet:job.contactSheet??null,
       soundDesignAudit:job.soundtrackAudit??null,loopAudit:job.loopAudit??null,qualityEvidence:job.qualityEvidence??null,pacingAudit:job.pacingAudit??null,
+      characterMotionAudit:job.characterMotionAudit??null,
       visualDefects:job.visualDefects??null,sourceJobId:job.sourceJobId,attempt:job.attempt,iterationComparison:job.iterationComparison??null,
       alphaAudit:job.alphaAudit??null,alphaDownload:job.alphaDownload??null,
     }) : respond(res, 404, {error: 'Trabajo no encontrado.'});
