@@ -39,6 +39,8 @@
     "accept:broll:alpha": "node scripts/acceptance-broll-alpha.mjs",
     "accept:styles:21": "node scripts/acceptance-21-styles.mjs",
     "test:p3": "node --test style-recipes-p3.test.mjs",
+    "test:p4": "node --test specialized-workflows-p4.test.mjs",
+    "accept:workflows:p4": "node scripts/acceptance-specialized-p4.mjs",
     "test:audio-cues": "node scripts/verify-audio-cues.mjs",
     "test:smoke": "node scripts/smoke-v2.mjs",
     "test:acceptance-v71": "node scripts/acceptance-v71.mjs",

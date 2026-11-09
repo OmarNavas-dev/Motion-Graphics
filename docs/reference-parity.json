@@ -14,27 +14,34 @@
       "id": "explainer-default",
       "status": "partial",
       "evidence": [
-        "plugins/motion-graphics/skills/motion-graphics/references/produccion-2.7.md"
+        "plugins/motion-graphics/skills/motion-graphics/references/produccion-2.7.md",
+        "src/specialized-workflows.mjs"
       ],
-      "blocker": "Production mode not separately exposed and acceptance-tested"
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 genera storyboard, MP4 y Foley; exactitud del UI del producto y diseño sonoro completo dependen de fuentes reales y revisión humana"
     },
     {
       "source": "Barty-Bart/motion-graphics",
       "id": "explainer-engaging",
       "status": "partial",
       "evidence": [
-        "plugins/motion-graphics/skills/motion-graphics/scripts/creative-direction.mjs"
+        "plugins/motion-graphics/skills/motion-graphics/scripts/creative-direction.mjs",
+        "src/specialized-workflows.mjs",
+        "src/authored-renderer.mjs"
       ],
-      "blocker": "No dedicated engaging production profile"
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 implementa una sola toma, estaciones y cámara de keyframes; faltan físicas de contacto avanzadas, cámara resuelta con simulación y partitura reactiva de la referencia"
     },
     {
       "source": "Barty-Bart/motion-graphics",
       "id": "explainer-high-energy",
       "status": "partial",
       "evidence": [
-        "plugins/motion-graphics/skills/motion-graphics/scripts/continuous-motion.mjs"
+        "plugins/motion-graphics/skills/motion-graphics/scripts/continuous-motion.mjs",
+        "src/specialized-workflows.mjs"
       ],
-      "blocker": "No dedicated high-energy production profile"
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 genera perfiles cinéticos y MP4 con Foley; ritmos sobre una pista musical real, tipografía variable y transiciones geométricas complejas no son equivalentes 1:1"
     },
     {
       "source": "Barty-Bart/motion-graphics",
@@ -164,48 +171,58 @@
       "id": "animated-chart",
       "status": "partial",
       "evidence": [
-        "src/auto-graphics.mjs"
+        "src/auto-graphics.mjs",
+        "src/specialized-workflows.mjs"
       ],
-      "blocker": "Not all advanced chart morphing / storytelling workflows implemented"
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "Datos fuente y etiquetas estrictos; morphing barras→línea y paridad GIF/MP4 con datasets reales no se han homologado"
     },
     {
       "source": "charlie947/motion-graphics-skills",
       "id": "apple-launch-film",
-      "status": "missing",
-      "evidence": [],
-      "blocker": "No dedicated brand/product cinematic launch workflow"
+      "status": "partial",
+      "evidence": ["src/specialized-workflows.mjs"],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 ejecuta widgets y composiciones de lanzamiento genéricos; no implementa fidelidad completa de macOS ni certificación visual Apple"
     },
     {
       "source": "charlie947/motion-graphics-skills",
       "id": "launch-video",
       "status": "partial",
       "evidence": [
-        "src/semantic-director.mjs"
+        "src/semantic-director.mjs",
+        "src/specialized-workflows.mjs"
       ],
-      "blocker": "No dedicated turnkey launch mode"
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 tiene generador y MP4; aún requiere pruebas visuales de producto reales y verificación estética del brief original"
     },
     {
       "source": "charlie947/motion-graphics-skills",
       "id": "loop-cover",
       "status": "partial",
       "evidence": [
-        "src/loop-quality-audit.mjs"
+        "src/loop-quality-audit.mjs",
+        "src/specialized-workflows.mjs",
+        "scripts/acceptance-specialized-p4.mjs"
       ],
-      "blocker": "Loop auditing exists but autonomous cover design and rework absent"
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "GIF real de 180 cuadros y medición del bucle; seleccionar y segmentar un objeto dentro de portada arbitraria no es automático"
     },
     {
       "source": "charlie947/motion-graphics-skills",
       "id": "milestone-reveal",
-      "status": "missing",
-      "evidence": [],
-      "blocker": "No milestone-specific staged reveal generator"
+      "status": "partial",
+      "evidence": ["src/specialized-workflows.mjs"],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 genera revelación de cifra con fuente obligatoria; muestreo tipográfico de miles de partículas y loop exacto de la referencia quedan pendientes"
     },
     {
       "source": "charlie947/motion-graphics-skills",
       "id": "model-showdown",
-      "status": "missing",
-      "evidence": [],
-      "blocker": "No split comparison showdown workflow"
+      "status": "partial",
+      "evidence": ["src/SpecializedWorkflowMedia.tsx", "src/specialized-workflows.mjs"],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "Tres MP4 auténticos se componen en paralelo; el usuario aún debe gestionar la captura inicial, los logos y la equidad de cada prueba"
     },
     {
       "source": "charlie947/motion-graphics-skills",
@@ -237,9 +254,10 @@
     {
       "source": "charlie947/motion-graphics-skills",
       "id": "newsletter-promo",
-      "status": "missing",
-      "evidence": [],
-      "blocker": "No newsletter-specific renderer workflow"
+      "status": "partial",
+      "evidence": ["src/specialized-workflows.mjs"],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "Guion gancho→3 pruebas→CTA y MP4 ejecutables; no se extraen automáticamente pruebas de páginas web ni se confirma validez de sus derechos"
     },
     {
       "source": "charlie947/motion-graphics-skills",
@@ -264,18 +282,22 @@
       "id": "title-sequence-3d",
       "status": "partial",
       "evidence": [
-        "src/canvas-3d-engine.mjs"
+        "src/canvas-3d-engine.mjs",
+        "src/specialized-workflows.mjs"
       ],
-      "blocker": "Canvas 3D exists; no source-equivalent 3D title workflow fully verified"
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 usa composición 2.5D verificable; Three.js, reflectividad física, bloom y movimiento 3D equivalente no quedan implementados"
     },
     {
       "source": "charlie947/motion-graphics-skills",
       "id": "vox-explainer",
       "status": "partial",
       "evidence": [
-        "plugins/motion-graphics/skills/motion-graphics/scripts/explainer-kit.mjs"
+        "plugins/motion-graphics/skills/motion-graphics/scripts/explainer-kit.mjs",
+        "src/specialized-workflows.mjs"
       ],
-      "blocker": "Vox-specific visual storytelling contract not fully verified"
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "Composición editorial y fuentes por hecho obligatorias; recortes precisos, visuales de archivo y narración verificable quedan sujetos a material real y revisión"
     },
     {
       "source": "Motion Studio (target)",

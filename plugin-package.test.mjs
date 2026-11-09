@@ -9,7 +9,7 @@ test('el paquete y los contratos de autoría cubren las 26 guías y 21 estilos s
  const result=await inspectPluginPackage();
  assert.deepEqual(result.errors,[]);
  assert.equal(result.passed,true);
- assert.equal(result.version,'2.12.0');
+ assert.equal(result.version,'2.13.0');
  assert.equal(result.sourceGuides,26);
  assert.equal(result.styles,21);
 });

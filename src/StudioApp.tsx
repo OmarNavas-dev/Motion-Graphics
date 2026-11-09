@@ -7,6 +7,7 @@ import {exportHyperframesProject, exportHyperframesScene} from './hyperframes-br
 import {assignReferenceImages} from './media-director.mjs';
 import {suggestMotionGraphics, timedStoryboardBlocks} from './auto-graphics.mjs';
 import {createStyleComposition,getExecutableStyle,STYLE_RECIPE_IDS} from './style-recipes.mjs';
+import {generateSpecializedProject,listSpecializedFlows} from './specialized-workflows.mjs';
 import {normalizeBroll} from '../plugins/motion-graphics/skills/motion-graphics/scripts/broll-timeline.mjs';
 import {createVisualActionPlan, createVisualActionPlans} from './visual-action-planner.mjs';
 import {
@@ -331,6 +332,7 @@ function StudioApp() {
   const [runtimeReview, setRuntimeReview] = useState<{projectHash:string;passed:boolean;errors:string[];warnings:string[]}|null>(null);
   const [reviewBusy, setReviewBusy] = useState(false);
   const [selected, setSelected] = useState(0);
+  const [selectedWorkflow,setSelectedWorkflow] = useState('explainer-default');
   const [idea, setIdea] = useState('');
   const [jsonToImport, setJsonToImport] = useState('');
   const [busy, setBusy] = useState(false);
@@ -492,6 +494,17 @@ function StudioApp() {
       title:currentScene.title,duration:currentScene.duration,format:project.format,brandProfile:project.brandProfile}) : undefined}:{})});
     setNotice(custom?'P3: conservé el arte manual y los medios; el estilo queda como referencia visual.':
       'P3: composición '+(selectedRecipe?getExecutableStyle(selectedRecipe).name:'sin receta')+' generada para esta escena.');
+  };
+  const createWorkflowDemo = () => {
+    if(project.scenes.length>0 && !window.confirm('P4: crear una nueva demostración reemplazará las escenas sin guardar del editor. ¿Continuar?'))return;
+    try{
+      const generated=generateSpecializedProject({workflow:selectedWorkflow,demo:true,
+        format:project.format,brandProfile:project.brandProfile});
+      changeProject({...defaultStudioProject,...generated,scenes:generated.scenes.map(s=>({...s,approved:false}))});
+      setSelected(0);
+      setNotice('P4: '+listSpecializedFlows().find(f=>f.id===selectedWorkflow)?.name+
+        ' generado como DEMOSTRACIÓN. Sustituye los datos de ejemplo por información real antes de publicarlo.');
+    }catch(error){setNotice((error as Error).message);}
   };
   const applyBroll = (next: StudioProject['broll']) => {
     try {
@@ -1171,6 +1184,13 @@ function StudioApp() {
             </select>
           </label>
           <p className="hint">Las 21 recetas producen capas y movimiento en ambos renderizadores, respetando escenas con imágenes o composiciones propias. Elige una y revisa el resultado antes de exportar.</p>
+          <label>P4 · Flujo especializado ejecutable
+            <select value={selectedWorkflow} onChange={e=>setSelectedWorkflow(e.target.value)}>
+              {listSpecializedFlows().map(flow=><option key={flow.id} value={flow.id}>{flow.name}</option>)}
+            </select>
+          </label>
+          <button type="button" onClick={createWorkflowDemo}>Crear proyecto de demostración P4</button>
+          <p className="hint">El proyecto P4 creado desde aquí es una muestra ilustrativa y nunca representa resultados o cifras reales. Para producción, el complemento solicita los datos y medios originales de cada flujo.</p>
           <label>Motor visual de las escenas
             <select value={project.visualEngine ?? 'adaptive'}
               onChange={(e) => patchProject({visualEngine: e.target.value as 'adaptive' | 'classic' | 'canvas'})}>

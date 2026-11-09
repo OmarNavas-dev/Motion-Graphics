@@ -16,6 +16,8 @@ export function collectProjectAssets(project, {scenes = project.scenes ?? [], in
   }
   if (includeReferences) for (const asset of project.references ?? []) add(asset);
   const sceneIds = new Set(scenes.map(scene => scene.id));
+  if (project.workflow?.id === 'model-showdown' && scenes.length)
+    for (const asset of project.workflow.media ?? []) add(asset);
   for (const clip of project.broll ?? []) if (sceneIds.has(clip.sceneId)) for (const obj of clip.objects ?? []) add(obj.asset);
   for (const scene of scenes) {
     add(scene.imageAsset); add(scene.videoAsset);

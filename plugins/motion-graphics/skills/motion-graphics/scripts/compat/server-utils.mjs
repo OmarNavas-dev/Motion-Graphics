@@ -5,6 +5,7 @@ import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
 import {normalizeActors, normalizeDirection, normalizeWordTimings} from './src/explainer-contract.mjs';
 import {normalizeBroll} from './src/broll-timeline.mjs';
 import {createStyleComposition} from './src/style-recipes.mjs';
+import {getSpecializedFlow} from './src/specialized-workflows.mjs';
 
 export const MAX_ASSET_BYTES = 50 * 1024 * 1024;
 export const MAX_SCENES = 80;
@@ -39,6 +40,18 @@ const number = (value, fallback) => Number.isFinite(Number(value)) ? Number(valu
 const normalizeAuthored = (authored, duration) => {
   if (!authored || typeof authored !== 'object' || !Array.isArray(authored.layers)) return undefined;
   if (authored.layers.length > 500) throw Error('La composición admite hasta 500 capas.');
+  const cameraKeys=authored.camera?.keyframes;
+  if (cameraKeys !== undefined) {
+    if (!Array.isArray(cameraKeys) || cameraKeys.length>24)throw Error('P4: cámara con demasiados keyframes.');
+    let last=-1;
+    for(const key of cameraKeys){
+      if(!Number.isFinite(key.at)||key.at<last||key.at<0||key.at>duration)throw Error('P4: keyframe de cámara fuera de tiempo.');
+      for(const prop of ['x','y','zoom','rotate'])if(key[prop]!==undefined&&!Number.isFinite(key[prop]))
+        throw Error('P4: valor de cámara no numérico.');
+      if(key.zoom!==undefined && (key.zoom<.1||key.zoom>4))throw Error('P4: zoom de cámara fuera de rango.');
+      last=key.at;
+    }
+  }
   const ids = new Set(), supported = new Set(['group','shape','text','caption','image','particles','svg','path','arrow','wave','gradient','glow']);
   for (const layer of authored.layers) {
     if (!layer || !/^[A-Za-z][\w-]*$/.test(layer.id || '') || ids.has(layer.id)) throw Error('Identificador de capa inválido o duplicado.');
@@ -226,6 +239,21 @@ export function validateProject(raw) {
   const length = project.scenes.reduce((acc, scene) => acc + scene.duration, 0);
   project.soundDesign=normalizeSoundDesign(raw.soundDesign,length);
   project.loop=raw.loop===true;
+  if (raw.workflow !== undefined && raw.workflow !== null) {
+    if (typeof raw.workflow !== 'object' || Array.isArray(raw.workflow)) throw Error('Contrato P4 inválido.');
+    const meta = getSpecializedFlow(raw.workflow.id);
+    const media = Array.isArray(raw.workflow.media) ? raw.workflow.media : [];
+    if (media.length > 3 || (meta.id === 'model-showdown' && raw.workflow.demo !== true && media.length !== 3)) {
+      throw Error('P4: model-showdown necesita exactamente tres vídeos de origen.');
+    }
+    project.workflow = {id: meta.id, sourceGuide: meta.sourceGuide, demo: raw.workflow.demo === true,
+      mode: raw.workflow.mode === 'preview' ? 'preview' : 'complete', export:meta.export||'mp4',
+      source: text(raw.workflow.source, 240),brief:text(raw.workflow.brief,1200),
+      sources:(Array.isArray(raw.workflow.sources)?raw.workflow.sources:[]).slice(0,30)
+        .map(row=>({claim:text(row?.claim,180),source:text(row?.source,240)}))
+        .filter(row=>row.claim&&row.source),
+      media:media.map(asset=>validateAsset(asset,'video'))};
+  }
   project.actors = normalizeActors(raw.actors);
   project.wordTimings = normalizeWordTimings(raw.wordTimings, length);
   if (new Set(project.scenes.map(s => s.id)).size !== project.scenes.length) throw new Error('Las escenas deben tener identificadores únicos.');

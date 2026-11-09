@@ -29,6 +29,7 @@ import {AuthoredScene as ComplexAuthoredScene} from './AuthoredScene';
 import {MediaFirstScene} from './MediaFirstScene';
 import {chooseConcept} from './semantic-director.mjs';
 import {BrollTrack} from './BrollTrack';
+import {SpecializedWorkflowMedia} from './SpecializedWorkflowMedia';
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 
@@ -565,6 +566,7 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
               <NarrativeScene scene={scene} style={style} showText={showText}
                 sceneNumber={index + 1}/>
             )}
+            {project.workflow?.id==='model-showdown'?<SpecializedWorkflowMedia project={project}/>:null}
             {showText && scene.captionMode === 'global' ? <GlobalWordCaptions project={project} index={index}/> : null}
             {showText && scene.captionMode !== 'global' && scene.captionMode !== 'none' && scene.captions?.length ? <CaptionTrack scene={scene}/> : null}
             {scene.layers?.length ? <SceneLayers scene={scene}/> : null}

@@ -268,6 +268,8 @@ const renderScene = (scene, project, index, record, embeddedAssets, showText) =>
 };
 
 export const exportHyperframesProject = (project, only, gsapSource = '', embeddedAssets = {}) => {
+  if (project.workflow?.id === 'model-showdown' && project.workflow.media?.length)
+    throw Error('P4: model-showdown con tres MP4 requiere exportación Remotion; HyperFrames no compone los tres vídeos en este contrato.');
   const scenes = only ? [only] : (project.scenes || []);
   const {width, height} = getDimensions(project.format, project.resolution);
   const portrait = height > width;
