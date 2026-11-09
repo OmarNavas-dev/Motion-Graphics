@@ -38,7 +38,7 @@ export function validateCharacterRig(rig,duration){
   for(const side of ['left','right']){
    const hip=[side==='left'?104:136,182+pose.squash*35];
    const shoulder=[side==='left'?88:152,116+pose.squash*16];
-   solveLimb(hip,pose[side+'Foot'],59,61,side==='left'?1:-1);
+   solveLimb(hip,pose[side+'Foot'],52,52,side==='left'?1:-1);
    solveLimb(shoulder,pose[side+'Hand'],46,48,side==='left'?1:-1);
   }
   previous=pose.at;
@@ -73,7 +73,7 @@ export function inspectCharacterMotion(rig,{duration,width=1280,fps=24,slideThre
    if(prior&&distance>accelerationThresholdPx)findings.push({code:'FOOT_TELEPORT',foot:side,time:Number(time.toFixed(3)),pixels:Number(distance.toFixed(2))});
    last.set(side,current);
    const hip=[side==='left'?104:136,182+p.squash*35];
-   maxStretch=Math.max(maxStretch,Math.hypot(foot[0]-hip[0],foot[1]-hip[1])/(59+61));
+   maxStretch=Math.max(maxStretch,Math.hypot(foot[0]-hip[0],foot[1]-hip[1])/(52+52));
   }
  }
  return {measured:plantedPairs>0,frames,plantedPairs,airbornePairs,maxStretch:Number(maxStretch.toFixed(4)),

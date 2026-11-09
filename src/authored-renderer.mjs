@@ -214,7 +214,7 @@ export function renderAuthored(spec, options = {}) {
       let limbs='';
       for(const side of ['left','right']){
         const left=side==='left',hip=[left?104:136,hipY],ankle=p[side+'Foot'];
-        const knee=limb(hip,ankle,59,61,left?1:-1);
+        const knee=limb(hip,ankle,52,52,left?1:-1);
         const shoulder=[left?88:152,shoulderY],wrist=p[side+'Hand'];
         const elbow=limb(shoulder,wrist,46,48,left?1:-1);
         limbs+=line(hip,knee,pants,20)+line(knee,ankle,pants,17)+

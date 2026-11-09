@@ -48,10 +48,18 @@ test('P5: caminar mantiene puntos plantados estables durante el desplazamiento d
  assert.equal(report.findings.length,0,JSON.stringify(report.findings.slice(0,3)));
 });
 
+test('P5: rodillas casi extendidas en reposo y flexionadas durante agacharse',()=>{
+ const standing=solveLimb([104,182],[102,280],52,52,1);
+ const crouched=solveLimb([104,186.9],[102,267],52,52,1);
+ assert.ok(Math.abs(standing[0]-104)<20,'de pie no debe parecer una sentadilla profunda');
+ assert.ok(Math.abs(crouched[0]-104)>Math.abs(standing[0]-104)+10,
+   'agacharse debe aumentar la flexión de la rodilla');
+});
+
 test('P5: detecta deslizamiento, articulación inalcanzable y deformaciones excesivas',()=>{
  const actor=createCharacterAction('greet');
  const badSlide=structuredClone(actor);
- badSlide.poses[1].leftFoot=[140,280];
+ badSlide.poses[1].leftFoot=[130,280];badSlide.poses[1].at=.15;
  const report=inspectCharacterMotion(badSlide,{duration:badSlide.poses.at(-1).at});
  assert.equal(report.passed,false);
  assert.ok(report.findings.some(f=>f.code==='FOOT_SLIDE'));
