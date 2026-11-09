@@ -18,7 +18,7 @@ const explicitActionFor = (text) => {
   return null;
 };
 
-const clean = (value, max) => String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max);
+const clean = (value, max) => String(value ?? '').replace(/\s+/g, ' ').trim().slice(0, max).trim();
 const subjectFor = (scene, project = {}) => clean(scene.visualQuery || scene.title || scene.scriptExcerpt || project.name || 'el elemento principal', 120);
 const motionFor = (scene, index, previous) => {
   const requested = scene.motion;
@@ -98,7 +98,7 @@ export function normalizeVisualActionPlan(raw, scene = {}, project = {}, index =
     .map((beat, beatIndex) => ({
       at: Math.max(0, Math.min(0.99, Number(beat?.at) || 0)),
       duration: Math.max(0.01, Math.min(1, Number(beat?.duration) || 0.1)),
-      action: clean(beat?.action, 160) || `Ejecuta el beat ${beatIndex + 1} de ${subject}.`,
+      action: clean(beat?.action, 320) || `Ejecuta el beat ${beatIndex + 1} de ${subject}.`,
     })).sort((a, b) => a.at - b.at);
   let beatEnd = 0;
   const stable = value => Math.round(value * 1e9) / 1e9;

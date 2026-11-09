@@ -45,10 +45,22 @@ export function renderAuthored(spec, options = {}) {
     a = { x: 0, y: 0, zoom: 1, rotate: 0, ...spec.camera?.from },
     b = { ...a, ...spec.camera?.to },
     cam = {};
-  for (const k of ["x", "y", "zoom", "rotate"])
-    cam[k] =
-      n(a[k], k === "zoom" ? 1 : 0) +
-      (n(b[k], k === "zoom" ? 1 : 0) - n(a[k], k === "zoom" ? 1 : 0)) * u;
+  const cameraKeys = Array.isArray(spec.camera?.keyframes) ? spec.camera.keyframes : [];
+  let cameraFrom={...a,at:0},cameraTo={...b,at:duration},cameraT=u;
+  if(cameraKeys.length){
+    for(const next of cameraKeys){
+      cameraTo={...cameraFrom,...next};
+      if(time <= cameraTo.at){
+        const v=clamp((time-cameraFrom.at)/Math.max(.001,cameraTo.at-cameraFrom.at));
+        cameraT=v*v*(3-2*v);
+        break;
+      }
+      cameraFrom=cameraTo;cameraT=1;
+    }
+  }
+  for(const k of ["x", "y", "zoom", "rotate"])
+    cam[k] = n(cameraFrom[k], k === "zoom" ? 1 : 0) +
+      (n(cameraTo[k], k === "zoom" ? 1 : 0)-n(cameraFrom[k], k === "zoom" ? 1 : 0))*cameraT;
   const node = (l, bw, bh, root = false) => {
     const age = time - n(l.enter?.at);
     if (age < 0 || (!showText && ["text", "caption"].includes(l.type)))

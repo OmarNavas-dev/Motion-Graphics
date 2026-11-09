@@ -22,6 +22,8 @@ jobs:
         run: npm run test:p2
       - name: Verify 21 executable style recipes
         run: npm run test:p3
+      - name: Verify 12 executable specialized workflows
+        run: npm run test:p4
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types
@@ -94,5 +96,29 @@ jobs:
         with:
           name: p3-styles-21-mp4-and-contact-sheet
           path: out/p3-style-gallery/
+          if-no-files-found: warn
+          retention-days: 14
+  workflows-acceptance:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci --include=dev
+      - name: Install FFmpeg and FFprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Render 12 workflow MP4s, GIF and real comparison
+        run: npm run accept:workflows:p4
+      - name: Upload workflow videos, GIF and inspection report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p4-workflows-video-gif-and-report
+          path: out/p4-specialized/
           if-no-files-found: warn
           retention-days: 14

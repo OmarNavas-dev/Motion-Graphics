@@ -223,6 +223,17 @@ async function ensureMediaAvailable(project) {
       throw new Error(`Falta un archivo importado: ${reference}. Vuelve a cargarlo antes de exportar.`);
     }
   }
+  if (project.workflow?.id === 'model-showdown' && !project.workflow.demo) {
+    const length=project.scenes.reduce((sum,scene)=>sum+scene.duration,0);
+    for (const asset of project.workflow.media ?? []) {
+      const full=path.join(assetsDir,path.basename(asset));
+      const probe=spawnSync('ffprobe',['-v','error','-show_entries','format=duration',
+        '-of','default=noprint_wrappers=1:nokey=1',full],{encoding:'utf8',windowsHide:true,timeout:15000});
+      const seconds=Number(probe.stdout?.trim());
+      if(probe.status!==0||!Number.isFinite(seconds)||seconds<length-.04)
+        throw Error('P4: el vídeo '+asset+' debe cubrir los '+length+' segundos completos de la comparativa.');
+    }
+  }
 }
 
 async function sendFile(res, base, relative, download = false, req = null) {
@@ -582,6 +593,8 @@ function assertHyperframesRequirements() {
 }
 
 async function beginHyperframesRender(project,{sourceJobId=null,attempt=1}={}) {
+  if (project.workflow?.id === 'model-showdown' && project.workflow.media?.length)
+    throw new Error('P4: model-showdown con tres MP4 requiere exportación Remotion para conservar los tres vídeos reales.');
   const preflight=checkCustomScenePreflight(project);
   if(!preflight.passed)throw Error('Corrige la escena antes de exportar: '+preflight.errors.slice(0,6).join(' | '));
   if (project.visualEngine === 'canvas') {
