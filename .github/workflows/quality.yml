@@ -52,6 +52,8 @@ jobs:
         run: node --test browser-style-catalog.test.mjs
       - name: Guard visual storytelling and vertical composition regressions
         run: node --test art-direction-quality.test.mjs
+      - name: Guard automatic cross-scene SVG identifier repair
+        run: node --test scene-id-repair.test.mjs
       - name: Record source-integration parity (informational)
         run: npm run integration:status
       - name: Five-domain contract acceptance

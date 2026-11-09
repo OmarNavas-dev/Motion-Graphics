@@ -592,13 +592,17 @@ function StudioApp() {
   const save = async () => {
     setBusy(true);
     try {
-      const value = await api<{project: StudioProject}>('/api/project', {
+      const value = await api<{project: StudioProject;sceneIdRepair?:{changes:{scene:string;from:string;to:string}[];warnings:string[]}}>('/api/project', {
         method: 'PUT', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(project),
       });
       setProject(value.project);
       setDirty(false);
-      setNotice('Proyecto guardado en tu computadora.');
+      setNotice(value.sceneIdRepair?.changes.length
+        ? `Proyecto guardado. Se repararon ${value.sceneIdRepair.changes.length} identificadores SVG repetidos.`
+        : value.sceneIdRepair?.warnings.length
+          ? `Proyecto guardado con ${value.sceneIdRepair.warnings.length} conflictos de identificadores que requieren revisión manual.`
+        : 'Proyecto guardado en tu computadora.');
     } catch (error) {
       setNotice(`Error al guardar: ${(error as Error).message}`);
     } finally {
@@ -616,14 +620,16 @@ function StudioApp() {
     setRenderStatus(null);
     try {
       const endpoint = renderEngine === 'hyperframes' ? '/api/render/hyperframes' : '/api/render';
-      const response = await api<{jobId: string}> (endpoint, {
+      const response = await api<{jobId: string;sceneIdRepair?:{changes:{scene:string;from:string;to:string}[]}}> (endpoint, {
         method: 'POST', headers: {'Content-Type': 'application/json'},
         body: JSON.stringify(project),
       });
       setDirty(false);
       setRenderJobId(response.jobId);
       setRenderStatus({engine: renderEngine, status: 'renderizando', progress: 0, error: '', log: '', download: null});
-      setNotice(project.visualEngine === 'canvas'
+      setNotice(response.sceneIdRepair?.changes.length
+        ? `Se repararon ${response.sceneIdRepair.changes.length} identificadores antes de iniciar el render. Espera el resultado.`
+        : project.visualEngine === 'canvas'
         ? 'Canvas 3D se exporta mediante Remotion, por fotogramas y en CPU.'
         : renderEngine === 'hyperframes'
           ? 'HyperFrames está preparando el navegador y renderizando tu MP4 en local.'
@@ -1032,19 +1038,24 @@ function StudioApp() {
     }
     const source = incoming as Partial<StudioProject>;
     const raw = {...source, scenes: source.scenes?.map((scene) => ({...scene, approved: false}))};
-    const result = await api<{project: StudioProject}>('/api/project', {
+    const result = await api<{project: StudioProject;sceneIdRepair?:{changes:{scene:string;from:string;to:string}[];warnings:string[]}}>('/api/project', {
       method: 'PUT', headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(raw),
     });
     setProject(result.project);
     setSelected(0);
     setDirty(false);
+    return result.sceneIdRepair;
   };
   const importJson = async () => {
     try {
       const parsed = JSON.parse(jsonToImport);
-      await loadJsonProject(parsed.project ?? parsed);
-      setNotice('Proyecto importado. Revisa y aprueba todas sus escenas.');
+      const repair=await loadJsonProject(parsed.project ?? parsed);
+      setNotice(repair?.changes.length
+        ? `Proyecto importado. Se repararon ${repair.changes.length} identificadores SVG repetidos. Revisa y aprueba las escenas.`
+        : repair?.warnings.length
+          ? `Proyecto importado con ${repair.warnings.length} identificadores ambiguos; revisa los avisos antes de exportar.`
+        : 'Proyecto importado. Revisa y aprueba todas sus escenas.');
       setJsonToImport('');
     } catch (error) {
       setNotice(`JSON rechazado: ${(error as Error).message}`);
