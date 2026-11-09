@@ -16,7 +16,7 @@
     "shortDescription": "Animaci\u00f3n para Motion Studio"
   },
   "name": "motion-graphics",
-  "version": "2.9.3",
+  "version": "2.9.5",
   "description": "Crea un unico proyecto JSON para Motion Studio a partir de guion y audio adjuntos en ChatGPT, con escenas en SVG, HTML, CSS y GSAP y kits de motion graphics (materiales, camara con zona segura, efectos, etiquetas, mecanismos, personajes, escenarios de oceano/iglesia/celda, objetos de historia, placas editoriales y cierre del canal).",
   "author": {
     "name": "Omar Navas",

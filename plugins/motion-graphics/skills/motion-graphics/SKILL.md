@@ -7,7 +7,7 @@ description: Convierte un guion y su narracion en un unico proyecto JSON importa
 
 Crear un único `proyecto.json` completo, editable e importable en Motion Studio, a partir del guion, narración y referencias disponibles en ChatGPT. Conservar idioma, contenido, ajustes del proyecto existente y decisiones explícitas del usuario. No asumir acceso a su ordenador. Motion Studio reproduce y exporta; esta habilidad no entrega MP4, no genera otra voz, no modifica el motor ni publica código.
 
-## Integración de las cuatro referencias y contrato 2.9.3
+## Integración de las cuatro referencias y contrato vigente
 
 Leer [guias-originales-4-repos.md](references/guias-originales-4-repos.md) para localizar el flujo pertinente y consultar su texto completo en `references/source-guides/` (26 documentos originales). Los 21 estilos completos están en `references/styles/`, con el índice práctico [galeria-estilos-21.md](references/galeria-estilos-21.md). Adaptar cada guía al JSON y a las capacidades verificadas de Motion Studio; copiar una guía o elegir una paleta no implementa por sí solo un flujo de producción ni certifica su estilo.
 

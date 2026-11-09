@@ -1,6 +1,6 @@
 # P1: circuito de revisión visual y re-render
 
-Implementación integrada con el paquete Motion Graphics 2.9.3 y Motion Studio.
+Implementación integrada con el paquete Motion Graphics 2.9.5 y Motion Studio.
 El módulo de contrato y reparación está físicamente en plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs, importado directamente por el servidor y el complemento: no hay dos implementaciones divergentes.
 
 ## Flujo de trabajo
