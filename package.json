@@ -37,6 +37,8 @@
     "test:ai-route": "node --test ai-route.test.mjs",
     "test:p2": "node --test broll-contract.test.mjs",
     "accept:broll:alpha": "node scripts/acceptance-broll-alpha.mjs",
+    "accept:styles:21": "node scripts/acceptance-21-styles.mjs",
+    "test:p3": "node --test style-recipes-p3.test.mjs",
     "test:audio-cues": "node scripts/verify-audio-cues.mjs",
     "test:smoke": "node scripts/smoke-v2.mjs",
     "test:acceptance-v71": "node scripts/acceptance-v71.mjs",

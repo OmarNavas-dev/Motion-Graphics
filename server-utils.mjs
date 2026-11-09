@@ -4,6 +4,7 @@ import {ensureDistinctVisualActionPlan, normalizeVisualActionPlan} from './src/v
 import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
 import {normalizeActors, normalizeDirection, normalizeWordTimings} from './src/explainer-contract.mjs';
 import {normalizeBroll} from './src/broll-timeline.mjs';
+import {createStyleComposition} from './src/style-recipes.mjs';
 
 export const MAX_ASSET_BYTES = 50 * 1024 * 1024;
 export const MAX_SCENES = 80;
@@ -85,6 +86,7 @@ export function validateProject(raw) {
     throw new Error('Se permiten hasta 100 audios de dialogo.');
   }
   const visualActionPlans = [];
+  const brandProfile=normalizeBrandProfile(raw.brandProfile);
   const project = {
     name: text(raw.name || 'Motion Studio', 42),
     format: formats.has(raw.format) ? raw.format : 'vertical',
@@ -96,7 +98,7 @@ export function validateProject(raw) {
     creativeBrief: text(raw.creativeBrief, 2000),
     style: styles.has(raw.style) ? raw.style : 'modern',
     stylePreset: acceptedStylePresets.has(raw.stylePreset)?raw.stylePreset:'',
-    brandProfile: normalizeBrandProfile(raw.brandProfile),
+    brandProfile,
     visualEngine: ['classic', 'canvas'].includes(raw.visualEngine) ? raw.visualEngine : 'adaptive',
     resolution: raw.resolution === '1080p' ? '1080p' : '720p',
     fps: Number(raw.fps) === 30 ? 30 : 24,
@@ -122,6 +124,13 @@ export function validateProject(raw) {
     scenes: raw.scenes.map((rawScene, index) => {
       const scene = rawScene && typeof rawScene === 'object' ? rawScene : {};
       const duration = Math.min(60, Math.max(0.5, Math.round(number(scene.duration, 4) * 1000) / 1000));
+      const selectedStyle = acceptedStylePresets.has(scene.stylePreset) ? scene.stylePreset :
+        acceptedStylePresets.has(raw.stylePreset) ? raw.stylePreset : '';
+      const useStyleRecipe = selectedStyle && !scene.imageAsset && !scene.videoAsset &&
+        !scene.customScene?.html && !(scene.motionGraphics?.length) &&
+        (!scene.authored || /^style-preset\//.test(scene.authored.source || ''));
+      const authoredInput = useStyleRecipe ? createStyleComposition(selectedStyle,{
+        title:scene.title,duration,format:raw.format,brandProfile}) : scene.authored;
       const hadVisualActionPlan = scene.visualActionPlan?.version === 1 && typeof scene.visualActionPlan.action === 'string';
       const normalizedPlan = normalizeVisualActionPlan(scene.visualActionPlan, scene, raw, index, visualActionPlans[index - 1]);
       const visualActionPlan = ensureDistinctVisualActionPlan(normalizedPlan, visualActionPlans, index);
@@ -159,7 +168,7 @@ export function validateProject(raw) {
         focusX: Math.round(Math.min(100, Math.max(0, number(scene.focusX, 50)))),
         focusY: Math.round(Math.min(100, Math.max(0, number(scene.focusY, 50)))),
         customScene: sanitizeCustomScene(scene.customScene, index + 1),
-        authored: normalizeAuthored(scene.authored, duration),
+        authored: normalizeAuthored(authoredInput, duration),
         layers: (Array.isArray(scene.layers) ? scene.layers : []).slice(0, 8).map((rawLayer, layerIndex) => {
           const layer = rawLayer && typeof rawLayer === 'object' ? rawLayer : {};
           return {id: text(layer.id || `layer-${layerIndex + 1}`, 45).replace(/[^a-zA-Z0-9-_]/g, ''), asset: validateAsset(layer.asset, 'image'), depth: Math.round(Math.min(100, Math.max(-100, number(layer.depth, 0)))), x: Math.round(Math.min(100, Math.max(0, number(layer.x, 50)))), y: Math.round(Math.min(100, Math.max(0, number(layer.y, 50)))), scale: Math.round(Math.min(3, Math.max(0.1, number(layer.scale, 1))) * 100) / 100, opacity: Math.round(Math.min(1, Math.max(0, number(layer.opacity, 1))) * 100) / 100};

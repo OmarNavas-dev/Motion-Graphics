@@ -6,6 +6,7 @@ import {FaithfulPreview, type PreviewHandle} from './FaithfulPreview';
 import {exportHyperframesProject, exportHyperframesScene} from './hyperframes-bridge';
 import {assignReferenceImages} from './media-director.mjs';
 import {suggestMotionGraphics, timedStoryboardBlocks} from './auto-graphics.mjs';
+import {createStyleComposition,getExecutableStyle,STYLE_RECIPE_IDS} from './style-recipes.mjs';
 import {normalizeBroll} from '../plugins/motion-graphics/skills/motion-graphics/scripts/broll-timeline.mjs';
 import {createVisualActionPlan, createVisualActionPlans} from './visual-action-planner.mjs';
 import {
@@ -465,10 +466,32 @@ function StudioApp() {
   };
   const patchProject = (patch: Partial<StudioProject>) => {
     const requiresReview = Object.keys(patch).some((name) =>
-      ['format', 'palette', 'style', 'visualEngine', 'creativeBrief', 'showText', 'characterMode', 'script',
+      ['format', 'palette', 'style', 'stylePreset', 'visualEngine', 'creativeBrief', 'showText', 'characterMode', 'script',
         'references', 'audioAsset', 'musicVolume', 'voiceClips', 'narrationMode', 'fps', 'resolution', 'actors', 'wordTimings'].includes(name));
     changeProject({...project, ...patch,
       scenes: requiresReview ? markForReview(project.scenes) : project.scenes});
+  };
+  const selectProjectStylePreset = (id:string) => {
+    const scenes=project.scenes.map(scene=>{
+      if(scene.stylePreset || scene.customScene?.html || scene.imageAsset || scene.videoAsset ||
+        scene.motionGraphics?.length || scene.authored && !scene.authored.source?.startsWith('style-preset/'))
+        return {...scene,approved:false};
+      return {...scene,approved:false,authored:id ? createStyleComposition(id,{title:scene.title,
+        duration:scene.duration,format:project.format,brandProfile:project.brandProfile}) : undefined};
+    });
+    changeProject({...project,stylePreset:id||undefined,scenes});
+    setNotice(id?'P3: receta '+getExecutableStyle(id).name+' aplicada a escenas libres. Revisa las capas y aprueba.':
+      'Se retiró el estilo P3 global de las escenas que no tenían diseño propio.');
+  };
+  const selectSceneStylePreset = (id:string) => {
+    if(!currentScene)return;
+    const selectedRecipe=id||project.stylePreset||'';
+    const custom=Boolean(currentScene.customScene?.html || currentScene.imageAsset || currentScene.videoAsset ||
+      currentScene.motionGraphics?.length || currentScene.authored && !currentScene.authored.source?.startsWith('style-preset/'));
+    patchScene({stylePreset:id||undefined,...(!custom?{authored:selectedRecipe ? createStyleComposition(selectedRecipe,{
+      title:currentScene.title,duration:currentScene.duration,format:project.format,brandProfile:project.brandProfile}) : undefined}:{})});
+    setNotice(custom?'P3: conservé el arte manual y los medios; el estilo queda como referencia visual.':
+      'P3: composición '+(selectedRecipe?getExecutableStyle(selectedRecipe).name:'sin receta')+' generada para esta escena.');
   };
   const applyBroll = (next: StudioProject['broll']) => {
     try {
@@ -1141,6 +1164,13 @@ function StudioApp() {
                 <option key={id} value={id}>{name}</option>)}
             </select>
           </label>
+          <label>P3 · Estilo visual ejecutable (21 recetas)
+            <select value={project.stylePreset??''} onChange={e=>selectProjectStylePreset(e.target.value)}>
+              <option value="">Sin receta; conservar arte actual</option>
+              {STYLE_RECIPE_IDS.map(id=><option key={id} value={id}>{getExecutableStyle(id).name}</option>)}
+            </select>
+          </label>
+          <p className="hint">Las 21 recetas producen capas y movimiento en ambos renderizadores, respetando escenas con imágenes o composiciones propias. Elige una y revisa el resultado antes de exportar.</p>
           <label>Motor visual de las escenas
             <select value={project.visualEngine ?? 'adaptive'}
               onChange={(e) => patchProject({visualEngine: e.target.value as 'adaptive' | 'classic' | 'canvas'})}>
@@ -1564,6 +1594,14 @@ function StudioApp() {
                   <option key={id} value={id}>{name}</option>)}
               </select>
             </label>
+            <label>P3 · Receta ejecutable de esta escena
+              <select value={currentScene.stylePreset??''} onChange={e=>selectSceneStylePreset(e.target.value)}>
+                <option value="">Heredar receta del proyecto</option>
+                {STYLE_RECIPE_IDS.map(id=><option key={id} value={id}>{getExecutableStyle(id).name}</option>)}
+              </select>
+            </label>
+            {(currentScene.authored?.source?.startsWith('style-preset/')||Boolean(currentScene.stylePreset))&&
+              <p className="hint">Capas ejecutables: {currentScene.authored?.layers.length??0} · Firma visual: {currentScene.authored?.styleRules?.signature??'se aplicará al guardar'}.</p>}
             <div className="two-fields">
               <label>Movimiento de cámara
                 <select value={currentScene.motion ?? 'auto'}

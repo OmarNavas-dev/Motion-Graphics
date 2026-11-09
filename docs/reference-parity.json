@@ -108,9 +108,13 @@
       "status": "partial",
       "evidence": [
         "src/style-catalog.mjs",
-        "plugins/motion-graphics/skills/motion-graphics/references/styles/blueprint.md"
+        "src/style-recipes.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/references/styles/blueprint.md",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/generate-style-project.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/references/estilos-ejecutables-p3.md"
       ],
-      "blocker": "All 21 written guides integrated, but 21 local rendered previews and per-style visual implementation not yet complete"
+      "tests": ["style-recipes-p3.test.mjs", "scripts/acceptance-21-styles.mjs"],
+      "blocker": "21 recipes execute distinct composition and movement with 21 rendered MP4 acceptance samples; original media-specific editing, large particle simulations, procedural physics, and exact perceptual parity remain pending"
     },
     {
       "source": "ItsssssJack/claude-video-2",
