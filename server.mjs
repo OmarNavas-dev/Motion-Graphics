@@ -25,6 +25,7 @@ import {aiPlannerConfig, requestAiPlan, requestSceneCode, requestFullVideoCode} 
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
 import {auditVisualDirection} from './src/visual-direction-audit.mjs';
+import {auditArtDirection} from './src/art-direction-quality.mjs';
 import {auditRenderedVideo} from './src/render-quality-audit.mjs';
 import {auditLoopSeam} from './src/loop-quality-audit.mjs';
 import {auditRenderedPacing} from './src/pacing-quality-audit.mjs';
@@ -840,10 +841,15 @@ async function handle(req, res) {
       const project = validateProject(await bodyJson(req));
       if (!project.scenes.length) throw new Error('Añade escenas antes de revisar.');
       const preflight=checkCustomScenePreflight(project);
-      if(!preflight.passed)return respond(res,200,{passed:false,errors:preflight.errors,warnings:preflight.warnings,visualAudit:auditVisualDirection(project)});
+      const artDirection=auditArtDirection(project,{requiresReferences:project.references?.length>0});
+      if(!preflight.passed)return respond(res,200,{passed:false,errors:preflight.errors,warnings:preflight.warnings,visualAudit:auditVisualDirection(project),artDirection});
       const {reviewExplainer} = await import('./scripts/review-explainer.mjs');
       const review=await reviewExplainer(project, {root, publicDir, capture:false});
-      return respond(res,200,{...review,visualAudit:auditVisualDirection(project)});
+      const artErrors=artDirection.findings.filter(item=>item.severity==='error').map(item=>`${item.code}: ${item.message}`);
+      const artWarnings=artDirection.findings.filter(item=>item.severity==='warning').map(item=>`${item.code}: ${item.message}`);
+      return respond(res,200,{...review,passed:Boolean(review.passed)&&artDirection.readyForVisualReview,
+        errors:[...(review.errors??[]),...artErrors],warnings:[...(review.warnings??[]),...artWarnings],
+        visualAudit:auditVisualDirection(project),artDirection});
     }
   if (req.method === 'PUT' && pathname === '/api/project') {
     const project = validateProject(await bodyJson(req));
