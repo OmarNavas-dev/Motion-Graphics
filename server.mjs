@@ -19,6 +19,7 @@ import {
 } from './server-utils.mjs';
 import {searchFreeMedia, downloadFreeMedia, transcribeWithGroq, segmentWithRemoveBg} from './cloud-integrations.mjs';
 import {planExternalRequest} from './src/external-adapters-p7.mjs';
+import {createBrandKit,createMotionBrief,createMotionPrompt} from './src/authoring-workflows-p81.mjs';
 import {aiPlannerConfig, requestAiPlan, requestSceneCode, requestFullVideoCode} from './ai-planner.mjs';
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
@@ -808,6 +809,15 @@ async function handle(req, res) {
   if (req.method === 'POST' && pathname === '/api/media/import') return importMedia(req, res);
   if (req.method === 'POST' && pathname === '/api/external/plan')
     return respond(res,200,{request:planExternalRequest(await bodyJson(req))});
+  if (req.method === 'POST' && pathname === '/api/authoring/p81') {
+    const payload=await bodyJson(req);
+    const generators={'brand-intake':()=>createBrandKit(payload.brand??payload),
+      'motion-brief-writer':()=>createMotionBrief(payload),
+      'motion-prompt-writer':()=>createMotionPrompt(payload)};
+    if(!Object.hasOwn(generators,payload.kind))return respond(res,400,{error:'Flujo P8.1 no admitido.'});
+    const result=generators[payload.kind]();
+    return respond(res,result.ready?200:422,result);
+  }
   if (req.method === 'POST' && pathname === '/api/external/segment')return segmentExternalAsset(req,res);
     if (req.method === 'POST' && pathname === '/api/transcribe') return transcribeAsset(req, res);
     if (req.method === 'POST' && pathname === '/api/review') {
