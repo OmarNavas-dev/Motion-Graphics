@@ -1,0 +1,344 @@
+{
+  "schemaVersion": 1,
+  "target": "Motion Studio + Motion Graphics",
+  "readyForUserAcceptance": false,
+  "sources": [
+    "https://github.com/Barty-Bart/motion-graphics",
+    "https://github.com/whaleyxbt/claude-motion",
+    "https://github.com/ItsssssJack/claude-video-2",
+    "https://github.com/charlie947/motion-graphics-skills"
+  ],
+  "capabilities": [
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "explainer-default",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/references/produccion-2.7.md",
+        "src/specialized-workflows.mjs"
+      ],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 genera storyboard, MP4 y Foley; exactitud del UI del producto y diseño sonoro completo dependen de fuentes reales y revisión humana"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "explainer-engaging",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/creative-direction.mjs",
+        "src/specialized-workflows.mjs",
+        "src/authored-renderer.mjs"
+      ],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 implementa una sola toma, estaciones y cámara de keyframes; faltan físicas de contacto avanzadas, cámara resuelta con simulación y partitura reactiva de la referencia"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "explainer-high-energy",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/continuous-motion.mjs",
+        "src/specialized-workflows.mjs"
+      ],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 genera perfiles cinéticos y MP4 con Foley; ritmos sobre una pista musical real, tipografía variable y transiciones geométricas complejas no son equivalentes 1:1"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "motion-broll",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/broll-timeline.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/references/broll-transparencia-p2.md",
+        "src/BrollTrack.tsx",
+        "src/broll-export.mjs"
+      ],
+      "tests": ["broll-contract.test.mjs", "scripts/acceptance-broll-alpha.mjs"],
+      "blocker": "B-roll sincronizado y MOV ProRes 4444 implementados; siguen pendientes el visor antes/después y las transiciones interactivas del flujo Barty completo"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "object-separation",
+      "status": "external",
+      "evidence": ["cloud-integrations.mjs", "src/external-adapters-p7.mjs"],
+      "tests": ["external-adapters-p7.test.mjs"],
+      "blocker": "P7 incluye adaptador remove.bg y contrato PNG con alfa; no se ha ejecutado con clave pagada ni equivale a SAM 2.1, segmentación temporal por fotograma o separación de objetos múltiples"
+    },
+    {
+      "source": "Barty-Bart/motion-graphics",
+      "id": "sound-effects",
+      "status": "partial",
+      "evidence": [
+        "src/sound-design.mjs", "src/audio-simulation-p6.mjs"
+      ],
+      "tests": ["audio-simulation-p6.test.mjs", "scripts/acceptance-audio-simulations-p6.mjs"],
+      "blocker": "P6 sintetiza Foley con paneo, fades y mezcla estéreo; siguen sin homologarse una biblioteca musical licenciada y la colocación inteligente basada en escenas arbitrarias"
+    },
+    {
+      "source": "whaleyxbt/claude-motion",
+      "id": "motion-design",
+      "status": "partial",
+      "evidence": [
+        "src/direction-compiler.mjs"
+      ],
+      "blocker": "Not all camera/composition principles guaranteed to be executed"
+    },
+    {
+      "source": "whaleyxbt/claude-motion",
+      "id": "review-loop",
+      "status": "partial",
+      "evidence": [
+        "src/quality-contact-sheet.mjs",
+        "src/pacing-quality-audit.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/repair-from-report.mjs"
+      ],
+      "blocker": "Scene-attributed reports, safe text-contrast repair and linked re-renders exist; perceptual artwork edits still require image inspection and re-authoring"
+    },
+    {
+      "source": "whaleyxbt/claude-motion",
+      "id": "sound-design",
+      "status": "partial",
+      "evidence": [
+        "src/sound-design.mjs", "src/audio-quality-audit.mjs"
+      ],
+      "tests": ["audio-simulation-p6.test.mjs", "scripts/acceptance-audio-simulations-p6.mjs"],
+      "blocker": "P6 verificó paneo, ducking y sonoridad de mezcla real; recomendaciones multimodales y mastering perceptual comparado con referencias permanecen pendientes"
+    },
+    {
+      "source": "whaleyxbt/claude-motion",
+      "id": "web-sims",
+      "status": "partial",
+      "evidence": ["src/audio-simulation-p6.mjs", "src/authored-renderer.mjs"],
+      "tests": ["audio-simulation-p6.test.mjs", "scripts/acceptance-audio-simulations-p6.mjs"],
+      "blocker": "P6 dispone de cuatro simulaciones físicas 2D analíticas, pero no implementa el flujo web interactivo, entrada de usuario en vivo ni motor genérico de física de la referencia"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "21-style-gallery",
+      "status": "partial",
+      "evidence": [
+        "src/style-catalog.mjs",
+        "src/style-recipes.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/references/styles/blueprint.md",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/generate-style-project.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/references/estilos-ejecutables-p3.md"
+      ],
+      "tests": ["style-recipes-p3.test.mjs", "scripts/acceptance-21-styles.mjs"],
+      "blocker": "21 recipes execute distinct composition and movement with 21 rendered MP4 acceptance samples; original media-specific editing, large particle simulations, procedural physics, and exact perceptual parity remain pending"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "storyboard",
+      "status": "partial",
+      "evidence": [
+        "src/visual-direction-audit.mjs"
+      ],
+      "blocker": "Studio storyboard exists; full media credit storyboard and review approval not equivalent"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "pacing-check",
+      "status": "partial",
+      "evidence": [
+        "src/pacing-quality-audit.mjs"
+      ],
+      "blocker": "10 FPS gap detection implemented; exact flash/hold and human approval incomplete"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "loop-check",
+      "status": "partial",
+      "evidence": [
+        "src/loop-quality-audit.mjs"
+      ],
+      "blocker": "Pixel seam heuristic implemented; full end-state comparison with no-wrap clock not complete"
+    },
+    {
+      "source": "ItsssssJack/claude-video-2",
+      "id": "Higgsfield-media",
+      "status": "external",
+      "evidence": ["src/external-adapters-p7.mjs", "plugins/motion-graphics/skills/motion-graphics/scripts/plan-external-request.mjs"],
+      "tests": ["external-adapters-p7.test.mjs"],
+      "blocker": "P7 prepara planes y valida parámetros; ejecución pagada de Higgsfield, modelo y endpoint concretos, licencia y video importado no están verificados"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "brand-intake",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/references/direccion-creativa-2.6.md"
+      ],
+      "blocker": "Persistent enforceable brand/MOTION design contract absent"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "animated-chart",
+      "status": "partial",
+      "evidence": [
+        "src/auto-graphics.mjs",
+        "src/specialized-workflows.mjs"
+      ],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "Datos fuente y etiquetas estrictos; morphing barras→línea y paridad GIF/MP4 con datasets reales no se han homologado"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "apple-launch-film",
+      "status": "partial",
+      "evidence": ["src/specialized-workflows.mjs"],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 ejecuta widgets y composiciones de lanzamiento genéricos; no implementa fidelidad completa de macOS ni certificación visual Apple"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "launch-video",
+      "status": "partial",
+      "evidence": [
+        "src/semantic-director.mjs",
+        "src/specialized-workflows.mjs"
+      ],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 tiene generador y MP4; aún requiere pruebas visuales de producto reales y verificación estética del brief original"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "loop-cover",
+      "status": "partial",
+      "evidence": [
+        "src/loop-quality-audit.mjs",
+        "src/specialized-workflows.mjs",
+        "scripts/acceptance-specialized-p4.mjs"
+      ],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "GIF real de 180 cuadros y medición del bucle; seleccionar y segmentar un objeto dentro de portada arbitraria no es automático"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "milestone-reveal",
+      "status": "partial",
+      "evidence": ["src/specialized-workflows.mjs"],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 genera revelación de cifra con fuente obligatoria; muestreo tipográfico de miles de partículas y loop exacto de la referencia quedan pendientes"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "model-showdown",
+      "status": "partial",
+      "evidence": ["src/SpecializedWorkflowMedia.tsx", "src/specialized-workflows.mjs"],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "Tres MP4 auténticos se componen en paralelo; el usuario aún debe gestionar la captura inicial, los logos y la equidad de cada prueba"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "motion-brief-writer",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/creative-direction.mjs"
+      ],
+      "blocker": "No dedicated verified quantitative brief generator"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "motion-effects",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/kits/effects-16-kit.mjs"
+      ],
+      "blocker": "16 effects present but no source-wide effect-by-effect equivalence test"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "motion-prompt-writer",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/SKILL.md"
+      ],
+      "blocker": "No independent canonical prompt workflow"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "newsletter-promo",
+      "status": "partial",
+      "evidence": ["src/specialized-workflows.mjs"],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "Guion gancho→3 pruebas→CTA y MP4 ejecutables; no se extraen automáticamente pruebas de páginas web ni se confirma validez de sus derechos"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "reel-export",
+      "status": "partial",
+      "evidence": [
+        "src/hyperframes-bridge.mjs"
+      ],
+      "blocker": "MP4 export works; all reel aspect/bitrate/caption presets not verified"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "reference-to-motion",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/compare-video-motion.py"
+      ],
+      "blocker": "Motion difference exists; perceptual look transfer and auto-correct absent"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "title-sequence-3d",
+      "status": "partial",
+      "evidence": [
+        "src/canvas-3d-engine.mjs",
+        "src/specialized-workflows.mjs"
+      ],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "P4 usa composición 2.5D verificable; Three.js, reflectividad física, bloom y movimiento 3D equivalente no quedan implementados"
+    },
+    {
+      "source": "charlie947/motion-graphics-skills",
+      "id": "vox-explainer",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/explainer-kit.mjs",
+        "src/specialized-workflows.mjs"
+      ],
+      "tests": ["specialized-workflows-p4.test.mjs", "scripts/acceptance-specialized-p4.mjs"],
+      "blocker": "Composición editorial y fuentes por hecho obligatorias; recortes precisos, visuales de archivo y narración verificable quedan sujetos a material real y revisión"
+    },
+    {
+      "source": "Motion Studio (target)",
+      "id": "autonomous-artistic-correction-loop",
+      "status": "partial",
+      "evidence": [
+        "server.mjs",
+        "src/render-quality-audit.mjs",
+        "src/visual-vision-review.mjs",
+        "src/visual-auto-loop.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/apply-vision-plan.mjs"
+      ],
+      "blocker": "Local opt-in vision model can propose and trial scene corrections with image-pair judgment, but no installed model or reference-style quality benchmark is verified by CI; human artistic approval remains required"
+    },
+    {
+      "source": "Motion Studio (target)",
+      "id": "natural-character-acting",
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/kinematic-motion.mjs",
+        "src/contact-motion-audit.mjs",
+        "src/character-motion.mjs",
+        "src/authored-renderer.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/generate-character-project.mjs"
+      ],
+      "tests": ["character-motion-p5.test.mjs", "scripts/acceptance-characters-p5.mjs"],
+      "blocker": "P5 implementa rig 2D articulado, expresiones, agarre y auditoría objetiva de pies con cinco renders; aún falta homologación de peso corporal creíble, oclusión/anatomía compleja y actuación natural frente a referencias reales"
+    },
+    {
+      "source": "Motion Studio (target)",
+      "id": "transparent-ProRes-4444",
+      "status": "verified",
+      "evidence": ["src/BrollTrack.tsx", "src/broll-export.mjs", "server.mjs"],
+      "tests": ["scripts/acceptance-broll-alpha.mjs", "broll-contract.test.mjs"],
+      "blocker": "Verificación del alfa decodificable y composición MP4 con audio; ver pruebas de render en CI"
+    }
+  ]
+}

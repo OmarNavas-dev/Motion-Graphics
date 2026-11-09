@@ -53,6 +53,14 @@ try{
   const pixel=(x,y)=>[...final.subarray((y*1280+x)*3,(y*1280+x)*3+3)];
   assert.ok(pixel(360,300)[0]>180,'El objeto rojo debe estar integrado en el MP4.');
   assert.ok(pixel(3,3)[0]<80,'Fuera del objeto se debe ver el fondo original.');
+  if(process.env.MOTION_P8_EVIDENCE_DIR){
+    const evidence=path.resolve(root,process.env.MOTION_P8_EVIDENCE_DIR);
+    await fs.mkdir(evidence,{recursive:true});
+    await fs.copyFile(mov,path.join(evidence,'broll-alpha.mov'));
+    await fs.copyFile(mp4,path.join(evidence,'composite.mp4'));
+    await fs.writeFile(path.join(evidence,'report.json'),JSON.stringify({passed:true,alpha:report,
+      finalVideo:'H264+audio',pixelTests:['outside transparent','inside opaque','clip timed','MP4 composed']},null,2));
+  }
   console.log(JSON.stringify({passed:true,alpha:report,finalVideo:'H264+audio',
     pixelTests:['outside transparent','inside opaque','clip timed','MP4 composed']},null,2));
 }finally{await fs.rm(work,{recursive:true,force:true});}
