@@ -70,6 +70,17 @@ test('P4: modelo real conserva y valida los tres MP4 locales',()=>{
  assert.throws(()=>validateProject({...raw,workflow:{...raw.workflow,media:['../secreto.mp4']}}));
 });
 
+test('P4: rótulos y comparativa mantienen zonas seguras',()=>{
+ const showdown=generateSpecializedProject({workflow:'model-showdown',demo:true,compact:true,duration:2}).scenes[0].authored.layers;
+ assert.equal(showdown.filter(l=>l.type==='shape'&&l.fill==='#1A2130').length,3);
+ assert.ok(showdown.filter(l=>l.type==='shape'&&l.fill==='#1A2130')
+   .every(l=>l.height<=34&&l.y>=50));
+ const top=showdown.find(l=>l.type==='text'&&l.text==='UNA IDEA');
+ assert.ok(top&&top.height<=5&&top.y<=15);
+ const defaultFlow=generateSpecializedProject({workflow:'explainer-default',demo:true,compact:true,duration:2});
+ assert.ok(defaultFlow.scenes[0].authored.layers.some(l=>l.type==='text'&&l.text==='Crear'&&l.y>=35));
+});
+
 test('P4: el contrato conserva fuentes por hecho y brief de comparativa',()=>{
  const vox=generateWorkflowProject({workflow:'vox-explainer',demo:false,duration:10,
    data:{hook:'¿Por qué?',facts:[{text:'Hecho A',source:'https://example.org/a'},
