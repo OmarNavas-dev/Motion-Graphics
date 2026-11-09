@@ -82,9 +82,10 @@ export type LeavePreset = 'none' | 'fade' | 'drop' | 'shrink';
 export type SpringName = 'smooth' | 'soft' | 'snappy' | 'bouncy' | 'heavy';
 export type IdleKind = 'none' | 'float' | 'sway' | 'breathe' | 'pulse' | 'spin' | 'blink' | 'talk';
 export type AuthoredLayer = {id:string; type:'image'|'text'|'shape'|'particles'|'caption'|'svg'|'path'|'group'|'video'|'gradient'|'glow'|'mask'|'wave'|'arrow'|'icon'; parent?:string; x?:number;y?:number;width?:number;height?:number;rotate?:number;ax?:number;ay?:number;depth?:number;opacity?:number;flip?:boolean;shadow?:boolean;blend?:string;fixed?:boolean;enter?:{preset:EnterPreset;at:number;spring?:SpringName};leave?:{preset:LeavePreset;at:number;duration:number};idle?:{kind:IdleKind;amount?:number;speed?:number;phase?:number;from?:number;to?:number};asset?:string;text?:string;size?:number;weight?:number;font?:string;align?:string;color?:string;mode?:string;stagger?:number;wordTimes?:number[];emphasize?:number[];upper?:boolean;fillAsset?:string;words?:{w:string;s:number;e:number;box?:boolean}[];shape?:string;fill?:string;fill2?:string;angle?:number;stroke?:string;strokeWidth?:number;radius?:number;particles?:{kind:string;count:number;speed:number;size:number;seed:number}; points?:{x:number;y:number}[]; path?:string; icon?:string; videoAsset?:string; mask?:string; blur?:number; glow?:number; dash?:number; dashGap?:number; wave?:{amplitude:number;frequency:number;phase?:number}; arrow?:{head?:number;start?:number;end?:number}; gradient?:{stops:{color:string;offset:number}[];angle?:number}};
-export type AuthoredSpec = {layers: (AuthoredLayer & {svg?:string;viewBox?:string;keyframes?:{at:number;x?:number;y?:number;rotate?:number;scale?:number;opacity?:number}[]})[]; background?:{color?:string;color2?:string;angle?:number}; camera?:Record<string, unknown>; grade?:Record<string, unknown>; sfx?:unknown[]};
+export type AuthoredSpec = {source?:string;styleRules?:{id:string;signature:string;motion:string;family:string;typography:string;oneAccent:boolean;reference:string};layers: (AuthoredLayer & {svg?:string;viewBox?:string;keyframes?:{at:number;x?:number;y?:number;rotate?:number;scale?:number;opacity?:number}[]})[]; background?:{color?:string;color2?:string;angle?:number}; camera?:Record<string, unknown>; grade?:Record<string, unknown>; sfx?:unknown[]};
 
 export type StudioScene = {
+  stylePreset?:string;
   direction?: SceneDirection;
   captionMode?: 'embedded' | 'global' | 'none';
   id: string;
@@ -116,6 +117,8 @@ export type StudioScene = {
 };
 
 export type StudioProject = {
+  stylePreset?:string;
+  brandProfile?:{name:string;colors:Record<string,string>;typography:string;motionRules:string[];avoid:string[];narrativePromise:string};
   broll?: BrollClip[];
   actors?: ActorDefinition[];
   wordTimings?: WordTiming[];

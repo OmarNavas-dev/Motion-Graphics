@@ -20,6 +20,8 @@ jobs:
         run: npm test
       - name: Verify B-roll schema and plugin parity
         run: npm run test:p2
+      - name: Verify 21 executable style recipes
+        run: npm run test:p3
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types
@@ -70,3 +72,27 @@ jobs:
           path: out/acceptance-five-topics/
           if-no-files-found: warn
           retention-days: 7
+  styles-acceptance:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci --include=dev
+      - name: Install FFmpeg and FFprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Render 21 distinct style examples and contact sheet
+        run: npm run accept:styles:21
+      - name: Upload 21 MP4 examples and visual evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p3-styles-21-mp4-and-contact-sheet
+          path: out/p3-style-gallery/
+          if-no-files-found: warn
+          retention-days: 14

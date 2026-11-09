@@ -1,7 +1,8 @@
-// Style catalog from ItsssssJack/claude-video-2 (MIT). Full guides are bundled in the Motion Graphics source.
-// Resolving a style affects built-in theme colors; custom SVG must be explicitly authored for the guide.
+// Style catalog from ItsssssJack/claude-video-2 (MIT). Full original guides are bundled.
+// P3 adds executable visual recipes; reference guides still govern advanced art direction.
 import fs from 'node:fs';
 import path from 'node:path';
+import {getExecutableStyle} from './style-recipes.mjs';
 const styleMeta=Object.freeze([
   {
     "id": "paper-world",
@@ -164,10 +165,14 @@ export function isKnownStylePreset(id){return ids.has(id);}
 export function getStylePreset(id){
  if(!ids.has(id))throw Error('Estilo desconocido.');
  const metadata=styleMeta.find(s=>s.id===id),guide=styleDoc(id);
+ const executable=getExecutableStyle(id);
  const colors={background:firstHex(guide,['ground','background','bg','canvas'])||'#101820',
  ink:firstHex(guide,['text','ink','type','foreground','lines','points'])||'#FFFFFF',
  accent:firstHex(guide,['accent','highlight'])||'#FFC857'};
- return {...metadata,colors,guidePath:'references/styles/'+id+'.md',source:'ItsssssJack/claude-video-2'};
+ return {...metadata,colors,executable:true,recipe:{signature:executable.signature,
+   family:executable.family,motion:executable.motion,noText:!!executable.noText,
+   renderer:'shared-authored/1'},
+   guidePath:'references/styles/'+id+'.md',source:'ItsssssJack/claude-video-2'};
 }
 export function listStylePresets(){return STYLE_IDS.map(getStylePreset);}
 export function getStyleGuide(id){if(!ids.has(id))throw Error('Estilo desconocido.');return styleDoc(id);}
