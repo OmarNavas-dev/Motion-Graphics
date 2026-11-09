@@ -713,13 +713,20 @@ function StudioApp() {
     if (target < 0 || target >= project.scenes.length) return;
     const scenes = [...project.scenes];
     [scenes[selected], scenes[target]] = [scenes[target], scenes[selected]];
-    changeProject({...project, scenes: markForReview(scenes)});
+    let broll=project.broll;
+    try {broll=normalizeBroll(project.broll,scenes,project.wordTimings ?? []);}
+    catch(error){setNotice('No se puede mover la escena sin romper un anclaje B-roll: '+(error as Error).message);return;}
+    changeProject({...project, scenes: markForReview(scenes),broll});
     setSelected(target);
   };
   const removeScene = () => {
     if (project.scenes.length === 1) return;
     const scenes = project.scenes.filter((_, index) => index !== selected);
-    changeProject({...project, scenes: markForReview(scenes)});
+    const remaining=(project.broll??[]).filter(clip=>clip.sceneId!==project.scenes[selected].id);
+    let broll;
+    try {broll=normalizeBroll(remaining,scenes,project.wordTimings ?? []);}
+    catch(error){setNotice('Ajusta los anclajes B-roll antes de eliminar la escena: '+(error as Error).message);return;}
+    changeProject({...project, scenes: markForReview(scenes),broll});
     setSelected(Math.min(selected, scenes.length - 1));
   };
   const seekToScene = (index: number) => {
