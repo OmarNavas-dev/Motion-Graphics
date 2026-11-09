@@ -141,18 +141,22 @@
       "id": "pacing-check",
       "status": "partial",
       "evidence": [
-        "src/pacing-quality-audit.mjs"
+        "src/pacing-quality-audit.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/audit-video-p82.mjs"
       ],
-      "blocker": "10 FPS gap detection implemented; exact flash/hold and human approval incomplete"
+      "tests": ["pacing-quality-audit.test.mjs"],
+      "blocker": "P8.2 informa intervalos de pausa y destellos con sugerencias no automáticas; la intención narrativa y la aprobación humana siguen pendientes"
     },
     {
       "source": "ItsssssJack/claude-video-2",
       "id": "loop-check",
       "status": "partial",
       "evidence": [
-        "src/loop-quality-audit.mjs"
+        "src/loop-quality-audit.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/audit-video-p82.mjs"
       ],
-      "blocker": "Pixel seam heuristic implemented; full end-state comparison with no-wrap clock not complete"
+      "tests": ["loop-quality-audit.test.mjs"],
+      "blocker": "P8.2 compara la continuidad de cuatro cuadros de un ciclo real; falta equivalencia perceptual de cierre, edición de animaciones y revisión de muestras de cada estilo"
     },
     {
       "source": "ItsssssJack/claude-video-2",
