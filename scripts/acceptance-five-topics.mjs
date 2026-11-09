@@ -14,6 +14,7 @@ import {auditTimelineAudio,measureAudioLoudness} from '../src/audio-quality-audi
 import {renderSoundWav,muxSoundtrack} from '../src/sound-design.mjs';
 import {auditLoopSeam} from '../src/loop-quality-audit.mjs';
 import {auditRenderedPacing} from '../src/pacing-quality-audit.mjs';
+import {createVisualDefectReport} from '../plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs';
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const COLOR={anatomia:'#fa627c',volcanes:'#fa8c4a',personajes:'#76b9eb',historia:'#eebd6e',graficos:'#70dfb4'};
 const subjects={
@@ -62,6 +63,8 @@ export function renderAcceptanceFailures(project,result){
  }
  if(result.inspection!=='frames-generated')errors.push('No se generaron todos los fotogramas de inspección.');
  if(result.pacingAudit?.hasMotion!==true)errors.push('El video no contiene movimiento medible.');
+ if(result.visualDefects?.schema!=='motion-studio.visual-iteration/1')
+  errors.push('No se generó el informe estructurado P1 del render.');
  return errors;
 }
 const run=(bin,args,cwd)=>new Promise((resolve,reject)=>{
@@ -110,6 +113,9 @@ export async function runAcceptanceSuite({out=path.join(root,'out','acceptance-f
      }
     if(r.videoAudit.video.audioPresent)r.loudness=await measureAudioLoudness(path.join(folder,'result.mp4'));
     const sheet=await createFrameContactSheet(path.join(folder,'result.mp4'),project,path.join(folder,'frames'),{maxFrames:12});
+    r.visualDefects=createVisualDefectReport(project,{visualAudit:r.videoAudit,pacingAudit:r.pacingAudit,loopAudit:r.loopAudit,
+      contactSheet:sheet,expectedAudio:Boolean(project.soundDesign?.enabled)},{attempt:1});
+    await fs.writeFile(path.join(folder,'frames','defects.json'),JSON.stringify(r.visualDefects,null,2));
     r.inspection=sheet.captured===sheet.totalRequested?'frames-generated':'partial';r.reviewFile=path.join(folder,'frames','index.html');
     r.qualityWarnings=(r.pacingAudit.deadGaps||[]).map(g=>`Posible pausa de ${g.duration}s en ${g.start}s (revisión humana).`);
     const failures=renderAcceptanceFailures(project,r);

@@ -30,9 +30,18 @@ export function assessSampledFrames(bytes, {width=96,height=170,fps=2}={}) {
     }
   }
   const spikes=diffs.flatMap((value,index)=>value>72?[{seconds:(index+1)/fps,meanPixelChange:Number(value.toFixed(1))}]:[]);
+  const lowContrastSegments=[];
+  let lowStart=null;
+  for(let index=0;index<=contrasts.length;index++){
+    if(index<contrasts.length && contrasts[index]<18){if(lowStart===null)lowStart=index;}
+    else if(lowStart!==null){
+      if((index-lowStart)/fps>=1)lowContrastSegments.push({startSeconds:lowStart/fps,endSeconds:index/fps});
+      lowStart=null;
+    }
+  }
   return {sampledFrames:count,frameRate:fps,meanChange:Number((diffs.reduce((a,b)=>a+b,0)/Math.max(1,diffs.length)).toFixed(2)),
     lowContrastFraction:Number((contrasts.filter(v=>v<18).length/Math.max(1,count)).toFixed(3)),
-    frozenSegments,largeVisualChanges:spikes};
+    lowContrastSegments,frozenSegments,largeVisualChanges:spikes};
 }
 
 export async function auditRenderedVideo(file,{expectedAudio=false}={}) {

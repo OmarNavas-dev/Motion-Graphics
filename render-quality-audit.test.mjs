@@ -9,6 +9,7 @@ test('detecta un plano congelado prolongado sin atribuirle calidad artística',(
   assert.equal(result.sampledFrames,12);
   assert.equal(result.meanChange,0);
   assert.ok(result.frozenSegments.length>=1);
+  assert.deepEqual(result.lowContrastSegments,[{startSeconds:0,endSeconds:6}]);
 });
 
 test('detecta un salto visual fuerte y no confunde cambios constantes con congelación',()=>{

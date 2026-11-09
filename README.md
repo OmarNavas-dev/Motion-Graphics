@@ -1,8 +1,20 @@
 # Motion Studio 7.4.0 - HyperFrames + GSAP + Remotion
 
-Motion Graphics 1.9 y Motion Studio 7.4 comparten secuencias y comprobaciones de
+Motion Graphics 2.9.3 y Motion Studio 7.4 comparten secuencias y comprobaciones de
 movimiento para cualquier tema. Se retiraron cuotas de efectos y camara automatica;
 ver [MEJORAS-7.4.md](MEJORAS-7.4.md). El acabado visual se revisa en fotogramas reales.
+
+### P1: corrección visual iterativa
+
+Tras renderizar, Motion Studio genera un informe estructurado de defectos con
+escena, segundo y fotograma de evidencia; su descarga aparece junto al MP4.
+Motion Graphics lee ese informe con el JSON original, corrige contrastes de texto
+deterministas y guía la reautoría de escenas con problemas artísticos.
+Importa el JSON corregido, revisa las escenas, apruébalas y usa el nuevo botón
+**Renderizar nuevamente el JSON corregido**. Se guardan ambos MP4 y se comparan
+alertas técnicas antes y después (máximo tres renders relacionados).
+Las alertas heurísticas no sustituyen inspección visual ni aprobación artística.
+Ver [P1-VISUAL-ITERATION.md](docs/P1-VISUAL-ITERATION.md).
 
 Los videos no llevan pies editoriales, marcas ni numeracion de escenas. Se retiraron
 de las plantillas de ambos motores y del generador. Ver [MEJORAS-7.3.2.md](MEJORAS-7.3.2.md).
