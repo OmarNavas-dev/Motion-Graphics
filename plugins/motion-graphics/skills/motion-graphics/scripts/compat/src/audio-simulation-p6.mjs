@@ -17,7 +17,7 @@ export function createAudioSimulationProject({kind='all',format='horizontal',sec
   const config=normalizeSimulation({kind:mode,...defaults[mode],...overrides},seconds);
   return {id:'p6-'+mode,title:'P6 '+mode,duration:seconds,layout:'hero',captionMode:'none',approved:false,
    authored:{source:'simulation-p6/'+mode,background:{color:'#101C2E'},camera:{from:{zoom:1},to:{zoom:1}},
-    layers:[{id:'p6-sim',type:'simulation',x:50,y:50,width:75,height:70,fill:colors[i%colors.length],stroke:'#F1FAFF',simulation:config},
+    layers:[{id:'p6-sim',type:'simulation',x:50,y:52,width:75,height:45,fill:colors[i%colors.length],stroke:'#F1FAFF',simulation:config},
       {id:'p6-heading',type:'text',x:50,y:12,width:80,height:8,text:mode.toUpperCase(),size:3.2,color:'#E7F5FF',font:'sansbold',fixed:true}]} };
  });
  const cues=kinds.flatMap((mode,i)=>Array.from({length:mode==='bounce'?3:2},(_,j)=>({
