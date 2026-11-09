@@ -1,8 +1,7 @@
 // Style catalog from ItsssssJack/claude-video-2 (MIT). Full original guides are bundled.
 // P3 adds executable visual recipes; reference guides still govern advanced art direction.
-import fs from 'node:fs';
-import path from 'node:path';
 import {getExecutableStyle} from './style-recipes.mjs';
+import {STYLE_GUIDES} from './style-guide-data.mjs';
 const styleMeta=Object.freeze([
   {
     "id": "paper-world",
@@ -153,8 +152,7 @@ const styleMeta=Object.freeze([
   }
 ]);
 const ids=new Set(styleMeta.map(item=>item.id));
-const refs=path.join(import.meta.dirname,'..','plugins','motion-graphics','skills','motion-graphics','references','styles');
-const styleDoc=id=>fs.readFileSync(path.join(refs,id+'.md'),'utf8');
+const styleDoc=id=>STYLE_GUIDES[id];
 const firstHex=(content,names)=>{
  for(const name of names){const line=content.split(/\r?\n/).find(l=>new RegExp('^[-*]\\s*'+name+'\\s*:', 'i').test(l.trim()));
   const found=line?.match(/#[0-9a-f]{6}/i);if(found)return found[0].toUpperCase();}

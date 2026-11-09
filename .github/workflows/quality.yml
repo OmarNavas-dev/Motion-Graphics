@@ -48,6 +48,8 @@ jobs:
         run: npm run lint
       - name: Build Studio
         run: npm run studio:build
+      - name: Guard browser startup against Node-only imports
+        run: node --test browser-style-catalog.test.mjs
       - name: Record source-integration parity (informational)
         run: npm run integration:status
       - name: Five-domain contract acceptance
