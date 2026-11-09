@@ -34,6 +34,8 @@ jobs:
         run: npm run test:p8
       - name: Verify P8.1 executable authoring workflows
         run: npm run test:p81
+      - name: Verify P8.2 loop closure and timed pacing defects
+        run: npm run test:p82
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types

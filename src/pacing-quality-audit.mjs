@@ -3,6 +3,7 @@
 import {execFile} from 'node:child_process';import {promisify} from 'node:util';
 const exec=promisify(execFile);
 export function analyzePacingFrames(bytes,{width=64,height=114,fps=10,maxGapSeconds=1.5,minHoldSeconds=.3}={}){
+ if(!Number.isInteger(width)||width<=0||!Number.isInteger(height)||height<=0||!Number.isFinite(fps)||fps<=0||maxGapSeconds<=0||minHoldSeconds<=0)throw Error('Parámetros de ritmo inválidos.');
  const stride=width*height,count=Math.floor(bytes.length/stride),events=[],cuts=[];
  for(let k=1;k<count;k++){
   let changed=0;const a=(k-1)*stride,b=k*stride;
@@ -19,7 +20,11 @@ export function analyzePacingFrames(bytes,{width=64,height=114,fps=10,maxGapSeco
  const flashSuspects=[];
  for(let i=1;i<cuts.length;i++)if(cuts[i].seconds-cuts[i-1].seconds<minHoldSeconds)
   flashSuspects.push({first:cuts[i-1].seconds,second:cuts[i].seconds});
- return {frames:count,fps,deadGaps,flashSuspects,largeChanges:cuts.length,hasMotion:events.length>0,
+ const holdWindows=deadGaps.map(g=>({...g,kind:g.duration>=maxGapSeconds*2?'extended-static':'static-hold',requiresReview:true}));
+ const flashWindows=flashSuspects.map(f=>({...f,duration:+(f.second-f.first).toFixed(3),kind:'rapid-full-frame-change',requiresReview:true}));
+ const correctiveHints=[...holdWindows.map(x=>({type:'review-hold',seconds:x.start,end:x.end,action:'Revisar si la pausa corresponde al guion; no acortar sin autorización.'})),
+  ...flashWindows.map(x=>({type:'review-flash',seconds:x.first,end:x.second,action:'Inspeccionar brillo, contraste y velocidad; considerar transición menos abrupta.'}))];
+ return {frames:count,fps,deadGaps,flashSuspects,holdWindows,flashWindows,correctiveHints,largeChanges:cuts.length,hasMotion:events.length>0,
   limitation:'Un texto que aparece suavemente o una pausa narrativa pueden parecer inactividad; requiere revisión de imágenes reales.'};
 }
 export async function auditRenderedPacing(video,{fps=10}={}){
