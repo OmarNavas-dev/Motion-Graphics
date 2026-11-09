@@ -1,5 +1,5 @@
 import {collectProjectAssets} from './project-assets.mjs';
-import {inspectExplainer, normalizeActors, normalizeDirection, normalizeWordTimings, parseWordSrt} from './explainer-contract.mjs';
+import {inspectExplainer, normalizeDirection} from './explainer-contract.mjs';
 import {useEffect, useRef, useState, type ChangeEvent} from 'react';
 import {createRoot} from 'react-dom/client';
 import {FaithfulPreview, type PreviewHandle} from './FaithfulPreview';
@@ -17,7 +17,7 @@ import {
   type SceneLayout, type StudioCue, type StudioProject, type StudioScene,
   type StyleName, type VoiceClip, type MotionPreset, type TransitionPreset,
   type MotionGraphic, type GraphicKind, type GraphicUnit, type GraphicIcon,
-  type ImageFit, type CaptionCue, type SceneDirection, type WordTiming,
+  type ImageFit, type CaptionCue,
 } from './studio-schema';
 import './studio-app.css';
 
@@ -36,24 +36,6 @@ type JobStatus = {
     counts:{error:number;warning:number;info:number};approval:string} | null;
   iterationComparison?: {before:number;after:number;delta:number;improvedByHeuristic:boolean;artisticApproval:boolean} | null;
 };
-type MediaCandidate = {id: string; thumbnail: string; title: string;
-  creator: string; license: string; sourceUrl: string};
-type IntegrationStatus = {openverse: boolean; pixabay: boolean; groq: boolean;
-  hyperframes: string; paidApisEnabled: boolean;
-  ollama?: {enabled:boolean; model:string; endpoint:string};
-  ollamaVision?: {configured:boolean;model:string;localOnly:boolean};
-  freeLLMApi?: {configured: boolean; model: string}};
-type VisualAutoSession = {id?:string;status:'running'|'review_ready'|'needs_review'|'error';
-  progress?:{phase:string;attempt:number;jobId?:string};error?:string|null;
-  result?:{status:string;reason:string;project:StudioProject|null;
-    rounds:{jobId:string;status:string;perceptual?:{accepted:boolean;judgments:{reason:string}[]}}[]}|null};
-type AiScenePlan = {
-  index: number; purpose?: string; visualPlan?: string; title: string; subtitle: string; visualQuery: string;
-  layout: SceneLayout; style: StyleName; motion: MotionPreset;
-  motionStrength: number; transition: TransitionPreset; captions?: {id: string; at: number; duration: number; text: string; emphasis?: string[]}[]; motionGraphics: MotionGraphic[];
-};
-type AiProposal = {plan: {style: StyleName; creativeBrief: string; topic?: string; audience?: string; promise?: string; facts?: string[];
-  scenes: AiScenePlan[]}; provider: string};
 
 const layoutNames: Record<SceneLayout, string> = {
   hero: 'Titular cinematográfico',
@@ -118,32 +100,6 @@ async function api<T>(url: string, options?: RequestInit): Promise<T> {
   }
   return data as T;
 }
-
-const localDraft = (description: string, original: StudioProject): StudioProject => {
-  const sentences = description
-    .replace(/\s+/g, ' ')
-    .split(/[.!?;]+/)
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .slice(0, 6);
-  const lines = sentences.length ? sentences : ['Una historia visual', 'Cada segundo importa', 'Mira el resultado'];
-  const layouts: SceneLayout[] = ['hero', 'orbit', 'data', 'editorial'];
-  return {
-    ...original,
-    name: 'Nuevo proyecto',
-    scenes: lines.map((line, index) => ({
-      id: crypto.randomUUID(),
-      layout: layouts[index % layouts.length],
-      duration: 4,
-      title: line.slice(0, 46).toUpperCase(),
-      subtitle: index === 0 ? 'Una pieza creada con Motion Studio.' : '',
-      imageAsset: '',
-      cues: [],
-      approved: false,
-      scriptExcerpt: line,
-    })),
-  };
-};
 
 const markForReview = (scenes: StudioScene[]) =>
   scenes.map((scene) => ({...scene, approved: false}));
@@ -216,26 +172,6 @@ const narrationDraft = (script: string, length: number, original: StudioProject,
       (hasData && !['horror', 'watercolor'].includes(style))});
 };
 
-const captionsFromTranscript = (scenes: StudioScene[], segments: {at: number; text: string}[], offset = 0, preserve = false) => {
-  const starts: number[] = [];
-  let elapsed = 0;
-  for (const scene of scenes) { starts.push(elapsed); elapsed += scene.duration; }
-  const next = scenes.map((scene) => ({...scene, captions: preserve ? [...(scene.captions ?? [])] : [] as CaptionCue[]}));
-  segments.forEach((segment, index) => {
-    const at = Math.max(0, Number(segment.at) + offset);
-    const sceneIndex = starts.findIndex((start, i) => at >= start && at < start + scenes[i].duration);
-    if (sceneIndex < 0) return;
-    const localAt = at - starts[sceneIndex];
-    const nextAt = index + 1 < segments.length ? Number(segments[index + 1].at) + offset : at + 2.6;
-    const duration = Math.max(0.45, Math.min(4.5, nextAt - at, scenes[sceneIndex].duration - localAt));
-    const text = String(segment.text ?? '').trim().slice(0, 180);
-    if (!text) return;
-    next[sceneIndex].captions.push({id: crypto.randomUUID(), at: Math.round(localAt * 100) / 100,
-      duration: Math.round(duration * 100) / 100, text, emphasis: []});
-  });
-  return next;
-};
-
 const audioFileDuration = (file: File): Promise<number> => new Promise((resolve, reject) => {
   const blobUrl = URL.createObjectURL(file);
   const sound = new window.Audio(blobUrl);
@@ -266,65 +202,6 @@ const makeScene = (project: StudioProject = defaultStudioProject): StudioScene =
   return {...candidate, visualActionPlan: plans[plans.length - 1]};
 };
 
-const ClaudePrompt = (project: StudioProject) => `Actúa como director de motion graphics.
-Crea un objeto JSON para el editor local Motion Studio. Responde SOLO con JSON válido, sin markdown.
-Incluye escenas completas customScene con HTML, CSS prefijado __SCENE__ y GSAP determinista; no uses recursos remotos ni servicios de pago.
-El JSON debe tener exactamente esta estructura:
-{
-  "name": "Nombre del video",
-  "format": "vertical",
-  "palette": "aurora",
-  "audioAsset": "",
-  "musicAsset": "",
-  "script": "",
-  "creativeBrief": "Describe el estilo propio de este proyecto",
-  "style": "cinematic",
-  "showText": false,
-  "characterMode": "preserve",
-  "references": [],
-  "narrationMode": "single",
-  "voiceClips": [],
-  "scenes": [
-    {
-      "id": "escena1",
-      "layout": "hero",
-      "duration": 4,
-      "title": "TÍTULO CORTO",
-      "subtitle": "Una frase",
-      "imageAsset": "",
-      "videoAsset": "",
-      "cues": [{"id": "evento1", "at": 1.5, "duration": 1.3, "shape": "ring", "label": ""}],
-      "scriptExcerpt": "Fragmento narrado de esta escena",
-      "approved": false,
-      "style": "cinematic",
-      "motion": "push",
-      "motionStrength": 35,
-      "transition": "cut",
-      "focusX": 50,
-      "focusY": 50
-    }
-  ]
-}
-Reglas: formato vertical u horizontal; paleta aurora, sunset o mono;
-layouts hero, orbit, editorial, data, kinetic o collage; entre 1 y 80 escenas;
-duración entre 0.5 y 60 segundos por escena, total máximo 900 segundos;
-cues opcionales de formas ring, dot, bars o square, con tiempos dentro de su escena.
-El proyecto puede usar style (modern, horror, watercolor, documentary, cinematic,
-tech, minimal, energetic, playful) y creativeBrief como dirección creativa libre.
-Cada escena puede definir su propio style, motion (auto, static, push, pull,
-pan-left, pan-right, rise, drift), motionStrength (0-100), transition
-(cut, fade, dip, flash), focusX y focusY (0-100).
-Evita efectos repetidos por defecto: el movimiento debe servir al mensaje.
-showText (false en historias narradas), characterMode (preserve o new),
-script, narrationMode (single o dialogues), voiceClips y references.
-Conserva las rutas de audioAsset, musicAsset, voiceClips, references y
-los videoAsset ya importados del proyecto. Para un clip HyperFrames, usa
-videoAsset solo después de que el usuario haya renderizado y cargado el MP4.
-Marca toda escena nueva con approved: false; la persona debe revisarla antes de exportar.
-No agregues subtítulos visibles salvo petición expresa.
-Planifica actores estables en actors y cada escena con direction: objective, before/after por actor, actions con id/actor/at/duration/description/result/selector, shots con at/duration/scale/target/purpose, holdReason, materials, lighting y transition. Estas fichas describen la intención; el script debe ejecutarla. No sustituyas acciones por zooms. Mantén contactos y transformaciones fijas en grupos distintos.
-Conserva wordTimings globales exactamente. Con captionMode=global no dibujes otros subtítulos; el motor los reproduce. Con embedded conserva los existentes. Sin tiempos por palabra no inventes alineación. Conserva fps y resolution; no cambies duración, audio ni medios.
-Proyecto de referencia: ${JSON.stringify(project)}`;
 
 function StudioApp() {
   const [project, setProject] = useState<StudioProject>({...defaultStudioProject, scenes:[]});
@@ -333,27 +210,13 @@ function StudioApp() {
   const [reviewBusy, setReviewBusy] = useState(false);
   const [selected, setSelected] = useState(0);
   const [selectedWorkflow,setSelectedWorkflow] = useState('explainer-default');
-  const [idea, setIdea] = useState('');
   const [jsonToImport, setJsonToImport] = useState('');
   const [busy, setBusy] = useState(false);
   const [renderJobId, setRenderJobId] = useState<string | null>(null);
   const [renderStatus, setRenderStatus] = useState<JobStatus | null>(null);
-  const [visualAutoId,setVisualAutoId] = useState<string|null>(null);
-  const [visualAuto,setVisualAuto] = useState<VisualAutoSession|null>(null);
   const [notice, setNotice] = useState('Cargando proyecto...');
   const [dirty, setDirty] = useState(false);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
-  const [integrationStatus, setIntegrationStatus] = useState<IntegrationStatus | null>(null);
-  const [mediaProvider, setMediaProvider] = useState<'openverse' | 'pixabay'>('openverse');
-  const [mediaQuery, setMediaQuery] = useState('');
-  const [mediaResults, setMediaResults] = useState<MediaCandidate[]>([]);
-  const [transcribeSource, setTranscribeSource] = useState('');
-  const [aiProposal, setAiProposal] = useState<AiProposal | null>(null);
-  const [aiProvider, setAiProvider] = useState<'ollama'|'freellmapi'>('ollama');
-  const [ollamaStatus, setOllamaStatus] = useState<{ok:boolean;model:string;error?:string}|null>(null);
-  const [sceneCodeBusy, setSceneCodeBusy] = useState(false);
-  const [fullVideoCodeBusy, setFullVideoCodeBusy] = useState(false);
-  const aiBaseProject = useRef('');
   const playerRef = useRef<PreviewHandle>(null);
 
   const dimensions = getDimensions(project.format, project.resolution);
@@ -385,21 +248,6 @@ function StudioApp() {
       .then((data) => {setProject(data.project); setNotice('Proyecto listo.');})
       .catch((error) => {setProject({...defaultStudioProject, scenes:[]}); setNotice(`No se pudo cargar: ${error.message}`);});
   }, []);
-
-  useEffect(() => {
-    api<IntegrationStatus>('/api/integrations').then(setIntegrationStatus).catch(() => {});
-  }, []);
-
-  const checkOllama = async () => {
-    setOllamaStatus(null);
-    try {
-      const status = await api<{ok:boolean;model:string;error?:string}>('/api/ollama/check', {method:'POST'});
-      setOllamaStatus(status);
-      setNotice(status.ok ? `Ollama disponible: ${status.model}.` : status.error || 'Ollama no está disponible.');
-    } catch (error) {
-      setOllamaStatus({ok:false, model:integrationStatus?.ollama?.model ?? 'qwen2.5:1.5b', error:(error as Error).message});
-    }
-  };
 
   useEffect(() => {
     if (project.narrationMode === 'dialogues' || !project.audioAsset) {
@@ -440,26 +288,6 @@ function StudioApp() {
     return () => {alive = false; window.clearInterval(timer);};
   }, [renderJobId]);
 
-  useEffect(()=>{
-    if(!visualAutoId)return;
-    let active=true;
-    const poll=async()=>{
-      try{
-        const status=await api<VisualAutoSession>(`/api/iterations/auto/${visualAutoId}`);
-        if(!active)return;
-        setVisualAuto(status);
-        if(status.status!=='running'){
-          setVisualAutoId(null);
-          setNotice(status.status==='review_ready'
-            ? 'Hay una corrección visual renderizada para revisar y aplicar.'
-            : status.error||status.result?.reason||'La revisión terminó sin una corrección demostrable.');
-        }
-      }catch(error){if(active){setVisualAutoId(null);setNotice((error as Error).message);}}
-    };
-    void poll();
-    const timer=window.setInterval(poll,1800);
-    return ()=>{active=false;window.clearInterval(timer);};
-  },[visualAutoId]);
 
   const changeProject = (next: StudioProject) => {
     setRuntimeReview(null);
@@ -673,26 +501,6 @@ function StudioApp() {
     finally {setBusy(false);}
   };
 
-  const startVisualAuto = async()=>{
-    if(!renderStatus?.id||renderStatus.status!=='completado')return;
-    setBusy(true);setVisualAuto(null);
-    try{
-      const started=await api<{sessionId:string}>('/api/iterations/auto',{
-        method:'POST',headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({sourceJobId:renderStatus.id,project}),
-      });
-      setVisualAutoId(started.sessionId);
-      setNotice('El modelo visual local está inspeccionando y corrigiendo escenas. El proyecto actual se conservará.');
-    }catch(error){setNotice('No se inició P1 automático: '+(error as Error).message);}
-    finally{setBusy(false);}
-  };
-
-  const applyVisualCandidate=()=>{
-    const candidate=visualAuto?.result?.project;
-    if(!candidate)return;
-    changeProject(candidate);
-    setNotice('Candidato incorporado sin aprobar: inspecciona las escenas modificadas antes de aceptarlas.');
-  };
 
   const uploadAssetOnly = async (file: File) => {
     const response = await api<{asset: string}>(`/api/assets?name=${encodeURIComponent(file.name)}`, {
@@ -796,113 +604,6 @@ function StudioApp() {
     };
     patchScene({cues: [...currentScene.cues, cue]});
   };
-  const copyClaude = async () => {
-    try {
-      await navigator.clipboard.writeText(ClaudePrompt(project));
-      setNotice('Instrucciones copiadas. Pégalas en Claude y luego importa su JSON.');
-    } catch {
-      setNotice('No se pudo copiar automáticamente. Selecciona las instrucciones manualmente.');
-    }
-  };
-
-  const searchVisuals = async (queryOverride?: string) => {
-    const query = (queryOverride ?? mediaQuery).trim();
-    if (query.length < 2) return setNotice('Escribe algo para buscar imágenes.');
-    setBusy(true);
-    try {
-      const {results} = await api<{results: MediaCandidate[]}>(
-        `/api/media/search?provider=${mediaProvider}&q=${encodeURIComponent(query)}`);
-      setMediaResults(results);
-      setNotice(`${results.length} imágenes disponibles. Selecciona una para la escena actual.`);
-    } catch (error) { setNotice(`Búsqueda no disponible: ${(error as Error).message}`); }
-    finally { setBusy(false); }
-  };
-
-  const requestCreativePlan = async () => {
-    const snapshot = JSON.stringify(project);
-    if (!(project.script || '').trim() && project.scenes.every((s) => !s.scriptExcerpt && !s.title)) {
-      setNotice('Primero pega el guion o crea un storyboard.');
-      return;
-    }
-    setBusy(true);
-    setAiProposal(null);
-    try {
-      const answer = await api<AiProposal>('/api/ai/plan', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({project, provider:aiProvider}),
-      });
-      aiBaseProject.current = snapshot;
-      setAiProposal(answer);
-      setNotice(`La IA preparó ${answer.plan.scenes.length} escenas usando ${answer.provider}. Revisa antes de aplicar.`);
-    } catch (error) {
-      setNotice(`El asesor IA no pudo generar una propuesta: ${(error as Error).message} El modo local sigue disponible.`);
-    } finally { setBusy(false); }
-  };
-
-  const requestSceneCode = async () => {
-    if (!currentScene) return;
-    setSceneCodeBusy(true);
-    try {
-      const snapshot = JSON.stringify(project);
-      const answer = await api<{customScene: {html: string; css?: string; script?: string}; direction?:SceneDirection; provider: string; attempts: number}>('/api/ai/scene', {
-        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({project, index: selected + 1}),
-      });
-      if (JSON.stringify(latestProject.current) !== snapshot) throw new Error('El proyecto cambió mientras se generaba la escena; no se sobrescribieron tus cambios.');
-      patchScene({customScene: answer.customScene, direction:answer.direction ?? currentScene.direction});
-      setNotice(`Escena ${selected + 1} escrita con código por ${answer.provider} tras ${answer.attempts} intento(s). Revisa Vista previa fiel y aprueba.`);
-    } catch (error) { setNotice(`No se pudo escribir la escena: ${(error as Error).message}`); }
-    finally { setSceneCodeBusy(false); }
-  };
-
-  const requestFullVideoCode = async () => {
-    if (!project.scenes.length) return;
-    setFullVideoCodeBusy(true);
-    try {
-      const snapshot = JSON.stringify(project);
-      const answer = await api<{scenes: {html: string; css?: string; script?: string}[]; directions?:(SceneDirection|undefined)[]; provider: string; attempts: number}>('/api/ai/full-video', {
-        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({project}),
-      });
-      if (answer.scenes.length !== project.scenes.length) throw new Error('La respuesta no contiene todas las escenas.');
-      if (JSON.stringify(latestProject.current) !== snapshot) throw new Error('El proyecto cambió mientras se generaba el video; no se sobrescribieron tus cambios.');
-      changeProject({...project, scenes: project.scenes.map((scene, index) => ({...scene, customScene: answer.scenes[index], direction:answer.directions?.[index] ?? scene.direction, approved: false}))});
-      setSelected(0);
-      setNotice(`Video completo escrito con código: ${answer.scenes.length} escenas, ${answer.provider}, ${answer.attempts} intento(s). Revisa Vista previa fiel y aprueba cada escena.`);
-    } catch (error) { setNotice(`No se pudo escribir el video completo: ${(error as Error).message}`); }
-    finally { setFullVideoCodeBusy(false); }
-  };
-
-  const applyCreativePlan = () => {
-    if (!aiProposal) return;
-    if (aiBaseProject.current !== JSON.stringify(project)) {
-      setNotice('Modificaste el proyecto después de solicitar la propuesta. Genera un plan nuevo para evitar sobrescribir cambios.');
-      return;
-    }
-    if (aiProposal.plan.scenes.length !== project.scenes.length) {
-      setNotice('El número de escenas cambió. Genera otra propuesta de IA.');
-      return;
-    }
-    if (!window.confirm('¿Aplicar el diseño de la IA? Se conservarán audios, imágenes, duración y personajes. Todas las escenas quedarán pendientes de aprobación.')) return;
-    const plannedScenes = project.scenes.map((scene, index) => {
-      const idea = aiProposal.plan.scenes[index];
-      return {...scene, title: idea.title, subtitle: idea.subtitle,
-        visualQuery: idea.visualQuery, visualPlan: idea.visualPlan,
-        visualActionPlan: undefined, layout: idea.layout,
-        style: idea.style, motion: idea.motion,
-        motionStrength: idea.motionStrength, transition: idea.transition,
-        motionGraphics: idea.motionGraphics, captions: idea.captions ?? scene.captions ?? [], approved: false};
-    });
-    const planProject = {...project, style: aiProposal.plan.style, creativeBrief: aiProposal.plan.creativeBrief};
-    const actionPlans = createVisualActionPlans(plannedScenes, planProject);
-    const next: StudioProject = {
-      ...planProject,
-      scenes: plannedScenes.map((scene, index) => ({...scene, visualActionPlan: actionPlans[index]})),
-    };
-    changeProject(next);
-    setAiProposal(null);
-    setSelected(0);
-    playerRef.current?.seekTo(0);
-    setNotice(`Dirección artística aplicada a ${next.scenes.length} escenas. Edita y aprueba cada escena antes de exportar.`);
-  };
 
   const reviewExecution = async () => {
     const snapshot = JSON.stringify(project); setReviewBusy(true);
@@ -914,72 +615,6 @@ function StudioApp() {
       setRuntimeReview(result);
       setNotice(result.passed ? 'Ejecución comprobada. Revisa las imágenes y escucha el audio antes de aprobar.' : 'La revisión encontró errores de ejecución.');
     } catch (error) {setNotice((error as Error).message);} finally {setReviewBusy(false);}
-  };
-
-  const importWordSrt = async (event: ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0]; if (!file) return;
-    try {
-      if (file.size > 2*1024*1024) throw new Error('El SRT supera 2 MB.');
-      const words = parseWordSrt(await file.text(), project.scenes.reduce((n,s)=>n+s.duration,0));
-      changeProject({...project,wordTimings:words,scenes:markForReview(project.scenes)});
-      setNotice(`${words.length} palabras importadas con sus tiempos globales. Elige la pista global en las escenas donde quieras usarlas.`);
-    } catch (error) {setNotice((error as Error).message);} finally {event.target.value='';}
-  };
-
-  const importStockVisual = async (candidate: MediaCandidate) => {
-    setBusy(true);
-    try {
-      const {asset} = await api<{asset: string}>('/api/media/import', {
-        method: 'POST', headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({id: candidate.id}),
-      });
-      patchScene({imageAsset: asset});
-      setNotice(`Imagen importada de ${candidate.creator}. Revisa la licencia: ${candidate.license}. Escena pendiente de aprobación.`);
-    } catch (error) { setNotice(`No se pudo importar: ${(error as Error).message}`); }
-    finally { setBusy(false); }
-  };
-
-  const transcribeFromCloud = async () => {
-    const asset = transcribeSource || (project.narrationMode === 'dialogues'
-      ? project.voiceClips?.[0]?.asset : project.audioAsset);
-    if (!asset) return setNotice('Carga primero una narración o audio de diálogo.');
-    if (!window.confirm('La narración se enviará a Groq para transcribirla. ¿Continuar?')) return;
-    setBusy(true);
-    try {
-      const result = await api<{text: string; segments: {at: number; text: string}[]; words?:WordTiming[]}>('/api/transcribe', {
-        method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({asset}),
-      });
-      const clips = project.narrationMode === 'dialogues' ? project.voiceClips ?? [] : [];
-      const position = clips.findIndex((clip) => clip.asset === asset);
-      const offset = position > 0 ? clips.slice(0, position)
-        .reduce((sum, clip) => sum + clip.duration, 0) : 0;
-      const transcript = result.segments.length ? result.segments.map((part) => {
-        const minutes = Math.floor((part.at + offset) / 60);
-        const seconds = Math.floor((part.at + offset) % 60);
-        return `(${minutes}:${String(seconds).padStart(2, '0')}) ${part.text}`;
-      }).join('\n') : result.text;
-      const combine = clips.length > 0 && (project.script ?? '').trim();
-      if (!clips.length && (project.script ?? '').trim() &&
-        !window.confirm('Ya existe un guion. ¿Reemplazarlo por la transcripción?')) return;
-      const nextScript = combine ? `${project.script}\n${transcript}` : transcript;
-      let scenes = project.scenes;
-      if (result.segments.length) {
-        const hasCaptions = project.scenes.some((scene) => (scene.captions?.length ?? 0) > 0);
-        if (hasCaptions && !window.confirm('Ya hay subtítulos. ¿Reemplazarlos con los segmentos de esta transcripción?')) return;
-        scenes = captionsFromTranscript(project.scenes, result.segments, offset, false);
-      }
-      if (result.words?.length) {
-        const global = result.words.map(w=>({...w,start:w.start+offset,end:w.end+offset}));
-        const retained = clips.length ? (project.wordTimings??[]).filter(w=>w.end<=offset||w.start>=offset+(clips[position]?.duration??0)) : [];
-        const wordTimings=normalizeWordTimings([...retained,...global].sort((a,b)=>a.start-b.start),project.scenes.reduce((n,c)=>n+c.duration,0));
-        changeProject({...project,script:nextScript,wordTimings,scenes:markForReview(scenes)});
-      } else if (result.segments.length) changeProject({...project, script: nextScript, scenes: markForReview(scenes)});
-      else patchProject({script: nextScript});
-      setNotice(result.words?.length ? 'Palabras del reconocimiento importadas. Revisa su alineación con el audio; activa la pista global donde corresponda.' : result.segments.length
-        ? 'Transcripción y subtítulos por frase importados. Los tiempos son aproximados: edítalos y revisa la sincronía.'
-        : 'Transcripción importada sin segmentos temporizados; no se generaron subtítulos.');
-    } catch (error) { setNotice(`Falló la transcripción: ${(error as Error).message}`); }
-    finally { setBusy(false); }
   };
 
   const downloadHyperframes = async (wholeProject = false) => {
@@ -1113,8 +748,6 @@ function StudioApp() {
                 setProject(result.project);
                 setSelected(0);
                 setDirty(false);
-                setAiProposal(null);
-                setMediaResults([]);
                 setNotice('Datos locales borrados. Motion Studio quedó listo para un proyecto nuevo.');
               } catch (error) {
                 setNotice(`No se pudo limpiar: ${(error as Error).message}`);
@@ -1216,7 +849,7 @@ function StudioApp() {
             Al cambiar de modo, revisa otra vez las escenas.</p>
           <label>Dirección artística libre (opcional)
             <textarea rows={3} maxLength={2000} value={project.creativeBrief ?? ''}
-              placeholder="Ej.: video educativo con papel recortado y colores pastel; ritmo pausado. Sirve para el diseño con Claude."
+              placeholder="Ej.: motion graphics vectorial con papel recortado, colores pastel y ritmo pausado."
               onChange={(e) => patchProject({creativeBrief: e.target.value})}/>
           </label>
           <label>Fuente local (opcional)
@@ -1225,8 +858,7 @@ function StudioApp() {
           </label>
           <small>{labelForAsset(project.fontAsset ?? '')} · se incrusta en la exportación HyperFrames</small>
           {project.fontAsset && <button className="text-button" onClick={() => patchProject({fontAsset: ''})}>Quitar fuente</button>}
-          <p className="hint">Puedes combinar cualquiera de los estilos con escenas individuales.
-            Esta descripción se incluye en las instrucciones para Claude; no crea imágenes automáticamente.</p>
+          <p className="hint">Esta dirección visual acompaña el JSON y no requiere modelos de IA.</p>
           <button className="secondary" onClick={() => {
             const style = suggestedStyle((project.script ?? '') + ' ' + project.name);
             patchProject({style, showText: style === 'modern'});
@@ -1454,30 +1086,6 @@ function StudioApp() {
               </ul></details>
               <button disabled={busy || (renderStatus.attempt ?? 1)>=3}
                 onClick={()=>void rerenderCorrected()}>Renderizar nuevamente el JSON corregido</button>
-              {renderStatus.status==='completado'&&<div className="review-alert">
-                <strong>Corrección artística asistida por visión local</strong>
-                <p>Inspecciona imágenes reales, propone cambios en HTML/GSAP o capas, prueba un nuevo render y compara ambos fotogramas. No aprueba escenas por ti.</p>
-                <button disabled={busy||Boolean(visualAutoId)||(renderStatus.attempt??1)>=3||
-                  !integrationStatus?.ollamaVision?.configured}
-                  onClick={()=>void startVisualAuto()}>
-                  {visualAutoId?'Analizando y renderizando…':'Intentar corrección visual automática'}
-                </button>
-                {!integrationStatus?.ollamaVision?.configured&&
-                  <p className="hint">Requiere Ollama con un modelo visual local y OLLAMA_VISION_MODEL configurado en .env. No se envían tus fotogramas a Internet.</p>}
-                {visualAuto?.progress&&<p>Fase: {visualAuto.progress.phase} · intento {visualAuto.progress.attempt}/3.</p>}
-                {visualAuto?.error&&<p className="hint">{visualAuto.error}</p>}
-                {visualAuto?.result&&<>
-                  <p>{visualAuto.result.reason}</p>
-                  {visualAuto.result.rounds.map((round,i)=><p key={i}>
-                    Intento {round.jobId.slice(0,8)}: {round.status} ·
-                    <a href={'/reviews/'+round.jobId+'/index.html'} target="_blank" rel="noreferrer"> ver fotogramas</a>
-                    {' · '}<a href={'/reviews/'+round.jobId+'/defects.json'} target="_blank" rel="noreferrer">informe</a>
-                  </p>)}
-                  {visualAuto.result.project&&<button onClick={applyVisualCandidate}>
-                    Importar escenas corregidas para revisar y aprobar
-                  </button>}
-                </>}
-              </div>}
               <p className="hint">Entrega el JSON de defectos y el proyecto original a Motion Graphics. Importa su JSON corregido, revisa las escenas, apruébalas y pulsa aquí. Sin cambios reales, Studio rechazará repetir el render.</p>
             </div>}
             {renderStatus?.error && <pre className="error-log">{renderStatus.error}{renderStatus.log ? `\n\nDiagnóstico:\n${renderStatus.log}` : ''}</pre>}
@@ -1509,11 +1117,6 @@ function StudioApp() {
               <button className={currentScene.approved ? 'secondary' : 'primary'}
                 onClick={() => patchScene({approved: !currentScene.approved})}>
                 {currentScene.approved ? 'Retirar aprobación' : '✓ Aprobar esta escena'}
-              </button>
-            </div>
-            <div className="scene-tools">
-              <button className="secondary" disabled={sceneCodeBusy || !integrationStatus?.freeLLMApi?.configured} onClick={() => void requestSceneCode()}>
-                {sceneCodeBusy ? 'Escribiendo escena...' : '✨ Escribir animación con IA'}
               </button>
             </div>
             <div className="scene-tools">
@@ -1597,11 +1200,6 @@ function StudioApp() {
               <small>Base del guion: {currentScene.visualActionPlan.evidence || 'sin fragmento; plan de respaldo'}<br/>
                 {currentScene.visualActionPlan.shotScale} · cámara {currentScene.visualActionPlan.camera} · {currentScene.visualActionPlan.beats.length} beats</small>
             </div>}
-            {(currentScene.visualQuery ?? '').trim().length >= 2 && <button className="secondary"
-              disabled={busy} onClick={() => {
-                setMediaQuery(currentScene.visualQuery ?? '');
-                void searchVisuals(currentScene.visualQuery);
-              }}>Buscar este recurso con {mediaProvider === 'openverse' ? 'Openverse' : 'Pixabay'}</button>}
             <div className="two-fields">
               <label>Animación
                 <select value={currentScene.layout}
@@ -1885,138 +1483,6 @@ function StudioApp() {
           <small>Este generador usa reglas locales. Los tiempos son aproximados y las propuestas deben revisarse.
             No modifica ni sustituye tus audios, imágenes o referencias.</small>
         </div>
-        <div className="assistant-box ai-panel">
-          <div className="panel-heading"><h2>Director creativo con IA</h2><span>Local o remoto · opcional</span></div>
-          <p>La IA recomienda una composición distinta para cada parte de tu narración:
-            estilos, movimiento, gráficos y búsquedas de imágenes. Puedes revisar
-            sus propuestas antes de modificar tu proyecto.</p>
-          <p className="hint">Solo se envían el texto del guion, títulos y tiempos. Con Ollama, el texto va al servicio local de tu laptop (127.0.0.1:11434); no sale a Internet por Motion Studio. MP3, imágenes, referencias y claves no se envían.</p>
-          <label>Proveedor del planificador
-            <select value={aiProvider} onChange={(e) => setAiProvider(e.target.value as 'ollama'|'freellmapi')}>
-              <option value="ollama">Ollama local · Qwen2.5</option>
-              <option value="freellmapi">FreeLLMAPI · externo opcional</option>
-            </select>
-          </label>
-          {aiProvider === 'ollama' ? <>
-            <div className={ollamaStatus?.ok ? 'review-alert ready' : 'review-alert'}>
-              {ollamaStatus?.ok ? `Conectado · ${ollamaStatus.model}`
-                : ollamaStatus?.error || (integrationStatus?.ollama?.enabled
-                  ? `Modelo configurado: ${integrationStatus.ollama.model}. Comprueba que Ollama esté ejecutándose.`
-                  : 'Ollama está desactivado en la configuración del servidor.')}
-            </div>
-            <button className="secondary" disabled={!integrationStatus?.ollama?.enabled || busy}
-              onClick={() => void checkOllama()}>Comprobar Ollama y el modelo</button>
-          </> : integrationStatus?.freeLLMApi?.configured ? <div className="review-alert ready">
-            FreeLLMAPI configurado · modelo: {integrationStatus.freeLLMApi.model}
-          </div> : <div className="review-alert">
-            IA externa no configurada. Copia <code>.env.example</code> como <code>.env</code>,
-            añade FREELLMAPI_API_KEY y abre FreeLLMAPI.
-          </div>}
-          <button className="primary" disabled={fullVideoCodeBusy || aiProvider !== 'freellmapi' || !integrationStatus?.freeLLMApi?.configured}
-            onClick={() => void requestFullVideoCode()}>
-            {fullVideoCodeBusy ? 'Escribiendo video completo...' : '🎬 Generar video completo con código · FreeLLMAPI'}
-          </button>
-          <button className="primary" disabled={busy || (aiProvider === 'ollama'
-            ? !integrationStatus?.ollama?.enabled || !ollamaStatus?.ok : !integrationStatus?.freeLLMApi?.configured)}
-            onClick={() => void requestCreativePlan()}>
-            {busy ? 'Procesando...' : aiProvider === 'ollama'
-              ? '✨ Analizar guion localmente con Qwen2.5'
-              : '✨ Analizar guion con FreeLLMAPI'}
-          </button>
-          {aiProposal && <div className="ai-preview">
-            <strong>Propuesta pendiente · {aiProposal.plan.scenes.length} escenas</strong>
-            <p>Estilo: {styleNames[aiProposal.plan.style]} · {aiProposal.provider}</p>
-            {aiProposal.plan.topic && <p><strong>Tema:</strong> {aiProposal.plan.topic}</p>}
-            {aiProposal.plan.audience && <p><strong>Audiencia:</strong> {aiProposal.plan.audience}</p>}
-            {aiProposal.plan.promise && <p><strong>Promesa:</strong> {aiProposal.plan.promise}</p>}
-            {aiProposal.plan.facts?.length ? <p><strong>Hechos:</strong> {aiProposal.plan.facts.join(' · ')}</p> : null}
-            <p>{aiProposal.plan.creativeBrief}</p>
-            <div className="ai-plan-list">
-              {aiProposal.plan.scenes.map((scene) => <div key={scene.index} className="ai-scene">
-                <strong>{scene.index.toString().padStart(2, '0')}. {scene.title}</strong>
-                <small>{scene.purpose ? `${scene.purpose} · ` : ''}{layoutNames[scene.layout]} · {styleNames[scene.style]} · {scene.motionGraphics.length} gráficos</small>
-                {scene.visualPlan && <small>Plan visual: {scene.visualPlan}</small>}
-                {scene.visualQuery && <small>Imagen: {scene.visualQuery}</small>}
-              </div>)}
-            </div>
-            <p className="hint">Al aplicar, el audio, los archivos, los tiempos y las referencias se mantienen.
-              Todas las escenas quedarán pendientes de aprobación.</p>
-            <div className="scene-tools">
-              <button className="secondary" disabled={busy}
-                onClick={() => setAiProposal(null)}>Descartar</button>
-              <button className="primary" disabled={busy} onClick={applyCreativePlan}>Aplicar propuesta</button>
-            </div>
-          </div>}
-          <small>Los modelos gratuitos pueden fallar o tener límites. Para publicar contenido,
-            revisa las condiciones del proveedor que haya respondido. Nunca es obligatorio usar la IA.</small>
-        </div>
-        <div className="assistant-box">
-          <div className="panel-heading"><h2>Generador gratuito de borradores</h2><span>Sin IA ni Internet</span></div>
-          <textarea value={idea} onChange={(e) => setIdea(e.target.value)}
-            placeholder="Describe las escenas de tu video separándolas con puntos. Por ejemplo: Un producto aparece. Sus características brillan. La marca se revela." rows={3}/>
-          <button className="secondary" onClick={() => {
-            changeProject(localDraft(idea, project)); setSelected(0);
-            setNotice('Borrador creado. Ajusta sus escenas en el inspector.');
-          }}>Crear escenas desde la descripción</button>
-        </div>
-        <div className="assistant-box">
-          <div className="panel-heading"><h2>Recursos mediante APIs</h2><span>Gratis o con límites</span></div>
-          <p>Busca imágenes para la escena seleccionada. Tú eliges cuáles importar;
-            se guarda su autor, procedencia y licencia. Ninguna API de pago está activada.</p>
-          <div className="two-fields">
-            <label>Proveedor
-              <select value={mediaProvider} onChange={(e) => setMediaProvider(e.target.value as 'openverse' | 'pixabay')}>
-                <option value="openverse">Openverse · gratis</option>
-                <option value="pixabay">Pixabay · clave gratuita</option>
-              </select>
-            </label>
-            <label>Qué imagen necesitas
-              <input value={mediaQuery} maxLength={100} placeholder="río nocturno, telescopio, edificio..."
-                onChange={(e) => setMediaQuery(e.target.value)}/>
-            </label>
-          </div>
-          <button className="secondary" disabled={busy || (mediaProvider === 'pixabay' && !integrationStatus?.pixabay)}
-            onClick={() => void searchVisuals()}>Buscar imágenes para mi video</button>
-          {mediaProvider === 'pixabay' && !integrationStatus?.pixabay &&
-            <p className="hint">Configura PIXABAY_API_KEY en .env para habilitar Pixabay.</p>}
-          <div className="asset-results">
-            {mediaResults.map((item) => <div className="asset-result" key={item.id}>
-              <div className="asset-result-preview" role="img" aria-label={item.title} style={{
-                // Remote search thumbnail in the editor UI, not a video composition.
-                // eslint-disable-next-line @remotion/no-background-image
-                backgroundImage: `url(${JSON.stringify(item.thumbnail)})`,
-              }}/>
-              <small>{item.creator} · {item.license}</small>
-              <div className="scene-tools">
-                <button disabled={busy} onClick={() => void importStockVisual(item)}>Usar en escena</button>
-                {item.sourceUrl && <a href={item.sourceUrl} target="_blank" rel="noopener noreferrer">Origen / licencia</a>}
-              </div>
-            </div>)}
-          </div>
-          <details className="cue-card">
-            <summary>Personajes, objetos y palabras sincronizadas</summary>
-            <label>Importar SRT con una palabra por bloque<input type="file" accept=".srt" onChange={event=>void importWordSrt(event)}/></label>
-            <p>{project.wordTimings?.length??0} palabras. Los tiempos se conservan; no se estiman repartiendo frases.</p>
-            <label>Personajes y objetos recurrentes (JSON)
-              <textarea key={JSON.stringify(project.actors)} rows={8} defaultValue={JSON.stringify(project.actors??[],null,2)}
-                onBlur={event=>{try{const actors=normalizeActors(JSON.parse(event.target.value));if(JSON.stringify(actors)!==JSON.stringify(project.actors))patchProject({actors});}catch(error){setNotice((error as Error).message);}}}/>
-            </label>
-          </details>
-          <div className="panel-heading spaced"><h2>Transcribir audio en la nube</h2></div>
-          <p>Groq/Whisper puede transformar un MP3 en texto con tiempos aproximados.
-            El audio se envía únicamente cuando lo confirmas.</p>
-          {project.narrationMode === 'dialogues' && <label>Seleccionar audio de diálogo
-            <select value={transcribeSource} onChange={(e) => setTranscribeSource(e.target.value)}>
-              <option value="">Primer diálogo</option>
-              {(project.voiceClips ?? []).map((clip) =>
-                <option key={clip.id} value={clip.asset}>{clip.speaker || clip.id}</option>)}
-            </select>
-          </label>}
-          <button className="secondary" disabled={busy || !integrationStatus?.groq}
-            onClick={() => void transcribeFromCloud()}>Transcribir y proponer subtítulos con Groq</button>
-          {!integrationStatus?.groq && <p className="hint">Para activarlo, configura GROQ_API_KEY en .env.
-            El resto del editor sigue funcionando sin esta API.</p>}
-        </div>
         <div className="assistant-box">
           <div className="panel-heading"><h2>Motor HyperFrames</h2><span>Renderizado directo V7</span></div>
           <p>HyperFrames genera el MP4 desde este editor: no necesitas descargar el HTML ni volver a importarlo. Conserva tus imágenes y clips, mezcla narración, diálogos y música, y renderiza fotograma a fotograma.</p>
@@ -2033,11 +1499,8 @@ function StudioApp() {
           {project.visualEngine === 'canvas' ? <small>Modo experimental Canvas 3D: el monitor del editor y la exportación Remotion dibujan la misma geometría con perspectiva. HyperFrames/HTML no soporta este renderer. CPU, sin dependencias ni GPU.</small> : <small>La instalación incluye HyperFrames; el primer uso puede preparar Chrome. Requiere conexión a Internet para esa preparación inicial, Node.js 22.13 LTS o 24 y superiores y FFmpeg. Después el render es local, sin API ni créditos de pago. Se renderiza a 24 o 30 FPS según el proyecto y con un trabajador para reducir el consumo de memoria.</small>}
         </div>
         <div className="assistant-box">
-          <div className="panel-heading"><h2>Colaborar con Claude</h2><span>Opcional</span></div>
-          <p>Claude puede escribir el JSON de las escenas. El editor no hace llamadas de pago ni utiliza tus claves.</p>
-          <div className="assistant-buttons">
-            <button className="secondary" onClick={() => void copyClaude()}>Copiar instrucciones para Claude</button>
-          </div>
+          <div className="panel-heading"><h2>Importar proyecto Motion Graphics</h2><span>JSON · sin servicios externos</span></div>
+          <p>Pega un JSON completo generado fuera de Motion Studio. El editor lo valida y permite renderizarlo localmente.</p>
           <textarea value={jsonToImport} onChange={(e) => setJsonToImport(e.target.value)}
             placeholder="Pega aquí el JSON generado y pulsa Importar." rows={3}/>
           <button className="secondary" onClick={() => void importJson()} disabled={!jsonToImport.trim()}>

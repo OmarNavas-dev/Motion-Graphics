@@ -3,7 +3,6 @@ import http from 'node:http';
 import fs from 'node:fs';
 import fsp from 'node:fs/promises';
 import path from 'node:path';
-import vm from 'node:vm';
 import {fileURLToPath} from 'node:url';
 import {randomUUID} from 'node:crypto';
 import {spawn, spawnSync} from 'node:child_process';
@@ -18,10 +17,7 @@ import {
   MAX_ASSET_BYTES, MAX_PROJECT_BYTES, assetExtension,
   validMediaSignature, validateProject, assertApproved, safeFilename, validateAsset,
 } from './server-utils.mjs';
-import {searchFreeMedia, downloadFreeMedia, transcribeWithGroq, segmentWithRemoveBg} from './cloud-integrations.mjs';
-import {planExternalRequest} from './src/external-adapters-p7.mjs';
 import {createBrandKit,createMotionBrief,createMotionPrompt} from './src/authoring-workflows-p81.mjs';
-import {aiPlannerConfig, requestAiPlan, requestSceneCode, requestFullVideoCode} from './ai-planner.mjs';
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
 import {repairCrossSceneIds} from './src/scene-id-repair.mjs';
@@ -33,10 +29,7 @@ import {auditRenderedPacing} from './src/pacing-quality-audit.mjs';
 import {renderSoundWav,muxSoundtrack} from './src/sound-design.mjs';
 import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
 import {createVisualDefectReport,compareVisualReports,projectFingerprint,validateIterationRequest} from './plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs';
-import {assertVisionModel,visionModelConfig,proposeVisionRevisions,judgeVisionRevision} from './src/visual-vision-review.mjs';
-import {runVisualAutoLoop} from './src/visual-auto-loop.mjs';
 import {compareReferenceVideos} from './src/reference-alignment-p83.mjs';
-import {assessReferenceRevision} from './src/reference-revision-gate-p8.mjs';
 import {inspectAlphaMov,compositeBrollAlpha} from './src/broll-export.mjs';
 import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
 import {inspectCharacterMotion} from './src/character-motion.mjs';
@@ -58,7 +51,6 @@ const assetsDir = path.join(publicDir, 'user-assets');
 const outDir = path.join(runtimeRoot, 'out');
 const dataDir = path.join(runtimeRoot, 'data');
 const projectPath = path.join(dataDir, 'studio-project.json');
-const creditsPath = path.join(dataDir, 'media-credits.json');
 const cliPath = path.join(root, 'node_modules', '@remotion', 'cli', 'remotion-cli.js');
 const port = Number(process.env.MOTION_STUDIO_PORT || 4317);
 const appVersion = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8')).version;
@@ -66,10 +58,6 @@ const HYPERFRAMES_VERSION = '0.8.225';
 const MAX_HYPERFRAMES_ASSETS = 512 * 1024 * 1024;
 
 const jobs = new Map();
-const visualSessions = new Map();
-let activeVisualSession = null;
-const mediaChoices = new Map();
-const mediaSearchCache = new Map();
 let currentJob = null;
 let creatingJob = false;
 
@@ -156,78 +144,17 @@ async function resetLocalContent() {
   if (process.env.MOTION_STUDIO_TEST_ROOT) {
     throw new Error('La limpieza total no está disponible en un entorno de pruebas.');
   }
-  if (currentJob?.status === 'renderizando' || creatingJob || activeVisualSession) {
+  if (currentJob?.status === 'renderizando' || creatingJob) {
     throw new Error('Espera a que termine el render antes de limpiar los datos.');
   }
   for (const directory of [assetsDir, outDir, dataDir]) {
     await fsp.rm(directory, {recursive:true, force:true});
     await fsp.mkdir(directory, {recursive:true});
   }
-  mediaChoices.clear();
-  mediaSearchCache.clear();
   jobs.clear();
   currentJob = null;
 }
 
-async function waitForVisualRender(job,{timeoutMs=20*60*1000}={}) {
-  const deadline=Date.now()+timeoutMs;
-  while(Date.now()<deadline){
-    if(job.status!=='renderizando'&&currentJob?.id!==job.id)return job;
-    await new Promise(resolve=>setTimeout(resolve,250));
-  }
-  throw Error('La iteración superó el tiempo límite de render. Revisa el trabajo '+job.id+'.');
-}
-
-async function beginAutonomousVisualReview(session,project,previous,modelConfig,referenceVideo=null){
-  try{
-    const result=await runVisualAutoLoop({
-      project,sourceJob:previous,maxAttempts:3,validateProject,
-      validateCustomScene:(code,scene)=>{
-        const candidate=validateProject({...project,scenes:project.scenes.map(s=>
-          s.id===scene.id?{...s,customScene:code}:s)});
-        const preflight=checkCustomScenePreflight(candidate);
-        if(!preflight.passed)throw Error('Selector de escena inválido: '+preflight.errors.slice(0,3).join(' | '));
-        const valid=candidate.scenes.find(s=>s.id===scene.id).customScene;
-        new vm.Script('(function(tl,S,T0,D,gsap){'+valid.script+'\n})');
-        return valid;
-      },
-      onProgress:progress=>{session.progress=progress;},
-      propose:async (candidate,source,{validationFeedback}={})=>proposeVisionRevisions(candidate,source.visualDefects,
-        path.join(outDir,source.output),{modelConfig,validationFeedback}),
-      render:async (candidate,source,context)=>{
-        await ensureMediaAvailable(candidate);
-        const begin=source.engine==='hyperframes'?beginHyperframesRender:beginRender;
-        return begin(candidate,context);
-      },
-      wait:waitForVisualRender,
-      judge:async (source,trial,candidate,edits)=>judgeVisionRevision(
-        path.join(outDir,source.output),path.join(outDir,trial.output),candidate,edits,{modelConfig}),
-      compareReference:referenceVideo?async(source,trial,candidate)=>{
-        const [before,after]=await Promise.all([
-          compareReferenceVideos(candidate,referenceVideo,path.join(outDir,source.output),{framesPerScene:2}),
-          compareReferenceVideos(candidate,referenceVideo,path.join(outDir,trial.output),{framesPerScene:2}),
-        ]);
-        return assessReferenceRevision(before,after);
-      }:undefined,
-    });
-    session.status=result.status;session.result=result;
-    for(const round of result.rounds??[]){
-      const dir=path.join(outDir,'quality-reviews',round.jobId);
-      await fsp.mkdir(dir,{recursive:true});
-      await fsp.writeFile(path.join(dir,'vision-iteration.json'),JSON.stringify({
-        sourceJobId:round.sourceJobId,attempt:round.attempt,status:round.status,
-        technical:round.technical,perceptual:round.perceptual,changes:round.manifest?.applied,
-        reference:round.reference??null,
-        approval:'PENDING_VISUAL_REVIEW',
-      },null,2));
-    }
-  }catch(error){
-    session.status='error';session.error=error instanceof Error?error.message:'Error visual desconocido.';
-  }finally{
-    session.finishedAt=Date.now();
-    if(activeVisualSession===session.id)activeVisualSession=null;
-  }
-}
 
 async function ensureMediaAvailable(project) {
   const references = collectProjectAssets(project, {includeReferences: true});
@@ -319,73 +246,6 @@ async function uploadAsset(req, url, res) {
   }
 }
 
-async function searchMedia(url, res) {
-  const provider = String(url.searchParams.get('provider') || 'openverse');
-  const query = String(url.searchParams.get('q') || '').trim();
-  const cacheKey = `${provider}\n${query.toLowerCase()}`;
-  const now = Date.now();
-  for (const [key, value] of mediaChoices) if (value.expires <= now) mediaChoices.delete(key);
-  for (const [key, value] of mediaSearchCache) if (value.expires <= now) mediaSearchCache.delete(key);
-  let items = mediaSearchCache.get(cacheKey)?.items;
-  if (!items) {
-    items = await searchFreeMedia(provider, query, {pixabayKey: process.env.PIXABAY_API_KEY});
-    // Pixabay requests 24-hour result caching; Openverse uses a shorter cache.
-    const ttl = provider === 'pixabay' ? 24 * 60 * 60 * 1000 : 5 * 60 * 1000;
-    mediaSearchCache.set(cacheKey, {items, expires: now + ttl});
-  }
-  const results = items.map((item) => {
-    const id = randomUUID();
-    mediaChoices.set(id, {item, expires: now + 10 * 60 * 1000});
-    return {id, thumbnail: item.thumbnail, title: item.title,
-      creator: item.creator, license: item.license, sourceUrl: item.sourceUrl};
-  });
-  if (mediaChoices.size > 300) mediaChoices.delete(mediaChoices.keys().next().value);
-  return respond(res, 200, {provider, results});
-}
-
-async function importMedia(req, res) {
-  const {id} = await bodyJson(req);
-  const choice = mediaChoices.get(id);
-  if (!choice || choice.expires < Date.now()) throw new Error('La búsqueda ha caducado. Vuelve a buscar el recurso.');
-  const {bytes, ext} = await downloadFreeMedia(choice.item);
-  if (!validMediaSignature(bytes.subarray(0, 16), ext)) throw new Error('La imagen descargada no es válida.');
-  const filename = `${randomUUID()}${ext}`;
-  await fsp.writeFile(path.join(assetsDir, filename), bytes, {flag: 'wx'});
-  const asset = `user-assets/${filename}`;
-  const attribution = {asset, title: choice.item.title, creator: choice.item.creator,
-    license: choice.item.license, sourceUrl: choice.item.sourceUrl, importedAt: new Date().toISOString()};
-  let credits = [];
-  try { credits = JSON.parse(await fsp.readFile(creditsPath, 'utf8')); }
-  catch (error) { if (error.code !== 'ENOENT') throw error; }
-  if (!Array.isArray(credits)) credits = [];
-  credits.push(attribution);
-  await fsp.writeFile(creditsPath, JSON.stringify(credits.slice(-500), null, 2));
-  return respond(res, 201, {asset, attribution});
-}
-
-async function transcribeAsset(req, res) {
-  const {asset} = await bodyJson(req);
-  const validated = validateAsset(asset, 'audio');
-  if (!validated) throw new Error('Importa un audio antes de transcribir.');
-  const full = path.join(assetsDir, path.basename(validated));
-  const stat = await fsp.stat(full);
-  if (stat.size > 25 * 1024 * 1024) throw new Error('El audio supera los 25 MB del nivel gratuito de Groq.');
-  const transcription = await transcribeWithGroq(await fsp.readFile(full), path.basename(full), process.env.GROQ_API_KEY);
-  return respond(res, 200, transcription);
-}
-
-async function segmentExternalAsset(req,res){
-  const body=await bodyJson(req),plan=planExternalRequest({provider:'removebg',operation:'segment',asset:body.asset,size:body.size});
-  if(body.confirm!=='ACEPTO CONSUMIR CREDITOS REMOVE_BG')throw Error('P7: debes confirmar el uso de créditos externos antes de segmentar.');
-  const asset=validateAsset(plan.asset,'image');
-  const file=path.join(assetsDir,path.basename(asset)),info=await fsp.stat(file);
-  if(!info.isFile()||info.size>22*1024*1024)throw Error('P7: tamaño de imagen excede el límite de remove.bg.');
-  const image=await segmentWithRemoveBg(await fsp.readFile(file),path.basename(asset),process.env.REMOVE_BG_API_KEY,{size:plan.size});
-  const filename=randomUUID()+image.ext;
-  await fsp.writeFile(path.join(assetsDir,filename),image.bytes,{flag:'wx'});
-  return respond(res,201,{asset:'user-assets/'+filename,source:asset,provider:'removebg',alpha:true,size:plan.size,
-    note:'El objeto se guardó como PNG transparente; la solicitud externa puede consumir créditos.'});
-}
 
 const latestLog = (value, incoming) =>
   (value + incoming.toString('utf8')).slice(-4500);
@@ -782,51 +642,9 @@ async function handle(req, res) {
   const styleMatch=/^[a-z0-9-]+$/.test(styleId)?styleId:null;
   if(req.method==='GET'&&styleMatch)
     return respond(res,200,{...getStylePreset(styleMatch),guide:getStyleGuide(styleMatch)});
-  if (req.method === 'GET' && pathname === '/api/integrations') {
-    const llm = aiPlannerConfig();
-    const vision = visionModelConfig();
-    return respond(res, 200, {version: appVersion, sceneContract:MOTION_STUDIO_CONTRACT, customScene: true, openverse: true,
-      pixabay: Boolean(process.env.PIXABAY_API_KEY),
-      groq: Boolean(process.env.GROQ_API_KEY),
-      externalP7:{removebgConfigured:Boolean(process.env.REMOVE_BG_API_KEY),
-        higgsfieldConfigured:Boolean(process.env.HIGGSFIELD_API_KEY),higgsfieldDispatchEnabled:false,
-        segmentEndpoint:'/api/external/segment',planEndpoint:'/api/external/plan'},
-      ollama: {enabled:llm.ollamaConfigured, model:llm.ollamaModel, endpoint:llm.ollamaEndpoint},
-      ollamaVision:{configured:vision.configured,model:vision.model,localOnly:true},
-      freeLLMApi: {configured: llm.configured, model: llm.model},
-      hyperframes: `renderizador directo ${HYPERFRAMES_VERSION} (instalación automática al primer uso)`, paidApisEnabled: false});
-  }
-  if (req.method === 'POST' && pathname === '/api/ai/plan') {
-    const body = await bodyJson(req);
-    const provider = body.provider ?? 'freellmapi';
-    return respond(res, 200, await requestAiPlan(body.project ?? body, {provider}));
-  }
-  if (req.method === 'POST' && pathname === '/api/ollama/check') {
-    const config = aiPlannerConfig();
-    if (!config.ollamaConfigured) return respond(res, 200, {ok:false, model:config.ollamaModel, error:'Ollama está desactivado.'});
-    try {
-      const response = await fetch(new URL('/api/tags', config.ollamaEndpoint), {signal:AbortSignal.timeout(3000)});
-      if (!response.ok) return respond(res, 200, {ok:false, model:config.ollamaModel, error:`Ollama respondió HTTP ${response.status}.`});
-      const payload = await response.json();
-      const models = Array.isArray(payload.models) ? payload.models : [];
-      const found = models.some((item) => item.name === config.ollamaModel || item.model === config.ollamaModel);
-      return respond(res, 200, {ok:found, model:config.ollamaModel,
-        error:found ? '' : `Ollama responde, pero no aparece ${config.ollamaModel}. Ejecuta: ollama pull ${config.ollamaModel}`});
-    } catch {
-      return respond(res, 200, {ok:false, model:config.ollamaModel,
-        error:'No responde Ollama en 127.0.0.1:11434. Abre Ollama y vuelve a comprobar.'});
-    }
-  }
-  if (req.method === 'POST' && pathname === '/api/ai/scene') {
-    return respond(res, 200, await requestSceneCode(await bodyJson(req)));
-  }
-  if (req.method === 'POST' && pathname === '/api/ai/full-video') {
-    return respond(res, 200, await requestFullVideoCode(await bodyJson(req)));
-  }
-  if (req.method === 'GET' && pathname === '/api/media/search') return searchMedia(url, res);
-  if (req.method === 'POST' && pathname === '/api/media/import') return importMedia(req, res);
-  if (req.method === 'POST' && pathname === '/api/external/plan')
-    return respond(res,200,{request:planExternalRequest(await bodyJson(req))});
+  if (req.method === 'GET' && pathname === '/api/integrations')
+    return respond(res,200,{version:appVersion,sceneContract:MOTION_STUDIO_CONTRACT,customScene:true,
+      hyperframes:`renderizador directo ${HYPERFRAMES_VERSION} (instalación automática al primer uso)`,paidApisEnabled:false});
   if (req.method === 'POST' && pathname === '/api/authoring/p81') {
     const payload=await bodyJson(req);
     const generators={'brand-intake':()=>createBrandKit(payload.brand??payload),
@@ -836,8 +654,6 @@ async function handle(req, res) {
     const result=generators[payload.kind]();
     return respond(res,result.ready?200:422,result);
   }
-  if (req.method === 'POST' && pathname === '/api/external/segment')return segmentExternalAsset(req,res);
-    if (req.method === 'POST' && pathname === '/api/transcribe') return transcribeAsset(req, res);
     if (req.method === 'POST' && pathname === '/api/review') {
       const project = validateProject(await bodyJson(req));
       if (!project.scenes.length) throw new Error('Añade escenas antes de revisar.');
@@ -862,7 +678,6 @@ async function handle(req, res) {
     return uploadAsset(req, url, res);
   }
   if (req.method === 'POST' && pathname === '/api/render/hyperframes') {
-    if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
     const repaired=repairCrossSceneIds(validateProject(await bodyJson(req)));
     const project=repaired.project;
     assertApproved(project);
@@ -872,7 +687,6 @@ async function handle(req, res) {
     return respond(res, 202, {jobId: job.id, engine: job.engine,sceneIdRepair:{changes:repaired.changes,warnings:repaired.warnings}});
   }
   if (req.method === 'POST' && pathname === '/api/render') {
-    if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
     const project = validateProject(await bodyJson(req));
     assertApproved(project);
     await ensureMediaAvailable(project);
@@ -881,7 +695,6 @@ async function handle(req, res) {
     return respond(res, 202, {jobId: job.id});
   }
   if(req.method==='POST'&&pathname==='/api/export/alpha-broll'){
-    if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
     const project=validateProject(await bodyJson(req));
     assertApproved(project);
     if(!project.broll.length)throw Error('P2: agrega un plano B-roll antes de exportar alfa.');
@@ -891,7 +704,6 @@ async function handle(req, res) {
     return respond(res,202,{jobId:job.id,engine:job.engine});
   }
   if (req.method === 'POST' && pathname === '/api/iterations/rerender') {
-    if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
     const body=await bodyJson(req),previous=jobs.get(body.sourceJobId);
     const project=validateProject(body.project);
     const context=validateIterationRequest(previous,project);
@@ -901,41 +713,6 @@ async function handle(req, res) {
     const begin=previous.engine==='hyperframes'?beginHyperframesRender:beginRender;
     const job=await begin(project,context);
     return respond(res,202,{jobId:job.id,sourceJobId:previous.id,attempt:job.attempt});
-  }
-  if(req.method==='POST'&&pathname==='/api/iterations/auto'){
-    if(activeVisualSession||creatingJob||currentJob?.status==='renderizando')
-      throw Error('Hay un render o una revisión visual en marcha.');
-    const body=await bodyJson(req),project=validateProject(body.project);
-    const previous=jobs.get(body.sourceJobId);
-    if(previous?.status!=='completado'||previous?.visualDefects?.stage!=='post-render'||
-       previous.projectHash!==projectFingerprint(project))
-      throw Error('Selecciona un MP4 terminado y su JSON original exacto.');
-    if(previous.attempt>=3)throw Error('Se alcanzó el máximo de tres renders relacionados.');
-    await ensureMediaAvailable(project);
-    let referenceVideo=null;
-    if(body.referenceAsset!==undefined){
-      if(typeof body.referenceAsset!=='string'||!/^user-assets\/[a-zA-Z0-9._-]+\.mp4$/i.test(body.referenceAsset)||
-         !safeFilename(path.basename(body.referenceAsset)))
-        throw Error('La referencia debe ser un MP4 local importado en user-assets.');
-      referenceVideo=path.join(assetsDir,path.basename(body.referenceAsset));
-      const info=await fsp.stat(referenceVideo).catch(()=>null);
-      if(!info?.isFile()||info.size<2000)throw Error('El MP4 de referencia no está disponible.');
-    }
-    const config=await assertVisionModel();
-    const session={id:randomUUID(),status:'running',sourceJobId:previous.id,
-      progress:{phase:'queued',attempt:previous.attempt},result:null,error:null,createdAt:Date.now()};
-    visualSessions.set(session.id,session);
-    if(visualSessions.size>12)visualSessions.delete(visualSessions.keys().next().value);
-    activeVisualSession=session.id;
-    void beginAutonomousVisualReview(session,project,previous,config,referenceVideo);
-    return respond(res,202,{sessionId:session.id,status:session.status});
-  }
-  const autoMatch=pathname.match(/^\/api\/iterations\/auto\/([0-9a-f-]{36})$/);
-  if(req.method==='GET'&&autoMatch){
-    const session=visualSessions.get(autoMatch[1]);
-    return session?respond(res,200,{id:session.id,status:session.status,
-      sourceJobId:session.sourceJobId,progress:session.progress,
-      error:session.error,result:session.result}):respond(res,404,{error:'Revisión visual desconocida.'});
   }
   const jobMatch = pathname.match(/^\/api\/jobs\/([0-9a-f-]{36})$/);
   if (req.method === 'GET' && jobMatch) {
