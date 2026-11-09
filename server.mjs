@@ -27,6 +27,8 @@ import {auditRenderedPacing} from './src/pacing-quality-audit.mjs';
 import {renderSoundWav,muxSoundtrack} from './src/sound-design.mjs';
 import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
 import {createVisualDefectReport,compareVisualReports,projectFingerprint,validateIterationRequest} from './plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs';
+import {assertVisionModel,visionModelConfig,proposeVisionRevisions,judgeVisionRevision} from './src/visual-vision-review.mjs';
+import {runVisualAutoLoop} from './src/visual-auto-loop.mjs';
 import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
@@ -54,6 +56,8 @@ const HYPERFRAMES_VERSION = '0.8.225';
 const MAX_HYPERFRAMES_ASSETS = 512 * 1024 * 1024;
 
 const jobs = new Map();
+const visualSessions = new Map();
+let activeVisualSession = null;
 const mediaChoices = new Map();
 const mediaSearchCache = new Map();
 let currentJob = null;
@@ -141,7 +145,7 @@ async function resetLocalContent() {
   if (process.env.MOTION_STUDIO_TEST_ROOT) {
     throw new Error('La limpieza total no está disponible en un entorno de pruebas.');
   }
-  if (currentJob?.status === 'renderizando' || creatingJob) {
+  if (currentJob?.status === 'renderizando' || creatingJob || activeVisualSession) {
     throw new Error('Espera a que termine el render antes de limpiar los datos.');
   }
   for (const directory of [assetsDir, outDir, dataDir]) {
@@ -152,6 +156,56 @@ async function resetLocalContent() {
   mediaSearchCache.clear();
   jobs.clear();
   currentJob = null;
+}
+
+async function waitForVisualRender(job,{timeoutMs=20*60*1000}={}) {
+  const deadline=Date.now()+timeoutMs;
+  while(Date.now()<deadline){
+    if(job.status!=='renderizando'&&currentJob?.id!==job.id)return job;
+    await new Promise(resolve=>setTimeout(resolve,250));
+  }
+  throw Error('La iteración superó el tiempo límite de render. Revisa el trabajo '+job.id+'.');
+}
+
+async function beginAutonomousVisualReview(session,project,previous,modelConfig){
+  try{
+    const result=await runVisualAutoLoop({
+      project,sourceJob:previous,maxAttempts:3,validateProject,
+      validateCustomScene:(code,scene)=>{
+        const candidate=validateProject({...project,scenes:project.scenes.map(s=>
+          s.id===scene.id?{...s,customScene:code}:s)});
+        const preflight=checkCustomScenePreflight(candidate);
+        if(!preflight.passed)throw Error('Selector de escena inválido: '+preflight.errors.slice(0,3).join(' | '));
+        return candidate.scenes.find(s=>s.id===scene.id).customScene;
+      },
+      onProgress:progress=>{session.progress=progress;},
+      propose:async (candidate,source,{validationFeedback}={})=>proposeVisionRevisions(candidate,source.visualDefects,
+        path.join(outDir,source.output),{modelConfig,validationFeedback}),
+      render:async (candidate,source,context)=>{
+        await ensureMediaAvailable(candidate);
+        const begin=source.engine==='hyperframes'?beginHyperframesRender:beginRender;
+        return begin(candidate,context);
+      },
+      wait:waitForVisualRender,
+      judge:async (source,trial,candidate,edits)=>judgeVisionRevision(
+        path.join(outDir,source.output),path.join(outDir,trial.output),candidate,edits,{modelConfig}),
+    });
+    session.status=result.status;session.result=result;
+    for(const round of result.rounds??[]){
+      const dir=path.join(outDir,'quality-reviews',round.jobId);
+      await fsp.mkdir(dir,{recursive:true});
+      await fsp.writeFile(path.join(dir,'vision-iteration.json'),JSON.stringify({
+        sourceJobId:round.sourceJobId,attempt:round.attempt,status:round.status,
+        technical:round.technical,perceptual:round.perceptual,changes:round.manifest?.applied,
+        approval:'PENDING_VISUAL_REVIEW',
+      },null,2));
+    }
+  }catch(error){
+    session.status='error';session.error=error instanceof Error?error.message:'Error visual desconocido.';
+  }finally{
+    session.finishedAt=Date.now();
+    if(activeVisualSession===session.id)activeVisualSession=null;
+  }
 }
 
 async function ensureMediaAvailable(project) {
@@ -620,10 +674,12 @@ async function handle(req, res) {
     return respond(res,200,{...getStylePreset(styleMatch),guide:getStyleGuide(styleMatch)});
   if (req.method === 'GET' && pathname === '/api/integrations') {
     const llm = aiPlannerConfig();
+    const vision = visionModelConfig();
     return respond(res, 200, {version: appVersion, sceneContract:MOTION_STUDIO_CONTRACT, customScene: true, openverse: true,
       pixabay: Boolean(process.env.PIXABAY_API_KEY),
       groq: Boolean(process.env.GROQ_API_KEY),
       ollama: {enabled:llm.ollamaConfigured, model:llm.ollamaModel, endpoint:llm.ollamaEndpoint},
+      ollamaVision:{configured:vision.configured,model:vision.model,localOnly:true},
       freeLLMApi: {configured: llm.configured, model: llm.model},
       hyperframes: `renderizador directo ${HYPERFRAMES_VERSION} (instalación automática al primer uso)`, paidApisEnabled: false});
   }
@@ -675,6 +731,7 @@ async function handle(req, res) {
     return uploadAsset(req, url, res);
   }
   if (req.method === 'POST' && pathname === '/api/render/hyperframes') {
+    if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
     const project = validateProject(await bodyJson(req));
     assertApproved(project);
     await ensureMediaAvailable(project);
@@ -683,6 +740,7 @@ async function handle(req, res) {
     return respond(res, 202, {jobId: job.id, engine: job.engine});
   }
   if (req.method === 'POST' && pathname === '/api/render') {
+    if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
     const project = validateProject(await bodyJson(req));
     assertApproved(project);
     await ensureMediaAvailable(project);
@@ -691,6 +749,7 @@ async function handle(req, res) {
     return respond(res, 202, {jobId: job.id});
   }
   if (req.method === 'POST' && pathname === '/api/iterations/rerender') {
+    if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
     const body=await bodyJson(req),previous=jobs.get(body.sourceJobId);
     const project=validateProject(body.project);
     const context=validateIterationRequest(previous,project);
@@ -700,6 +759,32 @@ async function handle(req, res) {
     const begin=previous.engine==='hyperframes'?beginHyperframesRender:beginRender;
     const job=await begin(project,context);
     return respond(res,202,{jobId:job.id,sourceJobId:previous.id,attempt:job.attempt});
+  }
+  if(req.method==='POST'&&pathname==='/api/iterations/auto'){
+    if(activeVisualSession||creatingJob||currentJob?.status==='renderizando')
+      throw Error('Hay un render o una revisión visual en marcha.');
+    const body=await bodyJson(req),project=validateProject(body.project);
+    const previous=jobs.get(body.sourceJobId);
+    if(previous?.status!=='completado'||previous?.visualDefects?.stage!=='post-render'||
+       previous.projectHash!==projectFingerprint(project))
+      throw Error('Selecciona un MP4 terminado y su JSON original exacto.');
+    if(previous.attempt>=3)throw Error('Se alcanzó el máximo de tres renders relacionados.');
+    await ensureMediaAvailable(project);
+    const config=await assertVisionModel();
+    const session={id:randomUUID(),status:'running',sourceJobId:previous.id,
+      progress:{phase:'queued',attempt:previous.attempt},result:null,error:null,createdAt:Date.now()};
+    visualSessions.set(session.id,session);
+    if(visualSessions.size>12)visualSessions.delete(visualSessions.keys().next().value);
+    activeVisualSession=session.id;
+    void beginAutonomousVisualReview(session,project,previous,config);
+    return respond(res,202,{sessionId:session.id,status:session.status});
+  }
+  const autoMatch=pathname.match(/^\/api\/iterations\/auto\/([0-9a-f-]{36})$/);
+  if(req.method==='GET'&&autoMatch){
+    const session=visualSessions.get(autoMatch[1]);
+    return session?respond(res,200,{id:session.id,status:session.status,
+      sourceJobId:session.sourceJobId,progress:session.progress,
+      error:session.error,result:session.result}):respond(res,404,{error:'Revisión visual desconocida.'});
   }
   const jobMatch = pathname.match(/^\/api\/jobs\/([0-9a-f-]{36})$/);
   if (req.method === 'GET' && jobMatch) {
@@ -730,7 +815,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && assetMatch) {
     return sendFile(res, assetsDir, assetMatch[1], false, req);
   }
-  const reviewMatch=pathname.match(/^\/reviews\/([0-9a-f-]{36})\/(index\.html|report\.json|defects\.json|[0-9]{3}\.png)$/);
+  const reviewMatch=pathname.match(/^\/reviews\/([0-9a-f-]{36})\/(index\.html|report\.json|defects\.json|vision-iteration\.json|[0-9]{3}\.png)$/);
   if(req.method==='GET'&&reviewMatch){
     return sendFile(res,path.join(outDir,'quality-reviews',reviewMatch[1]),reviewMatch[2],false);
   }

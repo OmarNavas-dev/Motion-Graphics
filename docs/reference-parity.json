@@ -274,9 +274,12 @@
       "evidence": [
         "server.mjs",
         "src/render-quality-audit.mjs",
-        "plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs"
+        "src/visual-vision-review.mjs",
+        "src/visual-auto-loop.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/apply-vision-plan.mjs"
       ],
-      "blocker": "Autonomous perceptual SVG/GSAP redesign, visual judgment and multi-pass auto-rerender are not implemented; a user must inspect and approve revised scenes"
+      "blocker": "Local opt-in vision model can propose and trial scene corrections with image-pair judgment, but no installed model or reference-style quality benchmark is verified by CI; human artistic approval remains required"
     },
     {
       "source": "Motion Studio (target)",

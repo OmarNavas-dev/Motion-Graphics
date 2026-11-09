@@ -3,6 +3,7 @@
 import {createHash} from 'node:crypto';
 
 export const VISUAL_ITERATION_SCHEMA = 'motion-studio.visual-iteration/1';
+export const VISUAL_REVISION_SCHEMA = 'motion-studio.visual-revision/1';
 export const projectFingerprint = project => createHash('sha256').update(JSON.stringify(project?.project ?? project)).digest('hex');
 const round = n => Number(Number(n).toFixed(3));
 
@@ -142,4 +143,76 @@ export function validateIterationRequest(previous,project,{maxAttempts=3}={}) {
   if(projectFingerprint(project)===previous.projectHash)
     throw Error('El JSON es idéntico al anterior. Corrige y aprueba una escena antes de repetir.');
   return {sourceJobId:previous.id,attempt:previous.attempt+1};
+}
+
+// Only explicitly evidenced, bounded scene edits are accepted from a vision model.
+// The caller must additionally run its full JSON and browser preflight validators.
+export function applyVisionRevisionPlan(project,report,plan,{validateCustomScene}={}) {
+  if(report?.schema!==VISUAL_ITERATION_SCHEMA ||
+     report.projectHash!==projectFingerprint(project))throw Error('El informe no corresponde al proyecto.');
+  if(plan?.schema!==VISUAL_REVISION_SCHEMA || plan.projectHash!==report.projectHash ||
+     plan.sourceJobId!==report.jobId || !Array.isArray(plan.scenes) ||
+     plan.scenes.length<1 || plan.scenes.length>3)throw Error('Plan de revisión visual inválido.');
+  const next=structuredClone(project), root=next.project??next, seen=new Set(),applied=[];
+  const allowedMotion=new Set(['auto','static','push','pull','pan-left','pan-right','rise','drift']);
+  const allowedTransition=new Set(['cut','fade','dip','flash']);
+  const numericBounds={x:[-200,200],y:[-200,200],width:[1,200],height:[1,200],
+    opacity:[0,1],size:[8,180],rotate:[-360,360],scale:[.1,5]};
+  for(const entry of plan.scenes){
+    const scene=root.scenes.find(s=>s.id===entry?.sceneId);
+    if(!scene||seen.has(scene.id)||!['customScene','authoredLayers','motion'].includes(entry.type)||
+       !Number.isFinite(entry.confidence)||entry.confidence<.7||entry.confidence>1||
+       typeof entry.observation!=='string'||entry.observation.trim().length<12||
+       entry.observation.length>800||!Number.isFinite(entry.localSeconds)||
+       entry.localSeconds<0||entry.localSeconds>scene.duration)
+      throw Error('Propuesta sin escena, confianza o evidencia temporal válida.');
+    seen.add(scene.id);
+    if(entry.type==='customScene'){
+      if(!scene.customScene?.html||typeof validateCustomScene!=='function')
+        throw Error('La revisión de código requiere la escena original y validador ejecutable.');
+      const data=entry.customScene;
+      if(!data||Object.keys(data).some(k=>!['html','css','script'].includes(k))||
+         typeof data.html!=='string'||typeof data.css!=='string'||typeof data.script!=='string')
+        throw Error('El reemplazo HTML/CSS/GSAP está incompleto.');
+      const validated=validateCustomScene(data,scene);
+      if(!validated?.html||JSON.stringify(validated)===JSON.stringify(scene.customScene))
+        throw Error('El código corregido está vacío o no cambió.');
+      scene.customScene=validated;
+    } else if(entry.type==='authoredLayers'){
+      if(!scene.authored?.layers?.length||!Array.isArray(entry.layerEdits)||
+         !entry.layerEdits.length||entry.layerEdits.length>12)throw Error('Capas no editables.');
+      const ids=new Set();
+      for(const edit of entry.layerEdits){
+        const layer=scene.authored.layers.find(l=>l.id===edit.layerId);
+        if(!layer||ids.has(layer.id))throw Error('ID de capa inexistente o repetido.');
+        ids.add(layer.id);
+        for(const key of Object.keys(edit)){
+          if(key==='layerId')continue;
+          if(key==='color'){
+            if(layer.type!=='text'||!hex(edit.color))throw Error('El color debe ser hexadecimal de texto.');
+          }else if(numericBounds[key]){
+            const [min,max]=numericBounds[key];
+            if(!Number.isFinite(edit[key])||edit[key]<min||edit[key]>max)
+              throw Error('Coordenada de capa fuera de límites.');
+          }else throw Error('No se permite modificar '+key+' en una propuesta visual.');
+          layer[key]=edit[key];
+        }
+        if(Object.keys(edit).length<2)throw Error('La revisión no contiene modificaciones.');
+      }
+    } else {
+      if(!allowedMotion.has(entry.motion)||!allowedTransition.has(entry.transition)||
+         !Number.isFinite(entry.motionStrength)||entry.motionStrength<0||entry.motionStrength>100)
+        throw Error('Movimiento fuera del contrato.');
+      if(scene.motion===entry.motion&&scene.transition===entry.transition&&
+         scene.motionStrength===entry.motionStrength)throw Error('La revisión no cambió el movimiento.');
+      scene.motion=entry.motion;scene.transition=entry.transition;scene.motionStrength=entry.motionStrength;
+    }
+    scene.approved=false;
+    applied.push({sceneId:scene.id,type:entry.type,confidence:entry.confidence,
+      localSeconds:entry.localSeconds,observation:entry.observation.trim()});
+  }
+  if(projectFingerprint(project)===projectFingerprint(next))throw Error('El plan no modificó el JSON.');
+  return {project:next,manifest:{schema:VISUAL_REVISION_SCHEMA,projectHashBefore:report.projectHash,
+    projectHashAfter:projectFingerprint(next),sourceJobId:report.jobId,applied,
+    approval:'PENDING_VISUAL_REVIEW'}};
 }

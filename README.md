@@ -1,6 +1,6 @@
 # Motion Studio 7.4.0 - HyperFrames + GSAP + Remotion
 
-Motion Graphics 2.9.5 y Motion Studio 7.4 comparten secuencias y comprobaciones de
+Motion Graphics 2.10.0 y Motion Studio 7.4 comparten secuencias y comprobaciones de
 movimiento para cualquier tema. Se retiraron cuotas de efectos y camara automatica;
 ver [MEJORAS-7.4.md](MEJORAS-7.4.md). El acabado visual se revisa en fotogramas reales.
 
@@ -10,6 +10,12 @@ Tras renderizar, Motion Studio genera un informe estructurado de defectos con
 escena, segundo y fotograma de evidencia; su descarga aparece junto al MP4.
 Motion Graphics lee ese informe con el JSON original, corrige contrastes de texto
 deterministas y guía la reautoría de escenas con problemas artísticos.
+Ahora permite planes `visual-revision/1` verificables para retocar capas,
+HTML/GSAP y movimientos sin modificar el audio ni los tiempos. Con un modelo
+multimodal de Ollama **instalado localmente** y `OLLAMA_VISION_MODEL` en `.env`,
+el botón **Intentar corrección visual automática** prueba hasta dos renders
+adicionales, revisa pares de fotogramas antes/después y conserva el original si
+no demuestra mejora. No se envían imágenes a APIs externas.
 Importa el JSON corregido, revisa las escenas, apruébalas y usa el nuevo botón
 **Renderizar nuevamente el JSON corregido**. Se guardan ambos MP4 y se comparan
 alertas técnicas antes y después (máximo tres renders relacionados).

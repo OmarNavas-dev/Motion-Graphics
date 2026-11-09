@@ -7,6 +7,7 @@ import {execFile,spawnSync} from 'node:child_process';
 import {promisify} from 'node:util';
 import {auditRenderedVideo} from './src/render-quality-audit.mjs';
 import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
+import {captureVisionFrame} from './src/visual-vision-review.mjs';
 import {createVisualDefectReport,VISUAL_ITERATION_SCHEMA} from './plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs';
 const exec=promisify(execFile);
 
@@ -33,5 +34,8 @@ test('P1 genera defectos y fotogramas desde un MP4 real de contraste insuficient
     await fs.writeFile(path.join(frames,'defects.json'),JSON.stringify(defects,null,2));
     assert.equal(JSON.parse(await fs.readFile(path.join(frames,'defects.json'))).jobId,'local');
     assert.ok((await fs.stat(path.join(frames,'001.png'))).size>0);
+    const image=Buffer.from(await captureVisionFrame(video,1.25),'base64');
+    assert.equal(image.subarray(1,4).toString('ascii'),'PNG');
+    assert.equal(image.readUInt32BE(16),640);
   }finally{await fs.rm(root,{recursive:true,force:true});}
 });
