@@ -8,7 +8,7 @@ import {
 // real evidence reports and fake renderers, while production uses real jobs.
 // A trial candidate is never saved or approved without user review.
 export async function runVisualAutoLoop({project,sourceJob,propose,render,wait,judge,
-  validateProject,validateCustomScene,onProgress=()=>{},maxAttempts=3}={}) {
+  validateProject,validateCustomScene,compareReference,onProgress=()=>{},maxAttempts=3}={}) {
   if(typeof propose!=='function'||typeof render!=='function'||typeof wait!=='function'||
      typeof judge!=='function'||typeof validateProject!=='function')
     throw Error('La revisión autónoma requiere modelo, renderizador, validación y comparación reales.');
@@ -56,13 +56,14 @@ export async function runVisualAutoLoop({project,sourceJob,propose,render,wait,j
     onProgress({phase:'compare',attempt:context.attempt,jobId:completed.id});
     const technical=compareVisualReports(previous.visualDefects,completed.visualDefects);
     const perceptual=await judge(previous,completed,candidate,revision.manifest.applied);
+    const reference=typeof compareReference==='function'?await compareReference(previous,completed,candidate):null;
     // A positive image-model opinion cannot override new technical errors.
     const accepted=perceptual.accepted===true&&
       completed.visualDefects.counts.error<=previous.visualDefects.counts.error&&
-      completed.qualityEvidence?.screenshotEvidence===true;
+      completed.qualityEvidence?.screenshotEvidence===true&&(!reference||reference.passed===true);
     const round={attempt:context.attempt,jobId:completed.id,sourceJobId:previous.id,
       status:accepted?'candidate_improved':'candidate_rejected',
-      technical,perceptual,manifest:revision.manifest};
+      technical,perceptual,reference,manifest:revision.manifest};
     rounds.push(round);
     if(!accepted)return {status:'needs_review',
       reason:'La comparación visual no demuestra mejora suficiente; el original se conservó.',

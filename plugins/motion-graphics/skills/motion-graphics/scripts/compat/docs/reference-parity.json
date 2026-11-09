@@ -326,10 +326,13 @@
         "src/render-quality-audit.mjs",
         "src/visual-vision-review.mjs",
         "src/visual-auto-loop.mjs",
+        "src/reference-revision-gate-p8.mjs",
+        "src/reference-alignment-p83.mjs",
         "plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs",
         "plugins/motion-graphics/skills/motion-graphics/scripts/apply-vision-plan.mjs"
       ],
-      "blocker": "Local opt-in vision model can propose and trial scene corrections with image-pair judgment, but no installed model or reference-style quality benchmark is verified by CI; human artistic approval remains required"
+      "tests": ["visual-autonomous.test.mjs", "reference-revision-gate-p8.test.mjs"],
+      "blocker": "El bucle P8 rechaza regresiones métricas contra el mismo MP4 de referencia cuando se aporta; no hay modelo visual local instalado ni aprobación humana de equivalencia artística en CI"
     },
     {
       "source": "Motion Studio (target)",
