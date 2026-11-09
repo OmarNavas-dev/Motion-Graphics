@@ -111,8 +111,8 @@ test('servidor real: GSAP, fuentes, reinicio con proyecto y arranque limpio con 
     await start();
     const integrations=await json('/api/integrations','GET');
     assert.equal(integrations.status,200);
-    assert.equal(typeof integrations.body.ollamaVision.configured,'boolean');
-    assert.equal(integrations.body.ollamaVision.localOnly,true);
+    assert.equal(integrations.body.paidApisEnabled,false);
+    assert.equal(integrations.body.ollamaVision,undefined);
     const gsap = await fetch(address+'/hyperframes/gsap.min.js');
     assert.equal(gsap.status,200);
     assert.match(gsap.headers.get('content-type'),/javascript/);
@@ -134,8 +134,7 @@ test('servidor real: GSAP, fuentes, reinicio con proyecto y arranque limpio con 
     assert.equal(invalid.status,400);
     const project = fixture();
     const autoWithoutVideo=await json('/api/iterations/auto','POST',{sourceJobId:'missing',project});
-    assert.equal(autoWithoutVideo.status,400);
-    assert.match(autoWithoutVideo.body.error,/MP4 terminado/);
+    assert.equal(autoWithoutVideo.status,404);
     const saved = await json('/api/project','PUT',project);
     assert.equal(saved.status,200);
     await stop(); await start();

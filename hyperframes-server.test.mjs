@@ -18,7 +18,8 @@ test('servidor tiene un render HyperFrames directo con navegador preparado y CPU
   assert.match(server, /assertHyperframesRequirements/);
   assert.match(server, /\['ffmpeg', 'ffprobe'\]\.filter/);
   assert.match(server, /exportHyperframesProject\(project, undefined, gsapSource, embeddedAssets\)/);
-  assert.match(server, /\/api\/ai\/scene/);
+  assert.doesNotMatch(server, /\/api\/ai\/scene/);
+  assert.doesNotMatch(server, /\/api\/media\/search/);
 });
 
 test('interfaz usa HyperFrames por defecto y conserva Remotion como alternativa', () => {
