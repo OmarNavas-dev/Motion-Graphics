@@ -24,6 +24,8 @@ jobs:
         run: npm run test:p3
       - name: Verify 12 executable specialized workflows
         run: npm run test:p4
+      - name: Verify P5 articulated characters and contact contracts
+        run: npm run test:p5
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types
@@ -120,5 +122,29 @@ jobs:
         with:
           name: p4-workflows-video-gif-and-report
           path: out/p4-specialized/
+          if-no-files-found: warn
+          retention-days: 14
+  characters-acceptance:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci --include=dev
+      - name: Install FFmpeg and FFprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Render and audit five character actions
+        run: npm run accept:characters:p5
+      - name: Upload character MP4s, poses, contact evidence and report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p5-character-actions-and-contact-audit
+          path: out/p5-characters/
           if-no-files-found: warn
           retention-days: 14
