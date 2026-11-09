@@ -15,6 +15,8 @@ export function collectProjectAssets(project, {scenes = project.scenes ?? [], in
     for (const clip of project.voiceClips ?? []) add(clip.asset);
   }
   if (includeReferences) for (const asset of project.references ?? []) add(asset);
+  const sceneIds = new Set(scenes.map(scene => scene.id));
+  for (const clip of project.broll ?? []) if (sceneIds.has(clip.sceneId)) for (const obj of clip.objects ?? []) add(obj.asset);
   for (const scene of scenes) {
     add(scene.imageAsset); add(scene.videoAsset);
     for (const cue of scene.audioCues ?? []) add(cue.asset);

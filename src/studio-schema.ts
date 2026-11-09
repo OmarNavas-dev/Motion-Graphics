@@ -116,6 +116,7 @@ export type StudioScene = {
 };
 
 export type StudioProject = {
+  broll?: BrollClip[];
   actors?: ActorDefinition[];
   wordTimings?: WordTiming[];
   name: string;
@@ -138,6 +139,12 @@ export type StudioProject = {
   voiceClips?: VoiceClip[];
   scenes: StudioScene[];
 };
+
+export type BrollObject = {id: string; type: 'shape'|'image'|'text'; x: number; y: number; width: number;
+  height: number; color?: string; shape?: 'rect'|'circle'; asset?: string; text?: string; fontSize?: number};
+export type BrollClip = {id:string;sceneId:string;at:number;duration:number;globalAt:number;
+  kind:'overlay'|'cutaway';objects:BrollObject[];motion:'static'|'rise'|'zoom'|'slide-left';background?:string;
+  narration?:{wordIndex:number;edge:'start'|'end';offset:number;phrase:string}};
 
 export type StudioProps = {project: StudioProject};
 export type WordTiming = {text: string; start: number; end: number; emphasis?: boolean};

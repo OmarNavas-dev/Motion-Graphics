@@ -28,6 +28,7 @@ import {Canvas3DScene} from './Canvas3DScene';
 import {AuthoredScene as ComplexAuthoredScene} from './AuthoredScene';
 import {MediaFirstScene} from './MediaFirstScene';
 import {chooseConcept} from './semantic-director.mjs';
+import {BrollTrack} from './BrollTrack';
 
 const clamp = {extrapolateLeft: 'clamp', extrapolateRight: 'clamp'} as const;
 
@@ -593,6 +594,7 @@ export const StudioVideo: React.FC<StudioProps> = ({project}) => {
         })
         : project.audioAsset && <Audio src={staticFile(project.audioAsset)} volume={1} />}
       {project.musicAsset && <Audio src={staticFile(project.musicAsset)} volume={project.musicVolume ?? 0.18} />}
+      <BrollTrack project={project}/>
     </AbsoluteFill>
   );
 };
