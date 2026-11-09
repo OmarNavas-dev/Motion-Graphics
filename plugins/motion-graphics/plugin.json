@@ -4,7 +4,7 @@
     "email": "omarsalome56@gmail.com",
     "name": "Omar Navas"
   },
-  "description": "Crea un unico proyecto JSON para Motion Studio a partir de guion y audio adjuntos en ChatGPT, con escenas en SVG, HTML, CSS y GSAP y kits de motion graphics (materiales, camara, efectos, etiquetas y mecanismos).",
+  "description": "Crea un unico proyecto JSON para Motion Studio a partir de guion y audio adjuntos en ChatGPT, con escenas en SVG, HTML, CSS y GSAP y kits de motion graphics (materiales, camara con zona segura, efectos, etiquetas, mecanismos, personajes, escenarios de oceano/iglesia/celda, objetos de historia, placas editoriales y cierre del canal).",
   "extensions": {
     "com.openai": {
       "interface": {
@@ -15,7 +15,7 @@
         "category": "Creativity",
         "composerIcon": "./assets/icon.svg",
         "defaultPrompt": [
-          "Genera un JSON para Motion Studio con los 21 estilos visuales, los 26 flujos de producción, identidad visual persistente, diseño sonoro optativo, cámara ejecutable, loops y validación de contrato actualizado."
+          "Crea un proyecto JSON para Motion Studio 7.4 con dirección, marca, uno de 21 estilos, cámara GSAP, Foley, análisis de voz y revisión visual. Consulta las referencias de sincronización 2.9 y valida todo antes de entregar."
         ],
         "developerName": "Omar Navas",
         "displayName": "Motion Graphics",
@@ -36,5 +36,5 @@
     "svg"
   ],
   "name": "motion-graphics",
-  "version": "2.9.1"
+  "version": "2.9.2"
 }

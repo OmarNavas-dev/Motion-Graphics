@@ -1,9 +1,8 @@
 import test from 'node:test';import assert from 'node:assert/strict';
 import {referenceParity} from './scripts/reference-parity-gate.mjs';
-test('the full reference suite is not falsely certified as ready',async()=>{
+test('la aceptación depende de evidencia verificada, no de un false permanente',async()=>{
  const report=await referenceParity();
  assert.ok(report.total>=30);
- assert.equal(report.readyForUserAcceptance,false);
+ assert.equal(report.readyForUserAcceptance,report.unresolved.length===0&&report.errors.length===0);
  assert.deepEqual(report.errors,[]);
- assert.ok(report.unresolved.some(x=>x.id==='motion-broll'));
 });

@@ -18,6 +18,8 @@ jobs:
         run: npm ci --include=dev
       - name: Test contracts and quality modules
         run: npm test
+      - name: Verify canonical plugin package
+        run: npm run plugin:check
       - name: Lint and types
         run: npm run lint
       - name: Build Studio
@@ -38,7 +40,6 @@ jobs:
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
