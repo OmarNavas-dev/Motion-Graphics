@@ -60,17 +60,19 @@
       "source": "Barty-Bart/motion-graphics",
       "id": "object-separation",
       "status": "external",
-      "evidence": [],
-      "blocker": "Needs SAM 2.1 local model install, hardware selection and per-frame segmentation pipeline"
+      "evidence": ["cloud-integrations.mjs", "src/external-adapters-p7.mjs"],
+      "tests": ["external-adapters-p7.test.mjs"],
+      "blocker": "P7 incluye adaptador remove.bg y contrato PNG con alfa; no se ha ejecutado con clave pagada ni equivale a SAM 2.1, segmentación temporal por fotograma o separación de objetos múltiples"
     },
     {
       "source": "Barty-Bart/motion-graphics",
       "id": "sound-effects",
       "status": "partial",
       "evidence": [
-        "src/sound-design.mjs"
+        "src/sound-design.mjs", "src/audio-simulation-p6.mjs"
       ],
-      "blocker": "Synthesized Foley exists; library/music credits and intelligent auto-placement remain absent"
+      "tests": ["audio-simulation-p6.test.mjs", "scripts/acceptance-audio-simulations-p6.mjs"],
+      "blocker": "P6 sintetiza Foley con paneo, fades y mezcla estéreo; siguen sin homologarse una biblioteca musical licenciada y la colocación inteligente basada en escenas arbitrarias"
     },
     {
       "source": "whaleyxbt/claude-motion",
@@ -98,16 +100,18 @@
       "id": "sound-design",
       "status": "partial",
       "evidence": [
-        "src/sound-design.mjs"
+        "src/sound-design.mjs", "src/audio-quality-audit.mjs"
       ],
-      "blocker": "Cues/mux included; multimodal cue recommendation, automated mastering and pan not complete"
+      "tests": ["audio-simulation-p6.test.mjs", "scripts/acceptance-audio-simulations-p6.mjs"],
+      "blocker": "P6 verificó paneo, ducking y sonoridad de mezcla real; recomendaciones multimodales y mastering perceptual comparado con referencias permanecen pendientes"
     },
     {
       "source": "whaleyxbt/claude-motion",
       "id": "web-sims",
-      "status": "missing",
-      "evidence": [],
-      "blocker": "Simulation engine and live interaction-to-video adaptation absent"
+      "status": "partial",
+      "evidence": ["src/audio-simulation-p6.mjs", "src/authored-renderer.mjs"],
+      "tests": ["audio-simulation-p6.test.mjs", "scripts/acceptance-audio-simulations-p6.mjs"],
+      "blocker": "P6 dispone de cuatro simulaciones físicas 2D analíticas, pero no implementa el flujo web interactivo, entrada de usuario en vivo ni motor genérico de física de la referencia"
     },
     {
       "source": "ItsssssJack/claude-video-2",
@@ -154,8 +158,9 @@
       "source": "ItsssssJack/claude-video-2",
       "id": "Higgsfield-media",
       "status": "external",
-      "evidence": [],
-      "blocker": "Requires external account, explicit cost confirmation, API credentials, licensing and video import"
+      "evidence": ["src/external-adapters-p7.mjs", "plugins/motion-graphics/skills/motion-graphics/scripts/plan-external-request.mjs"],
+      "tests": ["external-adapters-p7.test.mjs"],
+      "blocker": "P7 prepara planes y valida parámetros; ejecución pagada de Higgsfield, modelo y endpoint concretos, licencia y video importado no están verificados"
     },
     {
       "source": "charlie947/motion-graphics-skills",

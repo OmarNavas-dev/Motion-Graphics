@@ -30,6 +30,8 @@ jobs:
         run: npm run test:p6
       - name: Verify P7 external adapter contracts and safe mock requests
         run: npm run test:p7
+      - name: Verify P8 complete JSON coverage and strict honesty
+        run: npm run test:p8
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types
@@ -72,6 +74,8 @@ jobs:
         run: npm run accept:five:render
       - name: Render real transparent ProRes and composite with audio
         run: npm run accept:broll:alpha
+        env:
+          MOTION_P8_EVIDENCE_DIR: out/p2-alpha
       - name: Upload rendered evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -80,6 +84,14 @@ jobs:
           path: out/acceptance-five-topics/
           if-no-files-found: warn
           retention-days: 7
+      - name: Upload P2 alpha MOV and MP4 proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p2-broll-transparent-mov-and-composite
+          path: out/p2-alpha/
+          if-no-files-found: warn
+          retention-days: 14
   styles-acceptance:
     needs: validate
     runs-on: ubuntu-latest
@@ -176,3 +188,47 @@ jobs:
           path: out/p6-audio-simulations/
           if-no-files-found: warn
           retention-days: 14
+  homologation-p8:
+    needs: [validate, render-acceptance, styles-acceptance, workflows-acceptance, characters-acceptance, audio-simulations-acceptance]
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci --include=dev
+      - name: Install FFprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - uses: actions/download-artifact@v4
+        with:
+          name: p2-broll-transparent-mov-and-composite
+          path: out/p8-evidence/broll
+      - uses: actions/download-artifact@v4
+        with:
+          name: p3-styles-21-mp4-and-contact-sheet
+          path: out/p8-evidence/styles
+      - uses: actions/download-artifact@v4
+        with:
+          name: p4-workflows-video-gif-and-report
+          path: out/p8-evidence/workflows
+      - uses: actions/download-artifact@v4
+        with:
+          name: p5-character-actions-and-contact-audit
+          path: out/p8-evidence/characters
+      - uses: actions/download-artifact@v4
+        with:
+          name: p6-audio-simulations-video-and-mix
+          path: out/p8-evidence/audio
+      - name: Validate 33 full JSONs, shared contracts and inspect real media
+        run: npm run homologation:p8:ci
+      - name: Upload P8 33 JSONs and evidence matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p8-33-json-evidence-and-blockers
+          path: out/p8-final/
+          if-no-files-found: warn
+          retention-days: 30
