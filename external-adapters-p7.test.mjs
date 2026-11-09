@@ -55,7 +55,7 @@ test('P7: rechaza falta de clave, imagen grande, HTTP fallido, MIME falso y PNG 
  const opaque=png();opaque[25]=2;
  await assert.rejects(segmentWithRemoveBg(Buffer.alloc(32),'photo.png','key',{fetcher:async()=>new Response(opaque,{headers:{'content-type':'image/png'}})}),/canal alfa/);
 });
-test('P7: HTTP real devuelve plan y bloquea segmentación sin aceptación',async()=>{
+test('P7: el servidor de código puro no expone adaptadores externos',async()=>{
  const net=createServer();net.listen(0,'127.0.0.1');await once(net,'listening');
  const port=net.address().port;net.close();await once(net,'close');
  const root=await mkdtemp(path.join(tmpdir(),'ms-p7-http-'));
@@ -72,11 +72,10 @@ test('P7: HTTP real devuelve plan y bloquea segmentación sin aceptación',async
   const url=`http://127.0.0.1:${port}`,post=async(endpoint,body)=>fetch(url+endpoint,{
    method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
   const planned=await post('/api/external/plan',samples[3]);
-  assert.equal(planned.status,200);
-  assert.equal((await planned.json()).request.dispatchable,false);
+  assert.equal(planned.status,404);
   const denied=await post('/api/external/segment',{asset});
-  assert.equal(denied.status,400);
+  assert.equal(denied.status,404);
   const invalid=await post('/api/external/plan',{provider:'higgsfield',operation:'generate-video',prompt:'x'});
-  assert.equal(invalid.status,400);
+  assert.equal(invalid.status,404);
  }finally{child.kill();await rm(root,{recursive:true,force:true});}
 });
