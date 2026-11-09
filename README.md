@@ -1,6 +1,6 @@
 # Motion Studio 7.4.0 - HyperFrames + GSAP + Remotion
 
-Motion Graphics 2.9.3 y Motion Studio 7.4 comparten secuencias y comprobaciones de
+Motion Graphics 2.9.5 y Motion Studio 7.4 comparten secuencias y comprobaciones de
 movimiento para cualquier tema. Se retiraron cuotas de efectos y camara automatica;
 ver [MEJORAS-7.4.md](MEJORAS-7.4.md). El acabado visual se revisa en fotogramas reales.
 
