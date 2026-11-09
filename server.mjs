@@ -30,6 +30,7 @@ import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
 import {createVisualDefectReport,compareVisualReports,projectFingerprint,validateIterationRequest} from './plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs';
 import {assertVisionModel,visionModelConfig,proposeVisionRevisions,judgeVisionRevision} from './src/visual-vision-review.mjs';
 import {runVisualAutoLoop} from './src/visual-auto-loop.mjs';
+import {inspectAlphaMov,compositeBrollAlpha} from './src/broll-export.mjs';
 import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
@@ -80,6 +81,7 @@ const mimeType = (file) => {
     '.wav': 'audio/wav',
     '.m4a': 'audio/mp4',
     '.mp4': 'video/mp4',
+    '.mov': 'video/quicktime',
     '.woff2': 'font/woff2',
     '.ttf': 'font/ttf',
     '.otf': 'font/otf',
@@ -347,6 +349,46 @@ async function transcribeAsset(req, res) {
 
 const latestLog = (value, incoming) =>
   (value + incoming.toString('utf8')).slice(-4500);
+
+async function renderBrollMov(project,id,job) {
+  if (!project.broll?.length) throw Error('P2: añade planos B-roll antes de exportar alfa.');
+  const props=path.join(outDir,`broll-props-${id}.json`);
+  const output=path.join(outDir,`studio-${id}.mov`);
+  await fsp.writeFile(props,JSON.stringify({project}),'utf8');
+  try {
+    await new Promise((resolve,reject)=>{
+      const args=[cliPath,'render','TransparentBroll',output,`--props=${props}`,
+        `--public-dir=${publicDir}`,'--codec=prores','--prores-profile=4444',
+        '--pixel-format=yuva444p10le','--image-format=png','--concurrency=1',
+        '--hardware-acceleration=disable'];
+      const child=spawn(process.execPath,args,{cwd:root,env:process.env,windowsHide:true});
+      child.stdout.on('data',chunk=>{job.log=latestLog(job.log,chunk);});
+      child.stderr.on('data',chunk=>{job.log=latestLog(job.log,chunk);});
+      child.on('error',reject);
+      child.on('close',code=>code===0?resolve():reject(Error('P2: falló ProRes 4444: '+job.log.slice(-1200))));
+    });
+    job.alphaAudit=await inspectAlphaMov(output);
+    job.alphaDownload=`/exports/studio-${id}.mov`;
+    job.log+='[P2] Canal alfa decodificado: '+job.alphaAudit.pixelFormat+'\n';
+    return output;
+  } finally {await fsp.rm(props,{force:true}).catch(()=>{});}
+}
+
+async function beginBrollAlpha(project) {
+  if(creatingJob||currentJob?.status==='renderizando')throw Error('Espera a que termine el render actual.');
+  creatingJob=true;
+  const id=randomUUID();
+  const job={id,engine:'alpha-broll',status:'renderizando',progress:1,error:'',log:'',
+    output:`studio-${id}.mov`,startedAt:Date.now(),projectHash:projectFingerprint(project)};
+  jobs.set(id,job);currentJob=job;creatingJob=false;
+  if(jobs.size>20)jobs.delete(jobs.keys().next().value);
+  void(async()=>{
+    try{await renderBrollMov(project,id,job);job.status='completado';job.progress=100;}
+    catch(error){job.status='error';job.error=error.message;job.log=latestLog(job.log,error.message);}
+    finally{if(currentJob?.id===id)currentJob=null;}
+  })();
+  return job;
+}
 
 // Shared post-render pipeline: both Remotion and HyperFrames are audited.
 async function reviewCompletedRender(job,project,output,id){
@@ -629,6 +671,12 @@ async function beginHyperframesRender(project,{sourceJobId=null,attempt=1}={}) {
         throw new Error('HyperFrames terminó, pero no se encontró un MP4 válido.');
       }
       await fsp.copyFile(workspaceOutput, output);
+      if(project.broll?.length){
+        job.log+='[P2] Renderizando B-roll transparente y componiéndolo en el MP4...\n';
+        const overlay=await renderBrollMov(project,id,job);
+        await compositeBrollAlpha(output,overlay);
+        job.log+='[P2] Planos sincronizados integrados; audio original conservado.\n';
+      }
       await reviewCompletedRender(job,project,output,id);
       job.status = 'completado';
       job.progress = 100;
@@ -751,6 +799,16 @@ async function handle(req, res) {
     const job = await beginRender(project);
     return respond(res, 202, {jobId: job.id});
   }
+  if(req.method==='POST'&&pathname==='/api/export/alpha-broll'){
+    if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
+    const project=validateProject(await bodyJson(req));
+    assertApproved(project);
+    if(!project.broll.length)throw Error('P2: agrega un plano B-roll antes de exportar alfa.');
+    await ensureMediaAvailable(project);
+    await saveProject(project);
+    const job=await beginBrollAlpha(project);
+    return respond(res,202,{jobId:job.id,engine:job.engine});
+  }
   if (req.method === 'POST' && pathname === '/api/iterations/rerender') {
     if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
     const body=await bodyJson(req),previous=jobs.get(body.sourceJobId);
@@ -800,6 +858,7 @@ async function handle(req, res) {
       audioLoudnessAudit:job.audioLoudnessAudit??null, audioAssetsAudit:job.audioAssetsAudit??null, contactSheet:job.contactSheet??null,
       soundDesignAudit:job.soundtrackAudit??null,loopAudit:job.loopAudit??null,qualityEvidence:job.qualityEvidence??null,pacingAudit:job.pacingAudit??null,
       visualDefects:job.visualDefects??null,sourceJobId:job.sourceJobId,attempt:job.attempt,iterationComparison:job.iterationComparison??null,
+      alphaAudit:job.alphaAudit??null,alphaDownload:job.alphaDownload??null,
     }) : respond(res, 404, {error: 'Trabajo no encontrado.'});
   }
   if (req.method === 'GET' && pathname === '/preview') {
@@ -822,7 +881,7 @@ async function handle(req, res) {
   if(req.method==='GET'&&reviewMatch){
     return sendFile(res,path.join(outDir,'quality-reviews',reviewMatch[1]),reviewMatch[2],false);
   }
-  const exportMatch = pathname.match(/^\/exports\/(studio-[0-9a-f-]{36}\.mp4)$/);
+  const exportMatch = pathname.match(/^\/exports\/(studio-[0-9a-f-]{36}\.(?:mp4|mov))$/);
   if (req.method === 'GET' && exportMatch) {
     return sendFile(res, outDir, exportMatch[1], true);
   }

@@ -3,6 +3,7 @@ import path from 'node:path';
 import {ensureDistinctVisualActionPlan, normalizeVisualActionPlan} from './src/visual-action-planner.mjs';
 import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
 import {normalizeActors, normalizeDirection, normalizeWordTimings} from './src/explainer-contract.mjs';
+import {normalizeBroll} from './src/broll-timeline.mjs';
 
 export const MAX_ASSET_BYTES = 50 * 1024 * 1024;
 export const MAX_SCENES = 80;
@@ -219,6 +220,7 @@ export function validateProject(raw) {
   project.actors = normalizeActors(raw.actors);
   project.wordTimings = normalizeWordTimings(raw.wordTimings, length);
   if (new Set(project.scenes.map(s => s.id)).size !== project.scenes.length) throw new Error('Las escenas deben tener identificadores únicos.');
+  project.broll = normalizeBroll(raw.broll, project.scenes, project.wordTimings);
   if (length > MAX_VIDEO_SECONDS) throw new Error('El video no puede superar 15 minutos.');
   if (project.voiceClips.reduce((sum, clip) => sum + clip.duration, 0) > MAX_VIDEO_SECONDS) {
     throw new Error('La suma de audios por dialogo no puede superar 15 minutos.');

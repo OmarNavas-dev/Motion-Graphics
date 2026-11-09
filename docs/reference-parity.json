@@ -39,9 +39,15 @@
     {
       "source": "Barty-Bart/motion-graphics",
       "id": "motion-broll",
-      "status": "missing",
-      "evidence": [],
-      "blocker": "Timeline-attached cutaways, alpha ProRes export, comparison viewer, and word-aligned B-roll are not implemented"
+      "status": "partial",
+      "evidence": [
+        "plugins/motion-graphics/skills/motion-graphics/scripts/broll-timeline.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/references/broll-transparencia-p2.md",
+        "src/BrollTrack.tsx",
+        "src/broll-export.mjs"
+      ],
+      "tests": ["broll-contract.test.mjs", "scripts/acceptance-broll-alpha.mjs"],
+      "blocker": "B-roll sincronizado y MOV ProRes 4444 implementados; siguen pendientes el visor antes/después y las transiciones interactivas del flujo Barty completo"
     },
     {
       "source": "Barty-Bart/motion-graphics",
@@ -294,9 +300,10 @@
     {
       "source": "Motion Studio (target)",
       "id": "transparent-ProRes-4444",
-      "status": "missing",
-      "evidence": [],
-      "blocker": "No end-to-end alpha composition export"
+      "status": "verified",
+      "evidence": ["src/BrollTrack.tsx", "src/broll-export.mjs", "server.mjs"],
+      "tests": ["scripts/acceptance-broll-alpha.mjs", "broll-contract.test.mjs"],
+      "blocker": "Verificación del alfa decodificable y composición MP4 con audio; ver pruebas de render en CI"
     }
   ]
 }

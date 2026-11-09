@@ -6,6 +6,7 @@ import {FaithfulPreview, type PreviewHandle} from './FaithfulPreview';
 import {exportHyperframesProject, exportHyperframesScene} from './hyperframes-bridge';
 import {assignReferenceImages} from './media-director.mjs';
 import {suggestMotionGraphics, timedStoryboardBlocks} from './auto-graphics.mjs';
+import {normalizeBroll} from '../plugins/motion-graphics/skills/motion-graphics/scripts/broll-timeline.mjs';
 import {createVisualActionPlan, createVisualActionPlans} from './visual-action-planner.mjs';
 import {
   FPS, defaultStudioProject, getDimensions, getSceneFrames, getTotalFrames,
@@ -20,12 +21,14 @@ import './studio-app.css';
 
 type JobStatus = {
   id?: string;
-  engine?: 'hyperframes' | 'remotion';
+  engine?: 'hyperframes' | 'remotion' | 'alpha-broll';
   status: string;
   progress: number;
   error: string;
   log: string;
   download: string | null;
+  alphaDownload?: string | null;
+  alphaAudit?: {codec:string;pixelFormat:string;alphaDecoded:boolean} | null;
   attempt?: number;
   visualDefects?: {defects: {id:string;code:string;sceneId:string|null;seconds:number|null;summary:string;severity:string}[];
     counts:{error:number;warning:number;info:number};approval:string} | null;
@@ -421,7 +424,8 @@ function StudioApp() {
         if (result.status !== 'renderizando') {
           setRenderJobId(null);
           setNotice(result.status === 'completado'
-            ? `Render ${result.engine === 'hyperframes' ? 'HyperFrames' : 'Remotion'} completado. Ya puedes descargar el MP4.`
+            ? result.engine === 'alpha-broll' ? 'B-roll ProRes 4444 con alfa verificado. Descarga el MOV.'
+              : `Render ${result.engine === 'hyperframes' ? 'HyperFrames' : 'Remotion'} completado. Ya puedes descargar el MP4.`
             : `Falló el render ${result.engine === 'hyperframes' ? 'HyperFrames' : 'Remotion'}; revisa el diagnóstico.`);
         }
       } catch (error) {
@@ -465,6 +469,23 @@ function StudioApp() {
         'references', 'audioAsset', 'musicVolume', 'voiceClips', 'narrationMode', 'fps', 'resolution', 'actors', 'wordTimings'].includes(name));
     changeProject({...project, ...patch,
       scenes: requiresReview ? markForReview(project.scenes) : project.scenes});
+  };
+  const applyBroll = (next: StudioProject['broll']) => {
+    try {
+      const clips = normalizeBroll(next,project.scenes,project.wordTimings ?? []) as NonNullable<StudioProject['broll']>;
+      const old = new Set((project.broll ?? []).map(clip=>clip.sceneId));
+      const affected = new Set([...old,...clips.map(clip=>clip.sceneId)]);
+      changeProject({...project,broll:clips,scenes:project.scenes.map(scene=>affected.has(scene.id)?{...scene,approved:false}:scene)});
+      setNotice(`${clips.length} planos B-roll preparados; revisa y aprueba escenas modificadas.`);
+    } catch(error) {setNotice('B-roll inválido: '+(error as Error).message);}
+  };
+  const addBroll = () => {
+    if (!currentScene) return;
+    const at=Math.max(0,Math.min(0.4,currentScene.duration-0.5));
+    const duration=Math.min(2,Math.round((currentScene.duration-at)*100)/100);
+    applyBroll([...(project.broll ?? []),{id:'broll-'+crypto.randomUUID(),sceneId:currentScene.id,
+      at,duration,globalAt:0,kind:'overlay',motion:'rise',objects:[{id:'label',type:'text',
+        x:12,y:28,width:76,height:22,color:'#FFFFFF',text:'Plano B-roll',fontSize:45}]}]);
   };
   const applyVideoPreset = (preset: 'relato' | 'curiosidades' | 'historia') => {
     const options = {
@@ -576,6 +597,21 @@ function StudioApp() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const exportAlphaBroll = async () => {
+    if(pendingApproval){setNotice('Aprueba las escenas antes de exportar el canal alfa.');return;}
+    if(!project.broll?.length){setNotice('Primero añade uno o más planos B-roll.');return;}
+    setBusy(true);setRenderStatus(null);
+    try {
+      const result=await api<{jobId:string}>('/api/export/alpha-broll',{
+        method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(project),
+      });
+      setDirty(false);setRenderJobId(result.jobId);
+      setRenderStatus({engine:'alpha-broll',status:'renderizando',progress:1,error:'',log:'',download:null});
+      setNotice('Renderizando B-roll en ProRes 4444 MOV con alfa, sin fondo opaco.');
+    }catch(error){setNotice('No se pudo exportar el MOV alfa: '+(error as Error).message);}
+    finally{setBusy(false);}
   };
 
   const rerenderCorrected = async () => {
@@ -992,6 +1028,11 @@ function StudioApp() {
             title={pendingApproval > 0 ? 'Debes aprobar todas las escenas' : project.visualEngine === 'canvas' ? 'Canvas 3D requiere el render Remotion' : 'Renderizar MP4 con HyperFrames'}>
             {renderJobId ? 'Renderizando...' : project.visualEngine === 'canvas' ? 'Exportar MP4 · Canvas 3D / Remotion' : 'Exportar MP4 · HyperFrames'}
           </button>
+          <button className="secondary" onClick={() => void exportAlphaBroll()}
+            disabled={busy || renderJobId !== null || pendingApproval>0 || !project.broll?.length}
+            title="Exporta únicamente los planos B-roll con transparencia ProRes 4444">
+            Exportar B-roll alfa · MOV
+          </button>
         </div>
       </header>
 
@@ -1324,11 +1365,14 @@ function StudioApp() {
           <div className="export-panel">
             <div className="timeline-heading">
               <strong>Exportación</strong>
-              <span>{renderStatus?.engine === 'hyperframes' ? 'HyperFrames' : renderStatus?.engine === 'remotion' ? 'Remotion' : 'Esperando'}</span>
+              <span>{renderStatus?.engine === 'hyperframes' ? 'HyperFrames' : renderStatus?.engine === 'remotion' ? 'Remotion' : renderStatus?.engine === 'alpha-broll' ? 'ProRes 4444 alfa' : 'Esperando'}</span>
             </div>
             <div className="export-track"><div style={{width: `${renderStatus?.progress ?? 0}%`}}/></div>
             {renderStatus?.download &&
-              <a className="download-button" href={renderStatus.download}>Descargar video MP4</a>}
+              <a className="download-button" href={renderStatus.download}>{renderStatus.engine==='alpha-broll'?'Descargar MOV transparente':'Descargar video MP4'}</a>}
+            {renderStatus?.alphaDownload&&renderStatus.engine!=='alpha-broll'&&
+              <a className="download-button" href={renderStatus.alphaDownload}>Descargar planos B-roll con alfa · MOV</a>}
+            {renderStatus?.alphaAudit&&<p className="hint">Alfa verificado: {renderStatus.alphaAudit.codec} / {renderStatus.alphaAudit.pixelFormat}; decodificación alfa {renderStatus.alphaAudit.alphaDecoded?'correcta':'pendiente'}.</p>}
             {renderStatus?.id && renderStatus.visualDefects && <div className="review-alert">
               <strong>Inspección P1 · iteración {renderStatus.attempt ?? 1}/3</strong>
               <p>{renderStatus.visualDefects.counts.error} errores · {renderStatus.visualDefects.counts.warning} advertencias · {renderStatus.visualDefects.counts.info} pistas de revisión. La aprobación artística sigue pendiente.</p>
@@ -1376,6 +1420,21 @@ function StudioApp() {
         <aside className="panel inspector">
           <div className="panel-heading"><h2>Inspector de escena</h2><span>{String(selected + 1).padStart(2, '0')}</span></div>
           {currentScene && <>
+            <details className="cue-card">
+              <summary>P2 · B-roll sincronizado y transparente ({(project.broll??[]).filter(clip=>clip.sceneId===currentScene.id).length})</summary>
+              <p>Los tiempos <code>at</code> son locales a esta escena; <code>narration</code> se ancla a palabras reales del reloj global. Se renderizan sobre el MP4 y como MOV con alfa.</p>
+              <button className="secondary" onClick={addBroll}>+ Añadir plano B-roll</button>
+              <label>Planos de esta escena (JSON)
+                <textarea key={currentScene.id+JSON.stringify((project.broll??[]).filter(clip=>clip.sceneId===currentScene.id))}
+                  rows={10} defaultValue={JSON.stringify((project.broll??[]).filter(clip=>clip.sceneId===currentScene.id),null,2)}
+                  onBlur={event=>{try{
+                    const edits=JSON.parse(event.target.value);
+                    if(!Array.isArray(edits)||edits.some(clip=>clip.sceneId!==currentScene.id))throw Error('Cada plano debe pertenecer a esta escena.');
+                    if(JSON.stringify(edits)!==JSON.stringify((project.broll??[]).filter(clip=>clip.sceneId===currentScene.id)))
+                      applyBroll([...(project.broll??[]).filter(clip=>clip.sceneId!==currentScene.id),...edits]);
+                  }catch(error){setNotice((error as Error).message);}}}/>
+              </label>
+            </details>
             <div className={currentScene.approved ? 'review-alert ready' : 'review-alert'}>
               <strong>{currentScene.approved ? 'Escena aprobada' : 'Escena pendiente de revisión'}</strong>
               <p>Reproduce esta escena y comprueba la imagen, la duración y la voz.</p>

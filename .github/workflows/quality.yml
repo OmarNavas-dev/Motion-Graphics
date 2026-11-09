@@ -18,6 +18,8 @@ jobs:
         run: npm ci --include=dev
       - name: Test contracts and quality modules
         run: npm test
+      - name: Verify B-roll schema and plugin parity
+        run: npm run test:p2
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types
@@ -58,6 +60,8 @@ jobs:
           google-chrome --version || true
       - name: Render and inspect five real MP4s
         run: npm run accept:five:render
+      - name: Render real transparent ProRes and composite with audio
+        run: npm run accept:broll:alpha
       - name: Upload rendered evidence
         if: always()
         uses: actions/upload-artifact@v4
