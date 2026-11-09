@@ -7,17 +7,17 @@
     "category": "Creativity",
     "composerIcon": "./assets/icon.svg",
     "defaultPrompt": [
-      "Genera un JSON para Motion Studio con los 21 estilos visuales, los 26 flujos de producción, identidad visual persistente, diseño sonoro optativo, cámara ejecutable, loops y validación de contrato actualizado."
+      "Crea un proyecto JSON para Motion Studio 7.4 con direcci\u00f3n, marca, uno de 21 estilos, c\u00e1mara GSAP, Foley, an\u00e1lisis de voz y revisi\u00f3n visual. Consulta las referencias de sincronizaci\u00f3n 2.9 y valida todo antes de entregar."
     ],
     "developerName": "Omar Navas",
     "displayName": "Motion Graphics",
     "logo": "./assets/icon.svg",
     "longDescription": "Convierte guion y narracion adjuntos en un unico JSON editable para Motion Studio. Construye ilustraciones y animaciones en codigo con materiales texturizados, camara con intencion, efectos (explosion, humo, corte interno), etiquetas informativas y mecanismos, y sincroniza los titulos con la narracion. El video se reproduce y exporta en Motion Studio. La sincronizacion precisa requiere acceso al audio y una herramienta de transcripcion con tiempos.",
-    "shortDescription": "Animación para Motion Studio"
+    "shortDescription": "Animaci\u00f3n para Motion Studio"
   },
   "name": "motion-graphics",
-  "version": "2.9.1",
-  "description": "Crea un unico proyecto JSON para Motion Studio a partir de guion y audio adjuntos en ChatGPT, con escenas en SVG, HTML, CSS y GSAP y kits de motion graphics (materiales, camara, efectos, etiquetas y mecanismos).",
+  "version": "2.9.2",
+  "description": "Crea un unico proyecto JSON para Motion Studio a partir de guion y audio adjuntos en ChatGPT, con escenas en SVG, HTML, CSS y GSAP y kits de motion graphics (materiales, camara con zona segura, efectos, etiquetas, mecanismos, personajes, escenarios de oceano/iglesia/celda, objetos de historia, placas editoriales y cierre del canal).",
   "author": {
     "name": "Omar Navas",
     "email": "omarsalome56@gmail.com"

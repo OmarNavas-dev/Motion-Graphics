@@ -28,8 +28,11 @@ export function makeAcceptanceFixtures(){
   const scene=i=>({
    id:topic+'-'+i,duration:3,title:theme.title,scriptExcerpt:theme.title,
    approved:false,transition:i===2&&['anatomia','historia'].includes(topic)?'fade':'cut',captionMode:'none',
-   customScene:{html:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280"><rect width="720" height="1280" fill="#101d2e"/><g class="world">'+theme.shape+'</g><text x="360" y="290" text-anchor="middle" fill="'+COLOR[topic]+'" font-size="36">'+theme.label+'</text></svg>',css:'',script:i===1?'tl.fromTo(S+\' .pulse\',{opacity:.5},{opacity:1,duration:1.2,yoyo:true,repeat:1},T0+.2);':''},
-   direction:{objective:'Mostrar la relación de causa y efecto: '+theme.title,before:{},after:{},actions:i===2?[{id:'mostrar-'+topic,at:.3,duration:1.2,selector:'.pulse',description:'Revelar foco',result:'Foco visible',motion:{from:{opacity:.2},to:{opacity:1}}}]:[],shots:[{at:0,duration:1.5,scale:'wide',target:'world',purpose:'Contexto'},{at:1.5,duration:1.5,scale:'close',target:'world',purpose:'Detalle'}],cameraTarget:'.world'}
+   customScene:{html:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280"><rect width="720" height="1280" fill="#101d2e"/><g class="world">'+theme.shape+'</g><text x="360" y="290" text-anchor="middle" fill="'+COLOR[topic]+'" font-size="36">'+theme.label+'</text></svg>',css:'',
+    script:topic==='graficos'?"tl.fromTo(S+' .world rect',{scaleY:1,transformOrigin:'50% 100%'},{scaleY:.55,duration:1.2,repeat:1,yoyo:true,ease:'sine.inOut'},T0+.2);":i===1?'tl.fromTo(S+\' .pulse\',{opacity:.5},{opacity:1,duration:1.2,yoyo:true,repeat:1},T0+.2);':''},
+   direction:{objective:'Mostrar la relación de causa y efecto: '+theme.title,before:{},after:{},
+    actions:topic==='graficos'?[]:i===2?[{id:'mostrar-'+topic,at:.3,duration:1.2,selector:'.pulse',description:'Revelar foco',result:'Foco visible',motion:{from:{opacity:.2},to:{opacity:1}}}]:[],
+    shots:topic==='graficos'?[]:[{at:0,duration:1.5,scale:'wide',target:'world',purpose:'Contexto'},{at:1.5,duration:1.5,scale:'close',target:'world',purpose:'Detalle'}],cameraTarget:'.world'}
   });
   return {topic,project:{name:'Aceptación '+topic,format:'vertical',resolution:'720p',fps:24,showText:false,script:theme.title,
     stylePreset:({anatomia:'blueprint',volcanes:'poster-pop',personajes:'paper-world',historia:'time-travel',graficos:'data-story'})[topic],
@@ -39,6 +42,27 @@ export function makeAcceptanceFixtures(){
     ]}:undefined,
     creativeBrief:'Prueba técnica reproducible, no aprobada artísticamente.',scenes:[scene(1),scene(2)]}};
  });
+}
+// Fail only on measurable export defects. Heuristic pacing observations remain
+// review findings; they cannot stand in for artistic approval.
+export function renderAcceptanceFailures(project,result){
+ const errors=[],video=result.videoAudit?.video,total=project.scenes.reduce((n,s)=>n+s.duration,0);
+ if(!video)errors.push('No hay diagnóstico del MP4.');
+ else{
+  if(!Number.isFinite(video.duration)||Math.abs(video.duration-total)>1/(project.fps??24)+.06)
+   errors.push('Duración MP4 diferente de la línea temporal JSON.');
+  if(video.width!==720||video.height!==1280)errors.push('Resolución MP4 incorrecta.');
+  if(project.soundDesign?.enabled&&!video.audioPresent)errors.push('El MP4 perdió los efectos sonoros solicitados.');
+ }
+ if(project.loop===true){
+  if(result.loopAudit?.error||result.loopAudit?.measured===false)
+   errors.push('La prueba real del bucle no pudo ejecutarse.');
+  else if(result.loopAudit?.seamlessByHeuristic!==true)
+   errors.push('El bucle tiene un salto visible medido entre su último y primer fotograma.');
+ }
+ if(result.inspection!=='frames-generated')errors.push('No se generaron todos los fotogramas de inspección.');
+ if(result.pacingAudit?.hasMotion!==true)errors.push('El video no contiene movimiento medible.');
+ return errors;
 }
 const run=(bin,args,cwd)=>new Promise((resolve,reject)=>{
  const child=spawn(bin,args,{cwd,windowsHide:true,stdio:'pipe'});let log='';
@@ -78,7 +102,7 @@ export async function runAcceptanceSuite({out=path.join(root,'out','acceptance-f
        await muxSoundtrack(video,wav,mix,{hasExistingAudio:false});
        await fs.rename(mix,video);
      }
-     r.mp4='passed';r.videoAudit=await auditRenderedVideo(video);
+     r.videoAudit=await auditRenderedVideo(video);
      r.pacingAudit=await auditRenderedPacing(video);
      if(project.loop) {
        try{r.loopAudit=await auditLoopSeam(video);}
@@ -87,8 +111,12 @@ export async function runAcceptanceSuite({out=path.join(root,'out','acceptance-f
     if(r.videoAudit.video.audioPresent)r.loudness=await measureAudioLoudness(path.join(folder,'result.mp4'));
     const sheet=await createFrameContactSheet(path.join(folder,'result.mp4'),project,path.join(folder,'frames'),{maxFrames:12});
     r.inspection=sheet.captured===sheet.totalRequested?'frames-generated':'partial';r.reviewFile=path.join(folder,'frames','index.html');
+    r.qualityWarnings=(r.pacingAudit.deadGaps||[]).map(g=>`Posible pausa de ${g.duration}s en ${g.start}s (revisión humana).`);
+    const failures=renderAcceptanceFailures(project,r);
+    if(failures.length)throw Error(failures.join('; '));
+    r.mp4='passed';r.quality='technical-passed';
    }
-  }catch(error){r.errors.push(error.message);for(const stage of ['json','contract','browser','mp4','inspection'])if(r[stage]==='pending')r[stage]='failed';}
+  }catch(error){r.errors.push(error.message);r.quality='failed';for(const stage of ['json','contract','browser','mp4','inspection'])if(stage==='mp4'&&render||r[stage]==='pending')r[stage]='failed';}
  }
  const report={timestamp:new Date().toISOString(),runtimeRequested:runtime,renderRequested:render,visualApproval:false,tests:results,
   note:'Los cinco casos verifican compatibilidad y render técnico. La evaluación artística requiere inspección humana de los fotogramas.'};

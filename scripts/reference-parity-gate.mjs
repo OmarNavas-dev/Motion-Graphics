@@ -14,6 +14,10 @@ export async function referenceParity({rootDir=root}={}){
    catch{errors.push(cap.id+': falta evidencia '+file);}
   }
   if(cap.status==='verified'&&!(cap.tests?.length))errors.push(cap.id+': no puede marcarse verificado sin pruebas.');
+  if(cap.status==='verified')for(const test of cap.tests??[]){
+   try{await fs.access(path.join(rootDir,test));}
+   catch{errors.push(cap.id+': falta prueba '+test);}
+  }
  }
  const ready=errors.length===0&&data.capabilities.every(c=>['verified','notApplicable'].includes(c.status));
  return {readyForUserAcceptance:ready,counts,total:data.capabilities.length,errors,
