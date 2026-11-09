@@ -261,6 +261,35 @@ export function renderAuthored(spec, options = {}) {
         },
       ).join("");
     }
+    if(l.type==='simulation'){
+      const cfg=l.simulation||{},kind=cfg.kind||'orbit',count=Math.min(32,Math.max(1,n(cfg.count,kind==='orbit'?4:1)));
+      const t=Math.max(0,time-n(cfg.start,0)),speed=n(cfg.speed,1),amp=n(cfg.amplitude,.7),damping=n(cfg.damping,.16),radius=n(cfg.radius,.34),phase=n(cfg.phase,0);
+      const points=[];
+      for(let i=0;i<count;i++){
+        const offset=i*2*Math.PI/count+phase,omega=2*Math.PI*speed*t;
+        let xx=.5,yy=.5;
+        if(kind==='orbit'){
+          const theta=omega+offset;xx=.5+radius*Math.cos(theta);yy=.5+radius*.7*Math.sin(theta);
+        }else if(kind==='pendulum'){
+          const theta=amp*Math.exp(-damping*t)*Math.cos(omega+offset);
+          xx=.5+.34*Math.sin(theta);yy=.15+.68*Math.cos(theta);
+        }else if(kind==='spring'){
+          const value=amp*Math.exp(-damping*t)*Math.cos(omega+offset);
+          xx=.5+.37*value;yy=.5+(i-(count-1)/2)*.06;
+        }else if(kind==='bounce'){
+          const gravity=n(cfg.gravity,9.8),period=Math.max(.15,2*speed);
+          const bounce=(t+i*period/count)%period;
+          const v=gravity*period/2;
+          yy=.82-Math.min(.68,(v*bounce-.5*gravity*bounce*bounce)*.68/(gravity*period*period/8));
+          xx=.5+(i-(count-1)/2)*.06;
+        }
+        points.push([Math.max(.025,Math.min(.975,xx)),Math.max(.025,Math.min(.975,yy))]);
+      }
+      const dot=color(l.fill,theme.accent),stroke=color(l.stroke,theme.ink||'#FFFFFF');
+      const paths=kind==='pendulum'?points.map(([x,y])=>`<line x1="50" y1="15" x2="${x*100}" y2="${y*100}" stroke="${stroke}" stroke-width=".65"/>`).join(''):
+        kind==='spring'?points.map(([x,y])=>`<line x1="12" y1="${y*100}" x2="${x*100}" y2="${y*100}" stroke="${stroke}" stroke-width=".65" stroke-dasharray="2 1"/>`).join(''):'';
+      body=`<svg data-ms-simulation="${esc(kind)}" viewBox="0 0 100 100" preserveAspectRatio="none" width="100%" height="100%">${paths}${points.map(([x,y],i)=>`<circle data-ms-body="${i}" cx="${(x*100).toFixed(4)}" cy="${(y*100).toFixed(4)}" r="${kind==='orbit'?3.2:4.2}" fill="${dot}" stroke="${stroke}" stroke-width=".4"/>`).join('')}</svg>`;
+    }
     body += (children.get(l.id) || []).map((k) => node(k, w, h)).join("");
     const factor = 0.4 + 1.2 * clamp(n(l.depth, 0.5)),
       camera =

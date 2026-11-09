@@ -42,6 +42,8 @@
     "test:p4": "node --test specialized-workflows-p4.test.mjs",
     "accept:workflows:p4": "node scripts/acceptance-specialized-p4.mjs",
     "test:p5": "node --test character-motion-p5.test.mjs",
+    "test:p6": "node --test audio-simulation-p6.test.mjs",
+    "accept:audio-simulations:p6": "node scripts/acceptance-audio-simulations-p6.mjs",
     "accept:characters:p5": "node scripts/acceptance-characters-p5.mjs",
     "test:audio-cues": "node scripts/verify-audio-cues.mjs",
     "test:smoke": "node scripts/smoke-v2.mjs",

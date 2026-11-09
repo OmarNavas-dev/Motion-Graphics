@@ -9,7 +9,7 @@ import {exportHyperframesProject} from '../src/hyperframes-bridge.mjs';
 const root=path.resolve(import.meta.dirname,'..');
 const source=path.join(root,'plugins/motion-graphics');
 const skill=path.join(source,'skills/motion-graphics');
-const shared=['server-utils.mjs','src/broll-timeline.mjs','src/style-recipes.mjs','src/specialized-workflows.mjs','src/character-motion.mjs','src/explainer-contract.mjs','src/motion-sequence.mjs','src/scene-limits.mjs','src/visual-action-planner.mjs','src/caption-compat.mjs','src/motion-capabilities.mjs','scripts/render-browser.mjs','scripts/observe-motion.mjs'];
+const shared=['server-utils.mjs','src/audio-simulation-p6.mjs','src/broll-timeline.mjs','src/style-recipes.mjs','src/specialized-workflows.mjs','src/character-motion.mjs','src/explainer-contract.mjs','src/motion-sequence.mjs','src/scene-limits.mjs','src/visual-action-planner.mjs','src/caption-compat.mjs','src/motion-capabilities.mjs','scripts/render-browser.mjs','scripts/observe-motion.mjs'];
 const canonical=text=>text.replace(/\r\n/g,'\n').trimEnd();
 const hash=value=>createHash('sha256').update(value).digest('hex');
 
