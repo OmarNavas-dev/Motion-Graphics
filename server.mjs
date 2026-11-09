@@ -17,7 +17,8 @@ import {
   MAX_ASSET_BYTES, MAX_PROJECT_BYTES, assetExtension,
   validMediaSignature, validateProject, assertApproved, safeFilename, validateAsset,
 } from './server-utils.mjs';
-import {searchFreeMedia, downloadFreeMedia, transcribeWithGroq} from './cloud-integrations.mjs';
+import {searchFreeMedia, downloadFreeMedia, transcribeWithGroq, segmentWithRemoveBg} from './cloud-integrations.mjs';
+import {planExternalRequest} from './src/external-adapters-p7.mjs';
 import {aiPlannerConfig, requestAiPlan, requestSceneCode, requestFullVideoCode} from './ai-planner.mjs';
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
@@ -357,6 +358,19 @@ async function transcribeAsset(req, res) {
   if (stat.size > 25 * 1024 * 1024) throw new Error('El audio supera los 25 MB del nivel gratuito de Groq.');
   const transcription = await transcribeWithGroq(await fsp.readFile(full), path.basename(full), process.env.GROQ_API_KEY);
   return respond(res, 200, transcription);
+}
+
+async function segmentExternalAsset(req,res){
+  const body=await bodyJson(req),plan=planExternalRequest({provider:'removebg',operation:'segment',asset:body.asset,size:body.size});
+  if(body.confirm!=='ACEPTO CONSUMIR CREDITOS REMOVE_BG')throw Error('P7: debes confirmar el uso de créditos externos antes de segmentar.');
+  const asset=validateAsset(plan.asset,'image');
+  const file=path.join(assetsDir,path.basename(asset)),info=await fsp.stat(file);
+  if(!info.isFile()||info.size>22*1024*1024)throw Error('P7: tamaño de imagen excede el límite de remove.bg.');
+  const image=await segmentWithRemoveBg(await fsp.readFile(file),path.basename(asset),process.env.REMOVE_BG_API_KEY,{size:plan.size});
+  const filename=randomUUID()+image.ext;
+  await fsp.writeFile(path.join(assetsDir,filename),image.bytes,{flag:'wx'});
+  return respond(res,201,{asset:'user-assets/'+filename,source:asset,provider:'removebg',alpha:true,size:plan.size,
+    note:'El objeto se guardó como PNG transparente; la solicitud externa puede consumir créditos.'});
 }
 
 const latestLog = (value, incoming) =>
@@ -755,6 +769,9 @@ async function handle(req, res) {
     return respond(res, 200, {version: appVersion, sceneContract:MOTION_STUDIO_CONTRACT, customScene: true, openverse: true,
       pixabay: Boolean(process.env.PIXABAY_API_KEY),
       groq: Boolean(process.env.GROQ_API_KEY),
+      externalP7:{removebgConfigured:Boolean(process.env.REMOVE_BG_API_KEY),
+        higgsfieldConfigured:Boolean(process.env.HIGGSFIELD_API_KEY),higgsfieldDispatchEnabled:false,
+        segmentEndpoint:'/api/external/segment',planEndpoint:'/api/external/plan'},
       ollama: {enabled:llm.ollamaConfigured, model:llm.ollamaModel, endpoint:llm.ollamaEndpoint},
       ollamaVision:{configured:vision.configured,model:vision.model,localOnly:true},
       freeLLMApi: {configured: llm.configured, model: llm.model},
@@ -789,6 +806,9 @@ async function handle(req, res) {
   }
   if (req.method === 'GET' && pathname === '/api/media/search') return searchMedia(url, res);
   if (req.method === 'POST' && pathname === '/api/media/import') return importMedia(req, res);
+  if (req.method === 'POST' && pathname === '/api/external/plan')
+    return respond(res,200,{request:planExternalRequest(await bodyJson(req))});
+  if (req.method === 'POST' && pathname === '/api/external/segment')return segmentExternalAsset(req,res);
     if (req.method === 'POST' && pathname === '/api/transcribe') return transcribeAsset(req, res);
     if (req.method === 'POST' && pathname === '/api/review') {
       const project = validateProject(await bodyJson(req));

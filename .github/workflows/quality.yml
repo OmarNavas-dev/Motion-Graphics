@@ -28,6 +28,8 @@ jobs:
         run: npm run test:p5
       - name: Verify P6 synchronized audio and deterministic simulations
         run: npm run test:p6
+      - name: Verify P7 external adapter contracts and safe mock requests
+        run: npm run test:p7
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types

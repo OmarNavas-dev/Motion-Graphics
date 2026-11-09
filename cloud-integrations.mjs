@@ -126,3 +126,34 @@ export async function transcribeWithGroq(bytes, filename, apiKey, {fetcher = fet
     .slice(0, 15000).map(w => ({text:safeText(w.word,160),start:w.start,end:w.end})) : [];
   return {text: safeText(result.text, 45000), segments, words, alignment: words.length ? 'model-estimated' : 'segments-only'};
 }
+
+// P7: a separately authorized paid action; the caller must already have obtained
+// explicit confirmation, and must only pass a validated local upload.
+export async function segmentWithRemoveBg(bytes,filename,apiKey,{size='preview',fetcher=fetch}={}){
+  if(!apiKey)throw Error('P7: falta REMOVE_BG_API_KEY; no se ejecutó segmentación externa.');
+  if(!['preview','full'].includes(size))throw Error('P7: resolución de segmentación inválida.');
+  if(!Buffer.isBuffer(bytes)||bytes.length<16||bytes.length>22*1024*1024)throw Error('P7: imagen debe ocupar entre 16 bytes y 22 MB.');
+  const ext=String(filename).split('.').pop()?.toLowerCase(),mime={png:'image/png',jpg:'image/jpeg',jpeg:'image/jpeg',webp:'image/webp'}[ext];
+  if(!mime)throw Error('P7: solo se segmentan imágenes PNG/JPG/WebP.');
+  const form=new FormData();form.set('image_file',new Blob([bytes],{type:mime}),'source.'+ext);
+  form.set('size',size);form.set('format','png');
+  let response;
+  try{response=await fetcher('https://api.remove.bg/v1.0/removebg',{
+    method:'POST',headers:{'X-Api-Key':apiKey},body:form,redirect:'manual',signal:AbortSignal.timeout(90000)
+  });}catch{throw Error('P7: remove.bg no respondió; comprueba la red y tu cuota.');}
+  if(!response.ok)throw Error('P7: remove.bg respondió HTTP '+response.status+'. No se guardó ningún archivo.');
+  if(response.redirected||response.status>=300&&response.status<400)throw Error('P7: redirección de segmentación no permitida.');
+  if(!/^image\/png(?:;|$)/i.test(response.headers.get('content-type')||''))throw Error('P7: resultado externo no es PNG.');
+  const limit=24*1024*1024,declared=Number(response.headers.get('content-length')||0);
+  if(declared>limit)throw Error('P7: PNG segmentado demasiado grande.');
+  const chunks=[];let length=0;
+  if(!response.body)throw Error('P7: resultado de segmentación vacío.');
+  for await(const chunk of response.body){length+=chunk.byteLength;
+    if(length>limit)throw Error('P7: PNG segmentado demasiado grande.');
+    chunks.push(Buffer.from(chunk));
+  }
+  const image=Buffer.concat(chunks),png=Buffer.from('89504e470d0a1a0a','hex');
+  if(image.length<33||!image.subarray(0,8).equals(png)||![4,6].includes(image[25]))
+    throw Error('P7: no se recibió un PNG con canal alfa verificable.');
+  return {bytes:image,ext:'.png',provider:'removebg',size};
+}
