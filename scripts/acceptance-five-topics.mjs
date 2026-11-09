@@ -29,7 +29,7 @@ export function makeAcceptanceFixtures(){
    id:topic+'-'+i,duration:3,title:theme.title,scriptExcerpt:theme.title,
    approved:false,transition:i===2&&['anatomia','historia'].includes(topic)?'fade':'cut',captionMode:'none',
    customScene:{html:'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1280"><rect width="720" height="1280" fill="#101d2e"/><g class="world">'+theme.shape+'</g><text x="360" y="290" text-anchor="middle" fill="'+COLOR[topic]+'" font-size="36">'+theme.label+'</text></svg>',css:'',
-    script:topic==='graficos'?"tl.fromTo(S+' .pulse',{opacity:1},{opacity:.4,duration:1.2,repeat:1,yoyo:true,ease:'sine.inOut'},T0+.2);":i===1?'tl.fromTo(S+\' .pulse\',{opacity:.5},{opacity:1,duration:1.2,yoyo:true,repeat:1},T0+.2);':''},
+    script:topic==='graficos'?"tl.fromTo(S+' .world rect',{scaleY:1,transformOrigin:'50% 100%'},{scaleY:.55,duration:1.2,repeat:1,yoyo:true,ease:'sine.inOut'},T0+.2);":i===1?'tl.fromTo(S+\' .pulse\',{opacity:.5},{opacity:1,duration:1.2,yoyo:true,repeat:1},T0+.2);':''},
    direction:{objective:'Mostrar la relación de causa y efecto: '+theme.title,before:{},after:{},
     actions:topic==='graficos'?[]:i===2?[{id:'mostrar-'+topic,at:.3,duration:1.2,selector:'.pulse',description:'Revelar foco',result:'Foco visible',motion:{from:{opacity:.2},to:{opacity:1}}}]:[],
     shots:topic==='graficos'?[]:[{at:0,duration:1.5,scale:'wide',target:'world',purpose:'Contexto'},{at:1.5,duration:1.5,scale:'close',target:'world',purpose:'Detalle'}],cameraTarget:'.world'}

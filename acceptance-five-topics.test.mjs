@@ -24,5 +24,7 @@ test('acceptance spans style presets, Foley and looping',()=>{
  const f=makeAcceptanceFixtures();
  assert.ok(f.every(x=>x.project.stylePreset));
  assert.equal(f.find(x=>x.topic==='volcanes').project.soundDesign.cues.length,3);
- assert.equal(f.find(x=>x.topic==='graficos').project.loop,true);
+ const charts=f.find(x=>x.topic==='graficos').project;
+ assert.equal(charts.loop,true);
+ assert.match(charts.scenes[0].customScene.script,/world rect/);
 });
