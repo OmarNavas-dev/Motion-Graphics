@@ -109,6 +109,10 @@ test('servidor real: GSAP, fuentes, reinicio con proyecto y arranque limpio con 
     await fs.mkdir(path.dirname(path.join(temp,p1)),{recursive:true});
     await fs.cp(path.join(root,p1),path.join(temp,p1));
     await start();
+    const integrations=await json('/api/integrations','GET');
+    assert.equal(integrations.status,200);
+    assert.equal(typeof integrations.body.ollamaVision.configured,'boolean');
+    assert.equal(integrations.body.ollamaVision.localOnly,true);
     const gsap = await fetch(address+'/hyperframes/gsap.min.js');
     assert.equal(gsap.status,200);
     assert.match(gsap.headers.get('content-type'),/javascript/);
@@ -129,6 +133,9 @@ test('servidor real: GSAP, fuentes, reinicio con proyecto y arranque limpio con 
     const invalid = await fetch(address+'/api/assets?name=fake.ttf',{method:'PUT',body:Buffer.from('MZ')});
     assert.equal(invalid.status,400);
     const project = fixture();
+    const autoWithoutVideo=await json('/api/iterations/auto','POST',{sourceJobId:'missing',project});
+    assert.equal(autoWithoutVideo.status,400);
+    assert.match(autoWithoutVideo.body.error,/MP4 terminado/);
     const saved = await json('/api/project','PUT',project);
     assert.equal(saved.status,200);
     await stop(); await start();

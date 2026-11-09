@@ -36,7 +36,12 @@ type MediaCandidate = {id: string; thumbnail: string; title: string;
 type IntegrationStatus = {openverse: boolean; pixabay: boolean; groq: boolean;
   hyperframes: string; paidApisEnabled: boolean;
   ollama?: {enabled:boolean; model:string; endpoint:string};
+  ollamaVision?: {configured:boolean;model:string;localOnly:boolean};
   freeLLMApi?: {configured: boolean; model: string}};
+type VisualAutoSession = {id?:string;status:'running'|'review_ready'|'needs_review'|'error';
+  progress?:{phase:string;attempt:number;jobId?:string};error?:string|null;
+  result?:{status:string;reason:string;project:StudioProject|null;
+    rounds:{jobId:string;status:string;perceptual?:{accepted:boolean;judgments:{reason:string}[]}}[]}|null};
 type AiScenePlan = {
   index: number; purpose?: string; visualPlan?: string; title: string; subtitle: string; visualQuery: string;
   layout: SceneLayout; style: StyleName; motion: MotionPreset;
@@ -327,6 +332,8 @@ function StudioApp() {
   const [busy, setBusy] = useState(false);
   const [renderJobId, setRenderJobId] = useState<string | null>(null);
   const [renderStatus, setRenderStatus] = useState<JobStatus | null>(null);
+  const [visualAutoId,setVisualAutoId] = useState<string|null>(null);
+  const [visualAuto,setVisualAuto] = useState<VisualAutoSession|null>(null);
   const [notice, setNotice] = useState('Cargando proyecto...');
   const [dirty, setDirty] = useState(false);
   const [audioDuration, setAudioDuration] = useState<number | null>(null);
@@ -425,6 +432,27 @@ function StudioApp() {
     const timer = window.setInterval(poll, 1200);
     return () => {alive = false; window.clearInterval(timer);};
   }, [renderJobId]);
+
+  useEffect(()=>{
+    if(!visualAutoId)return;
+    let active=true;
+    const poll=async()=>{
+      try{
+        const status=await api<VisualAutoSession>(`/api/iterations/auto/${visualAutoId}`);
+        if(!active)return;
+        setVisualAuto(status);
+        if(status.status!=='running'){
+          setVisualAutoId(null);
+          setNotice(status.status==='review_ready'
+            ? 'Hay una corrección visual renderizada para revisar y aplicar.'
+            : status.error||status.result?.reason||'La revisión terminó sin una corrección demostrable.');
+        }
+      }catch(error){if(active){setVisualAutoId(null);setNotice((error as Error).message);}}
+    };
+    void poll();
+    const timer=window.setInterval(poll,1800);
+    return ()=>{active=false;window.clearInterval(timer);};
+  },[visualAutoId]);
 
   const changeProject = (next: StudioProject) => {
     setRuntimeReview(null);
@@ -565,6 +593,27 @@ function StudioApp() {
       setDirty(false);
     } catch(error) {setNotice('No se pudo repetir el render: '+(error as Error).message);}
     finally {setBusy(false);}
+  };
+
+  const startVisualAuto = async()=>{
+    if(!renderStatus?.id||renderStatus.status!=='completado')return;
+    setBusy(true);setVisualAuto(null);
+    try{
+      const started=await api<{sessionId:string}>('/api/iterations/auto',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({sourceJobId:renderStatus.id,project}),
+      });
+      setVisualAutoId(started.sessionId);
+      setNotice('El modelo visual local está inspeccionando y corrigiendo escenas. El proyecto actual se conservará.');
+    }catch(error){setNotice('No se inició P1 automático: '+(error as Error).message);}
+    finally{setBusy(false);}
+  };
+
+  const applyVisualCandidate=()=>{
+    const candidate=visualAuto?.result?.project;
+    if(!candidate)return;
+    changeProject(candidate);
+    setNotice('Candidato incorporado sin aprobar: inspecciona las escenas modificadas antes de aceptarlas.');
   };
 
   const uploadAssetOnly = async (file: File) => {
@@ -1293,6 +1342,30 @@ function StudioApp() {
               </ul></details>
               <button disabled={busy || (renderStatus.attempt ?? 1)>=3}
                 onClick={()=>void rerenderCorrected()}>Renderizar nuevamente el JSON corregido</button>
+              {renderStatus.status==='completado'&&<div className="review-alert">
+                <strong>Corrección artística asistida por visión local</strong>
+                <p>Inspecciona imágenes reales, propone cambios en HTML/GSAP o capas, prueba un nuevo render y compara ambos fotogramas. No aprueba escenas por ti.</p>
+                <button disabled={busy||Boolean(visualAutoId)||(renderStatus.attempt??1)>=3||
+                  !integrationStatus?.ollamaVision?.configured}
+                  onClick={()=>void startVisualAuto()}>
+                  {visualAutoId?'Analizando y renderizando…':'Intentar corrección visual automática'}
+                </button>
+                {!integrationStatus?.ollamaVision?.configured&&
+                  <p className="hint">Requiere Ollama con un modelo visual local y OLLAMA_VISION_MODEL configurado en .env. No se envían tus fotogramas a Internet.</p>}
+                {visualAuto?.progress&&<p>Fase: {visualAuto.progress.phase} · intento {visualAuto.progress.attempt}/3.</p>}
+                {visualAuto?.error&&<p className="hint">{visualAuto.error}</p>}
+                {visualAuto?.result&&<>
+                  <p>{visualAuto.result.reason}</p>
+                  {visualAuto.result.rounds.map((round,i)=><p key={i}>
+                    Intento {round.jobId.slice(0,8)}: {round.status} ·
+                    <a href={'/reviews/'+round.jobId+'/index.html'} target="_blank" rel="noreferrer"> ver fotogramas</a>
+                    {' · '}<a href={'/reviews/'+round.jobId+'/defects.json'} target="_blank" rel="noreferrer">informe</a>
+                  </p>)}
+                  {visualAuto.result.project&&<button onClick={applyVisualCandidate}>
+                    Importar escenas corregidas para revisar y aprobar
+                  </button>}
+                </>}
+              </div>}
               <p className="hint">Entrega el JSON de defectos y el proyecto original a Motion Graphics. Importa su JSON corregido, revisa las escenas, apruébalas y pulsa aquí. Sin cambios reales, Studio rechazará repetir el render.</p>
             </div>}
             {renderStatus?.error && <pre className="error-log">{renderStatus.error}{renderStatus.log ? `\n\nDiagnóstico:\n${renderStatus.log}` : ''}</pre>}
