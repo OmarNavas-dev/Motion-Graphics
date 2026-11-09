@@ -214,9 +214,9 @@ export function renderAuthored(spec, options = {}) {
       let limbs='';
       for(const side of ['left','right']){
         const left=side==='left',hip=[left?104:136,hipY],ankle=p[side+'Foot'];
-        const knee=limb(hip,ankle,66,67,left?-1:1);
+        const knee=limb(hip,ankle,59,61,left?1:-1);
         const shoulder=[left?88:152,shoulderY],wrist=p[side+'Hand'];
-        const elbow=limb(shoulder,wrist,64,62,left?1:-1);
+        const elbow=limb(shoulder,wrist,46,48,left?1:-1);
         limbs+=line(hip,knee,pants,20)+line(knee,ankle,pants,17)+
           `<circle data-dvj-joint="${side}-knee" cx="${knee[0]}" cy="${knee[1]}" r="8" fill="${pants}"/>`+
           line(shoulder,elbow,shirt,21)+line(elbow,wrist,skin,13)+

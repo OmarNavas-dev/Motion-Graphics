@@ -9,7 +9,7 @@ const point=(p)=>Array.isArray(p)&&p.length===2&&p.every(finite);
 const sample=(a,b,t)=>a+(b-a)*t;
 const smooth=(u)=>{const t=Math.max(0,Math.min(1,u));return t*t*(3-2*t);};
 const defaults=()=>({at:0,rootX:0,rootY:0,headTilt:0,squash:0,expression:'neutral',
- leftHand:[69,166],rightHand:[171,166],leftFoot:[102,280],rightFoot:[138,280],
+ leftHand:[83,194],rightHand:[157,194],leftFoot:[102,280],rightFoot:[138,280],
  contact:{left:'planted',right:'planted'},grip:false});
 export function solveLimb(start,end,upper,lower,bend=1){
  check(point(start)&&point(end)&&finite(upper)&&finite(lower)&&upper>0&&lower>0&&[1,-1].includes(bend),'geometría articular inválida');
@@ -38,8 +38,8 @@ export function validateCharacterRig(rig,duration){
   for(const side of ['left','right']){
    const hip=[side==='left'?104:136,182+pose.squash*35];
    const shoulder=[side==='left'?88:152,116+pose.squash*16];
-   solveLimb(hip,pose[side+'Foot'],66,67,side==='left'?-1:1);
-   solveLimb(shoulder,pose[side+'Hand'],64,62,side==='left'?1:-1);
+   solveLimb(hip,pose[side+'Foot'],59,61,side==='left'?1:-1);
+   solveLimb(shoulder,pose[side+'Hand'],46,48,side==='left'?1:-1);
   }
   previous=pose.at;
  }
@@ -73,7 +73,7 @@ export function inspectCharacterMotion(rig,{duration,width=1280,fps=24,slideThre
    if(prior&&distance>accelerationThresholdPx)findings.push({code:'FOOT_TELEPORT',foot:side,time:Number(time.toFixed(3)),pixels:Number(distance.toFixed(2))});
    last.set(side,current);
    const hip=[side==='left'?104:136,182+p.squash*35];
-   maxStretch=Math.max(maxStretch,Math.hypot(foot[0]-hip[0],foot[1]-hip[1])/(66+67));
+   maxStretch=Math.max(maxStretch,Math.hypot(foot[0]-hip[0],foot[1]-hip[1])/(59+61));
   }
  }
  return {measured:plantedPairs>0,frames,plantedPairs,airbornePairs,maxStretch:Number(maxStretch.toFixed(4)),
@@ -88,9 +88,12 @@ const sequences={
   pose(1.1,{expression:'happy',rightHand:[197,78],headTilt:6}),
   pose(1.7,{expression:'happy',rightHand:[183,97],headTilt:-4}),pose(2.6,{expression:'neutral'})],
  walk:[pose(0,{contact:{left:'planted',right:'air'}}),
-  pose(.7,{...foot(12,102,157),rightFoot:[145,259],contact:{left:'planted',right:'air'},headTilt:3}),
-  pose(1.3,{...foot(24,102,164),contact:{left:'air',right:'planted'},headTilt:-3}),
-  pose(2,{...foot(40,133,164),leftFoot:[93,259],contact:{left:'air',right:'planted'},headTilt:3}),
+  pose(.7,{...foot(12,102,157),rightFoot:[145,259],leftHand:[76,182],rightHand:[167,173],
+    contact:{left:'planted',right:'air'},headTilt:3}),
+  pose(1.3,{...foot(24,102,164),leftHand:[90,177],rightHand:[151,192],
+    contact:{left:'air',right:'planted'},headTilt:-3}),
+  pose(2,{...foot(40,133,164),leftFoot:[93,259],leftHand:[75,186],rightHand:[166,178],
+    contact:{left:'air',right:'planted'},headTilt:3}),
   pose(2.7,{...foot(56,156,164),contact:{left:'planted',right:'planted'},headTilt:0}),
   pose(3.5,{...foot(56,156,164),contact:{left:'planted',right:'planted'}})],
  reach:[pose(0),pose(.65,{rightHand:[195,152],expression:'surprised'}),
@@ -101,7 +104,7 @@ const sequences={
     leftHand:[71,201],rightHand:[164,201],headTilt:12}),
   pose(1.3,{squash:.14,rootY:13,leftFoot:[102,267],rightFoot:[138,267],
     leftHand:[71,201],rightHand:[164,201],headTilt:10}),
-  pose(2.1,{squash:0,rootY:0,leftHand:[69,166],rightHand:[171,166]}),pose(2.8)],
+  pose(2.1,{squash:0,rootY:0,leftHand:[83,194],rightHand:[157,194]}),pose(2.8)],
  react:[pose(0),pose(.45,{expression:'surprised',headTilt:-12,leftHand:[68,137],rightHand:[176,137]}),
   pose(.8,{expression:'blink',headTilt:5,leftHand:[70,141],rightHand:[172,141]}),
   pose(1.25,{expression:'sad',headTilt:14}),pose(1.75,{expression:'angry',headTilt:-9}),

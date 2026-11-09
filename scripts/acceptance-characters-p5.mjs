@@ -52,7 +52,10 @@ for(let index=0;index<project.scenes.length;index++){
    width:1280,height:720,showText:true});
  if(!html.includes('data-dvj-foot="left"')||!html.includes('data-dvj-joint="right-knee"'))
    throw Error('P5: etiquetas del rig ausentes en '+action);
- const movement=diff(smallFrame(start+.28),smallFrame(start+Math.min(scene.duration-.18,scene.duration*.81)));
+ // Evaluate a full action arc. A greeting can return to nearly the starting
+ // pose: comparing only its beginning and end would incorrectly call it static.
+ const samples=[.09,.42,.72,.9].map(f=>smallFrame(start+scene.duration*f));
+ const movement=Math.max(...samples.slice(1).map((frame,i)=>diff(samples[i],frame)));
  const hash=createHash('sha256').update(smallFrame(start+scene.duration*.53)).digest('hex');
  checks.push({action,clip:path.basename(clip),frames:Number(meta.nb_frames),movement,
    visualHash:hash,contact});
