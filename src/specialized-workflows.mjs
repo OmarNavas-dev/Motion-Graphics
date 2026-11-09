@@ -194,10 +194,14 @@ function decorate(id,beat,step,data,seconds,format,brand,preview){
    if(id==='loop-cover'||id==='animated-chart'||layer.id===layers[0]?.id||layer.text?.startsWith('DEMOSTRACIÓN'))
      layer.enter={preset:'none',at:0};
  }
+ // P3 style recipes carry their own illustrative headlines (for example,
+ // “Everything in focus” and “THE DAILY GRAPH”). Keep their visual structures,
+ // but let P4 own the editorial text to avoid double headlines and collisions.
+ const decorativeLayers=(spec.layers||[]).filter(layer=>layer.type!=='text');
  return {...spec,source:'workflow-p4/'+id+'/'+beat,
    workflowRules:{id,beat,sourceGuide:flow.sourceGuide,mode:preview?'illustrative':'production',
      renderer:'shared-authored/1',sourceRequired:['data','milestone','documentary','comparison'].includes(flow.kind)},
-   layers:[...(spec.layers||[]),...layers]};
+   layers:[...decorativeLayers,...layers]};
 }
 
 export function generateSpecializedProject({workflow,data={},demo=false,format='horizontal',duration,

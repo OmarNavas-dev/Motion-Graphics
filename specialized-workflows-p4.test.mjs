@@ -31,6 +31,8 @@ for(const id of SPECIALIZED_FLOW_IDS)test('P4: '+id+' produce escenas ejecutable
  for(const s of expected.scenes){
    assert.ok(s.authored.source.startsWith('workflow-p4/'+id+'/'));
    assert.equal(s.authored.workflowRules.sourceGuide,meta.sourceGuide);
+   assert.equal(s.authored.layers.filter(layer=>layer.type==='text'&&layer.id.startsWith('p3-')).length,0,
+     'P4 no debe superponer titulares de ejemplo de P3 sobre textos propios');
    const frames=[0.3,s.duration*.77].map(time=>renderAuthored(s.authored,{time,
      duration:s.duration,width:1280,height:720,showText:true}));
    assert.ok(frames.every(html=>html.includes('ms-authored-stage')));
