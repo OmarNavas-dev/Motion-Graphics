@@ -58,6 +58,8 @@ Entregar un nuevo JSON completo conservando narración, estilo, tiempos y recurs
 
 ## Bibliotecas según la tarea
 
+**P6 · Audio y simulaciones:** consultar [audio-simulaciones-p6.md](references/audio-simulaciones-p6.md). El generador `scripts/generate-audio-simulation-project.mjs` produce cuatro simulaciones físicas 2D declarativas con señales sonoras sincronizadas, paneo, fades, prioridad de voz y límites verificables; no equivale a fluidos o simulaciones 3D interactivas. Si se incorpora este flujo a un proyecto narrativo, conservar la voz y los tiempos globales antes de validar el JSON.
+
 Leer únicamente las referencias pertinentes, además de la dirección y el contrato:
 
 | Necesidad | Referencia / herramienta |

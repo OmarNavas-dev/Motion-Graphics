@@ -1,4 +1,4 @@
-import {STYLE_PRESET_IDS,normalizeSoundDesign,normalizeBrandProfile} from './src/motion-capabilities.mjs';
+import {STYLE_PRESET_IDS,normalizeSoundDesign,normalizeBrandProfile,normalizeSimulation} from './src/motion-capabilities.mjs';
 import path from 'node:path';
 import {ensureDistinctVisualActionPlan, normalizeVisualActionPlan} from './src/visual-action-planner.mjs';
 import {CUSTOM_SCENE_LIMITS} from './src/scene-limits.mjs';
@@ -53,7 +53,7 @@ const normalizeAuthored = (authored, duration) => {
       last=key.at;
     }
   }
-  const ids = new Set(), supported = new Set(['group','shape','text','caption','image','particles','svg','path','arrow','wave','gradient','glow','character']);
+  const ids = new Set(), supported = new Set(['group','shape','text','caption','image','particles','svg','path','arrow','wave','gradient','glow','character','simulation']);
   for (const layer of authored.layers) {
     if (!layer || !/^[A-Za-z][\w-]*$/.test(layer.id || '') || ids.has(layer.id)) throw Error('Identificador de capa inválido o duplicado.');
     ids.add(layer.id);
@@ -69,6 +69,7 @@ const normalizeAuthored = (authored, duration) => {
       const report=inspectCharacterMotion(rig,{duration,width:1280});
       if(!report.passed)throw Error('P5: personaje con problemas de contacto: '+report.findings.map(f=>f.code+' '+f.foot).join(', '));
     }
+    if(layer.type==='simulation')layer.simulation=normalizeSimulation(layer.simulation,duration);
     let previous = -1;
     if (layer.keyframes && (!Array.isArray(layer.keyframes) || layer.keyframes.length > 100)) throw Error('Lista de keyframes inválida.');
     for (const k of layer.keyframes || []) {

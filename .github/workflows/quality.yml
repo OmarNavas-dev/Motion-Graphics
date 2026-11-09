@@ -26,6 +26,8 @@ jobs:
         run: npm run test:p4
       - name: Verify P5 articulated characters and contact contracts
         run: npm run test:p5
+      - name: Verify P6 synchronized audio and deterministic simulations
+        run: npm run test:p6
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types
@@ -146,5 +148,29 @@ jobs:
         with:
           name: p5-character-actions-and-contact-audit
           path: out/p5-characters/
+          if-no-files-found: warn
+          retention-days: 14
+  audio-simulations-acceptance:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install
+        run: npm ci --include=dev
+      - name: Install FFmpeg and FFprobe
+        run: sudo apt-get update -qq && sudo apt-get install -y ffmpeg
+      - name: Render and analyze 4 simulations with real stereo AAC mix
+        run: npm run accept:audio-simulations:p6
+      - name: Upload P6 MP4s, stereo mix, contact sheet and analysis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: p6-audio-simulations-video-and-mix
+          path: out/p6-audio-simulations/
           if-no-files-found: warn
           retention-days: 14

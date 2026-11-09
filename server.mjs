@@ -412,9 +412,9 @@ async function reviewCompletedRender(job,project,output,id){
       const created=await renderSoundWav(project.soundDesign,wav,{seconds:total});
       const probe=spawnSync('ffprobe',['-v','error','-select_streams','a:0','-show_entries','stream=index','-of','csv=p=0',output],{encoding:'utf8',windowsHide:true});
       if(probe.error||probe.status!==0)throw Error('FFprobe no pudo detectar la pista de audio.');
-      await muxSoundtrack(output,wav,mixed,{hasExistingAudio:Boolean(probe.stdout?.trim())});
+      await muxSoundtrack(output,wav,mixed,{hasExistingAudio:Boolean(probe.stdout?.trim()),mix:project.soundDesign.mix});
       await fsp.rename(mixed,output);
-      job.soundtrackAudit={mixed:true,cues:created.cues,seconds:created.seconds,types:[...new Set(project.soundDesign.cues.map(c=>c.type))]};
+      job.soundtrackAudit={mixed:true,cues:created.cues,seconds:created.seconds,channels:created.channels,mix:project.soundDesign.mix??null,types:[...new Set(project.soundDesign.cues.map(c=>c.type))]};
       job.log+='[Efectos] '+created.cues+' eventos sintetizados y mezclados.\\n';
     }catch(error){
       job.soundtrackAudit={mixed:false,error:error.message};
