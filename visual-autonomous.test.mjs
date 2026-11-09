@@ -82,6 +82,20 @@ test('P1 rechaza un cambio perceptualmente peor aunque se haya renderizado',asyn
   assert.equal(result.project,null);
   assert.equal(result.rounds[0].status,'candidate_rejected');
 });
+test('P8 final exige mejora respecto a la referencia aunque el modelo visual apruebe',async()=>{
+  const p=original(),old={id:'job-old',engine:'remotion',output:'old.mp4',attempt:1,
+    projectHash:projectFingerprint(p),status:'completado',visualDefects:report(p)};
+  let measured=0;
+  const result=await runVisualAutoLoop({project:p,sourceJob:old,validateProject,
+    propose:async(candidate,source)=>({plan:revision(candidate,source.visualDefects)}),
+    render:async candidate=>({id:'job-new',status:'completado',qualityEvidence:{screenshotEvidence:true},visualDefects:report(candidate,false)}),
+    wait:async x=>x,judge:async()=>({accepted:true}),
+    compareReference:async()=>{measured++;return {passed:false,relativeGain:-.14};},
+  });
+  assert.equal(measured,1);assert.equal(result.status,'needs_review');
+  assert.equal(result.rounds[0].status,'candidate_rejected');
+  assert.equal(result.project,null);
+});
 
 test('P1 realimenta un error de contrato al modelo y exige corrección antes de renderizar',async()=>{
   const p=original(),old={id:'job-old',engine:'remotion',output:'old.mp4',

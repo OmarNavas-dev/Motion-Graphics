@@ -38,6 +38,8 @@ jobs:
         run: npm run test:p82
       - name: Verify P8.3 source-reference comparison and review safety
         run: npm run test:p83
+      - name: Verify final P8 reference-aware rerender gate
+        run: npm run test:p8:final
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types

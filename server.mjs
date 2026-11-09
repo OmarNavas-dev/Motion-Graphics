@@ -32,6 +32,8 @@ import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
 import {createVisualDefectReport,compareVisualReports,projectFingerprint,validateIterationRequest} from './plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs';
 import {assertVisionModel,visionModelConfig,proposeVisionRevisions,judgeVisionRevision} from './src/visual-vision-review.mjs';
 import {runVisualAutoLoop} from './src/visual-auto-loop.mjs';
+import {compareReferenceVideos} from './src/reference-alignment-p83.mjs';
+import {assessReferenceRevision} from './src/reference-revision-gate-p8.mjs';
 import {inspectAlphaMov,compositeBrollAlpha} from './src/broll-export.mjs';
 import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
 import {inspectCharacterMotion} from './src/character-motion.mjs';
@@ -173,7 +175,7 @@ async function waitForVisualRender(job,{timeoutMs=20*60*1000}={}) {
   throw Error('La iteración superó el tiempo límite de render. Revisa el trabajo '+job.id+'.');
 }
 
-async function beginAutonomousVisualReview(session,project,previous,modelConfig){
+async function beginAutonomousVisualReview(session,project,previous,modelConfig,referenceVideo=null){
   try{
     const result=await runVisualAutoLoop({
       project,sourceJob:previous,maxAttempts:3,validateProject,
@@ -197,6 +199,13 @@ async function beginAutonomousVisualReview(session,project,previous,modelConfig)
       wait:waitForVisualRender,
       judge:async (source,trial,candidate,edits)=>judgeVisionRevision(
         path.join(outDir,source.output),path.join(outDir,trial.output),candidate,edits,{modelConfig}),
+      compareReference:referenceVideo?async(source,trial,candidate)=>{
+        const [before,after]=await Promise.all([
+          compareReferenceVideos(candidate,referenceVideo,path.join(outDir,source.output),{framesPerScene:2}),
+          compareReferenceVideos(candidate,referenceVideo,path.join(outDir,trial.output),{framesPerScene:2}),
+        ]);
+        return assessReferenceRevision(before,after);
+      }:undefined,
     });
     session.status=result.status;session.result=result;
     for(const round of result.rounds??[]){
@@ -205,6 +214,7 @@ async function beginAutonomousVisualReview(session,project,previous,modelConfig)
       await fsp.writeFile(path.join(dir,'vision-iteration.json'),JSON.stringify({
         sourceJobId:round.sourceJobId,attempt:round.attempt,status:round.status,
         technical:round.technical,perceptual:round.perceptual,changes:round.manifest?.applied,
+        reference:round.reference??null,
         approval:'PENDING_VISUAL_REVIEW',
       },null,2));
     }
@@ -887,13 +897,22 @@ async function handle(req, res) {
       throw Error('Selecciona un MP4 terminado y su JSON original exacto.');
     if(previous.attempt>=3)throw Error('Se alcanzó el máximo de tres renders relacionados.');
     await ensureMediaAvailable(project);
+    let referenceVideo=null;
+    if(body.referenceAsset!==undefined){
+      if(typeof body.referenceAsset!=='string'||!/^user-assets\/[a-zA-Z0-9._-]+\.mp4$/i.test(body.referenceAsset)||
+         !safeFilename(path.basename(body.referenceAsset)))
+        throw Error('La referencia debe ser un MP4 local importado en user-assets.');
+      referenceVideo=path.join(assetsDir,path.basename(body.referenceAsset));
+      const info=await fsp.stat(referenceVideo).catch(()=>null);
+      if(!info?.isFile()||info.size<2000)throw Error('El MP4 de referencia no está disponible.');
+    }
     const config=await assertVisionModel();
     const session={id:randomUUID(),status:'running',sourceJobId:previous.id,
       progress:{phase:'queued',attempt:previous.attempt},result:null,error:null,createdAt:Date.now()};
     visualSessions.set(session.id,session);
     if(visualSessions.size>12)visualSessions.delete(visualSessions.keys().next().value);
     activeVisualSession=session.id;
-    void beginAutonomousVisualReview(session,project,previous,config);
+    void beginAutonomousVisualReview(session,project,previous,config,referenceVideo);
     return respond(res,202,{sessionId:session.id,status:session.status});
   }
   const autoMatch=pathname.match(/^\/api\/iterations\/auto\/([0-9a-f-]{36})$/);
