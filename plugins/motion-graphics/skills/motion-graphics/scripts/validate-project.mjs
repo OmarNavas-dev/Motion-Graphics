@@ -10,10 +10,14 @@ import {inspectExplainer} from './compat/src/explainer-contract.mjs';
 import {checkCaptionStyle} from './check-caption-style.mjs';
 import {pathToFileURL} from 'node:url';
 import {validateProject as bundledValidate, projectByteLimit} from './compat/server-utils.mjs';
+import {repairCrossSceneIds} from './compat/src/scene-id-repair.mjs';
 
 export async function checkProject(raw, {duration, repo, words, runtimeReport, requireNarration=false} = {}) {
   const p = raw.project ?? raw;
   const errors = [...checkCaptionStyle(raw, words), ...checkEditorialOverlays(p), ...checkNarrationBindings(p)];
+  const idRepair=repairCrossSceneIds(p);
+  if(idRepair.repaired)errors.push(`IDs SVG repetidos entre escenas: ${idRepair.changes.length} identificadores requieren reparación. Ejecuta scripts/repair-scene-ids.mjs antes de entregar.`);
+  errors.push(...idRepair.warnings);
   if(requireNarration)for(const scene of p.scenes??[])if(scene.direction?.actions?.length&&!scene.direction.actions.some(a=>a.narration))errors.push(scene.id+': falta anclar una accion principal a palabras reales.');
   const warnings = inspectExplainer(p).map(w=>`${w.scene}: ${w.message}`);
   const sceneAudit=auditProjectScenes(p);

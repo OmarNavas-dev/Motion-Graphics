@@ -24,6 +24,7 @@ import {createBrandKit,createMotionBrief,createMotionPrompt} from './src/authori
 import {aiPlannerConfig, requestAiPlan, requestSceneCode, requestFullVideoCode} from './ai-planner.mjs';
 import {exportHyperframesProject} from './src/hyperframes-bridge.mjs';
 import {checkCustomScenePreflight} from './src/custom-scene-preflight.mjs';
+import {repairCrossSceneIds} from './src/scene-id-repair.mjs';
 import {auditVisualDirection} from './src/visual-direction-audit.mjs';
 import {auditArtDirection} from './src/art-direction-quality.mjs';
 import {auditRenderedVideo} from './src/render-quality-audit.mjs';
@@ -852,21 +853,23 @@ async function handle(req, res) {
         visualAudit:auditVisualDirection(project),artDirection});
     }
   if (req.method === 'PUT' && pathname === '/api/project') {
-    const project = validateProject(await bodyJson(req));
+    const repaired=repairCrossSceneIds(validateProject(await bodyJson(req)));
+    const project=repaired.project;
     await saveProject(project);
-    return respond(res, 200, {project});
+    return respond(res, 200, {project,sceneIdRepair:{changes:repaired.changes,warnings:repaired.warnings}});
   }
   if (req.method === 'PUT' && pathname === '/api/assets') {
     return uploadAsset(req, url, res);
   }
   if (req.method === 'POST' && pathname === '/api/render/hyperframes') {
     if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
-    const project = validateProject(await bodyJson(req));
+    const repaired=repairCrossSceneIds(validateProject(await bodyJson(req)));
+    const project=repaired.project;
     assertApproved(project);
     await ensureMediaAvailable(project);
     await saveProject(project);
     const job = await beginHyperframesRender(project);
-    return respond(res, 202, {jobId: job.id, engine: job.engine});
+    return respond(res, 202, {jobId: job.id, engine: job.engine,sceneIdRepair:{changes:repaired.changes,warnings:repaired.warnings}});
   }
   if (req.method === 'POST' && pathname === '/api/render') {
     if(activeVisualSession)throw Error('Espera a que finalice la revisión visual automática.');
