@@ -5,6 +5,13 @@ import {generateExternalRequest} from './plugins/motion-graphics/skills/motion-g
 import {planExternalRequest as pluginPlan} from './plugins/motion-graphics/skills/motion-graphics/scripts/compat/src/external-adapters-p7.mjs';
 import {segmentWithRemoveBg} from './cloud-integrations.mjs';
 import {MOTION_STUDIO_CONTRACT} from './src/motion-capabilities.mjs';
+import {spawn} from 'node:child_process';
+import {createServer} from 'node:net';
+import {once} from 'node:events';
+import {setTimeout as delay} from 'node:timers/promises';
+import {mkdtemp,rm} from 'node:fs/promises';
+import {tmpdir} from 'node:os';
+import path from 'node:path';
 
 const asset='user-assets/00000000-0000-4000-8000-000000000000.png';
 const samples=[
@@ -47,4 +54,29 @@ test('P7: rechaza falta de clave, imagen grande, HTTP fallido, MIME falso y PNG 
  await assert.rejects(segmentWithRemoveBg(Buffer.alloc(32),'photo.png','key',{fetcher:async()=>new Response('{}',{headers:{'content-type':'application/json'}})}),/no es PNG/);
  const opaque=png();opaque[25]=2;
  await assert.rejects(segmentWithRemoveBg(Buffer.alloc(32),'photo.png','key',{fetcher:async()=>new Response(opaque,{headers:{'content-type':'image/png'}})}),/canal alfa/);
+});
+test('P7: HTTP real devuelve plan y bloquea segmentación sin aceptación',async()=>{
+ const net=createServer();net.listen(0,'127.0.0.1');await once(net,'listening');
+ const port=net.address().port;net.close();await once(net,'close');
+ const root=await mkdtemp(path.join(tmpdir(),'ms-p7-http-'));
+ const child=spawn(process.execPath,['server.mjs'],{cwd:import.meta.dirname,
+  env:{...process.env,MOTION_STUDIO_PORT:String(port),MOTION_STUDIO_TEST_ROOT:root},stdio:'ignore'});
+ try{
+  let ready=false;
+  for(let i=0;i<40;i++){
+   await delay(120);
+   try{const reply=await fetch(`http://127.0.0.1:${port}/api/health`);if(reply.ok){ready=true;break;}}
+   catch{if(child.exitCode!==null)break;}
+  }
+  assert.equal(ready,true,'el servidor local debe iniciar');
+  const url=`http://127.0.0.1:${port}`,post=async(endpoint,body)=>fetch(url+endpoint,{
+   method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)});
+  const planned=await post('/api/external/plan',samples[3]);
+  assert.equal(planned.status,200);
+  assert.equal((await planned.json()).request.dispatchable,false);
+  const denied=await post('/api/external/segment',{asset});
+  assert.equal(denied.status,400);
+  const invalid=await post('/api/external/plan',{provider:'higgsfield',operation:'generate-video',prompt:'x'});
+  assert.equal(invalid.status,400);
+ }finally{child.kill();await rm(root,{recursive:true,force:true});}
 });
