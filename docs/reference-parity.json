@@ -288,9 +288,12 @@
       "id": "reference-to-motion",
       "status": "partial",
       "evidence": [
-        "plugins/motion-graphics/skills/motion-graphics/scripts/compare-video-motion.py"
+        "plugins/motion-graphics/skills/motion-graphics/scripts/compare-video-motion.py",
+        "src/reference-alignment-p83.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/compare-reference-p83.mjs"
       ],
-      "blocker": "Motion difference exists; perceptual look transfer and auto-correct absent"
+      "tests": ["reference-alignment-p83.test.mjs"],
+      "blocker": "P8.3 compara pares de fotogramas de MP4 reales y atribuye diferencias de luz, saturación y peso compositivo por escena; la transferencia de estilo y edición perceptual autónoma permanecen pendientes"
     },
     {
       "source": "charlie947/motion-graphics-skills",

@@ -58,6 +58,8 @@ Entregar un nuevo JSON completo conservando narración, estilo, tiempos y recurs
 
 ## Bibliotecas según la tarea
 
+**P8.3 · Adaptación basada en referencias reales:** leer [comparacion-referencias-p83.md](references/comparacion-referencias-p83.md). Ejecutar `node scripts/compare-reference-p83.mjs --project proyecto.json --reference referencia.mp4 --rendered exportado.mp4 --out informe.json`. Usar el informe por escenas para proponer cambios puntuales de color, encuadre y contraste y volver a renderizar tras aprobación. El informe no modifica el JSON automáticamente ni acredita transferencia artística exacta.
+
 **P8.2 · Bucles y ritmo de fotogramas:** leer [auditoria-bucles-ritmo-p82.md](references/auditoria-bucles-ritmo-p82.md). `node scripts/audit-video-p82.mjs video.mp4` ejecuta los mismos análisis FFmpeg que Motion Studio; informa discontinuidades entre último y primer fotograma, pausas prolongadas y destellos con marcas temporales. No afirmar que es «artísticamente aprobado» solo por las métricas automáticas: revisar los fotogramas y el guion.
 
 **P8.1 · Autoría ejecutable:** leer [autoria-p81.md](references/autoria-p81.md). Para entrevista de marca, brief cuantitativo o prompt de ocho apartados usar `node scripts/generate-authoring-p81.mjs --kind brand-intake|motion-brief-writer|motion-prompt-writer --input entrada.json --out carpeta`. El motor común también está disponible en Motion Studio mediante `POST /api/authoring/p81`. Pedir datos faltantes y no atribuir observaciones de fotogramas a una inspección inexistente. Estas tres capacidades permanecen parciales hasta validación artística real.

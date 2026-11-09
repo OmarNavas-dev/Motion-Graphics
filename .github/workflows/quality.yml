@@ -36,6 +36,8 @@ jobs:
         run: npm run test:p81
       - name: Verify P8.2 loop closure and timed pacing defects
         run: npm run test:p82
+      - name: Verify P8.3 source-reference comparison and review safety
+        run: npm run test:p83
       - name: Verify canonical plugin package
         run: npm run plugin:check
       - name: Lint and types

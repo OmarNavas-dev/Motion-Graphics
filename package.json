@@ -47,6 +47,7 @@
     "test:p8": "node --test final-homologation-p8.test.mjs",
     "test:p81": "node --test authoring-workflows-p81.test.mjs",
     "test:p82": "node --test loop-quality-audit.test.mjs pacing-quality-audit.test.mjs",
+    "test:p83": "node --test reference-alignment-p83.test.mjs",
     "homologation:p8": "node scripts/final-homologation-p8.mjs",
     "homologation:p8:ci": "node scripts/final-homologation-p8.mjs --evidence out/p8-evidence --out out/p8-final --require-video-artifacts",
     "homologation:p8:strict": "node scripts/final-homologation-p8.mjs --strict",
