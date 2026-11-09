@@ -69,9 +69,9 @@ export async function muxSoundtrack(video,wav,tempOutput,{hasExistingAudio,mix={
   const gain=Number.isFinite(mix.sfxGain)?mix.sfxGain:.75;
   const ceiling=Number.isFinite(mix.limit)?Math.max(.2,Math.min(1,mix.limit)):.95;
   const priority=mix.voicePriority!==false;
-  const filter=`[1:a:0]volume=${gain}[fx];`+(priority?
-    `[fx][0:a:0]sidechaincompress=threshold=0.035:ratio=5:attack=18:release=220[duck];[0:a:0][duck]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,alimiter=limit=${ceiling}[a]`:
-    `[0:a:0][fx]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,alimiter=limit=${ceiling}[a]`);
+  const filter=`[1:a:0]volume=${gain},aformat=channel_layouts=stereo[fx];[0:a:0]aformat=channel_layouts=stereo[voice];`+(priority?
+    `[voice]asplit=2[voice-duck][voice-mix];[fx][voice-duck]sidechaincompress=threshold=0.035:ratio=5:attack=18:release=220[duck];[voice-mix][duck]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,alimiter=limit=${ceiling}[a]`:
+    `[voice][fx]amix=inputs=2:duration=first:dropout_transition=0:normalize=0,alimiter=limit=${ceiling}[a]`);
   args.push('-filter_complex',filter,'-map','0:v:0','-map','[a]');
  }else{
   args.push('-filter_complex',`[1:a:0]volume=${Number.isFinite(mix.sfxGain)?mix.sfxGain:1},alimiter=limit=${Number.isFinite(mix.limit)?Math.max(.2,Math.min(1,mix.limit)):.95}[a]`,'-map','0:v:0','-map','[a]');
