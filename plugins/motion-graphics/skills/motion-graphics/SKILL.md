@@ -7,13 +7,19 @@ description: Convierte un guion y su narracion en un unico proyecto JSON importa
 
 Crear un único `proyecto.json` completo, editable e importable en Motion Studio, a partir del guion, narración y referencias disponibles en ChatGPT. Conservar idioma, contenido, ajustes del proyecto existente y decisiones explícitas del usuario. No asumir acceso a su ordenador. Motion Studio reproduce y exporta; esta habilidad no entrega MP4, no genera otra voz, no modifica el motor ni publica código.
 
-## Integración de las cuatro referencias y contrato 2.9.2
+## Integración de las cuatro referencias y contrato 2.9.3
 
 Leer [guias-originales-4-repos.md](references/guias-originales-4-repos.md) para localizar el flujo pertinente y consultar su texto completo en `references/source-guides/` (26 documentos originales). Los 21 estilos completos están en `references/styles/`, con el índice práctico [galeria-estilos-21.md](references/galeria-estilos-21.md). Adaptar cada guía al JSON y a las capacidades verificadas de Motion Studio; copiar una guía o elegir una paleta no implementa por sí solo un flujo de producción ni certifica su estilo.
 
 Aplicar el [contrato de autoría 2.9](references/contrato-studio-2.9.md) y comprobar `node scripts/validate-2-9-contract.mjs proyecto.json` además de los validadores del proceso principal. `stylePreset` debe ser uno de los 21 identificadores; `brandProfile` conserva identidad visual y sus colores prevalecen sobre la paleta del estilo. `soundDesign` es optativo y requiere eventos globales válidos; `loop:true` solo puede aprobarse tras revisar el cierre del MP4. Los movimientos de cámara y acciones deben tener selectores existentes y tiempos ejecutables. Para acciones ancladas a narración real, conservar `narration` y las verificaciones de `scripts/compat/src/motion-sequence.mjs`, sin sustituirlas por planificación textual.
 
 **No hay integración total todavía:** consultar el inventario normativo `docs/reference-parity.json` del repositorio de Motion Studio. B-roll transparente, segmentación SAM, simulaciones interactivas, Higgsfield y corrección artística automática no se vuelven ejecutables por importar una referencia; comunicar su estado real y las [restricciones de licencia](references/fuentes-y-licencias-2.9.md). Un resultado de CI técnico no acredita por sí solo calidad artística ni compatibilidad con todos los repositorios.
+
+## P1 · Revisar defectos reales y generar proyecto corregido
+
+Cuando el usuario adjunte un informe de defectos de Motion Studio, aplicar obligatoriamente [correccion-iterativa-p1.md](references/correccion-iterativa-p1.md). No comenzar otro video desde cero: comprobar el hash del proyecto, ubicar defectos por escena y segundo exacto, inspeccionar fotogramas accesibles y corregir solo lo justificado. Usar el módulo compartido scripts/visual-iteration.mjs y el ejecutable scripts/repair-from-report.mjs para correcciones de contraste objetivas. Para GSAP, continuidad, anatomía y composición se requiere reautoría concreta basada en imágenes, no cambiar paletas indiscriminadamente.
+
+Entregar un nuevo JSON completo conservando narración, estilo, tiempos y recursos; marcar escenas alteradas sin aprobar hasta inspección. Motion Studio expone el informe descargable de cada render y permite una nueva iteración con el JSON corregido. Comparar antes/después sin afirmar homologación artística automática.
 
 ## Proceso principal
 

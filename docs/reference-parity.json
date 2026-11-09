@@ -74,9 +74,11 @@
       "status": "partial",
       "evidence": [
         "src/quality-contact-sheet.mjs",
-        "src/pacing-quality-audit.mjs"
+        "src/pacing-quality-audit.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/repair-from-report.mjs"
       ],
-      "blocker": "Contact sheets exist; automated visual correction-and-rerender loop not built"
+      "blocker": "Scene-attributed reports, safe text-contrast repair and linked re-renders exist; perceptual artwork edits still require image inspection and re-authoring"
     },
     {
       "source": "whaleyxbt/claude-motion",
@@ -268,9 +270,13 @@
     {
       "source": "Motion Studio (target)",
       "id": "autonomous-artistic-correction-loop",
-      "status": "missing",
-      "evidence": [],
-      "blocker": "Render, diagnose, iteratively edit and re-render using visual feedback not implemented"
+      "status": "partial",
+      "evidence": [
+        "server.mjs",
+        "src/render-quality-audit.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs"
+      ],
+      "blocker": "Autonomous perceptual SVG/GSAP redesign, visual judgment and multi-pass auto-rerender are not implemented; a user must inspect and approve revised scenes"
     },
     {
       "source": "Motion Studio (target)",

@@ -12,8 +12,9 @@ test('cinco temas independientes con escenas y dirección ejecutable',()=>{
 
 test('rechaza MP4 sin audio, sin frames o con loop defectuoso y no confunde advertencias con aprobación',()=>{
  const project=makeAcceptanceFixtures().find(x=>x.topic==='graficos').project;
- const base={videoAudit:{video:{duration:6,width:720,height:1280,audioPresent:false}},pacingAudit:{hasMotion:true},inspection:'frames-generated',loopAudit:{seamlessByHeuristic:true}};
+ const base={videoAudit:{video:{duration:6,width:720,height:1280,audioPresent:false}},pacingAudit:{hasMotion:true},inspection:'frames-generated',loopAudit:{seamlessByHeuristic:true},visualDefects:{schema:'motion-studio.visual-iteration/1'}};
  assert.deepEqual(renderAcceptanceFailures(project,base),[]);
+ assert.match(renderAcceptanceFailures(project,{...base,visualDefects:null}).join(' '),/P1/);
  assert.match(renderAcceptanceFailures(project,{...base,loopAudit:{seamlessByHeuristic:false}}).join(' '),/bucle/);
  assert.match(renderAcceptanceFailures(project,{...base,inspection:'partial'}).join(' '),/fotogramas/);
  const foley=makeAcceptanceFixtures().find(x=>x.topic==='volcanes').project;

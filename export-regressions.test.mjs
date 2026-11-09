@@ -104,6 +104,10 @@ test('servidor real: GSAP, fuentes, reinicio con proyecto y arranque limpio con 
     for (const file of ['server.mjs','server-utils.mjs','preview-player.mjs','cloud-integrations.mjs','ai-planner.mjs','package.json','src','scripts','public']) {
       await fs.cp(path.join(root,file),path.join(temp,file),{recursive:true});
     }
+    // The P1 source is deliberately shared with the bundled authoring plugin.
+    const p1='plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs';
+    await fs.mkdir(path.dirname(path.join(temp,p1)),{recursive:true});
+    await fs.cp(path.join(root,p1),path.join(temp,p1));
     await start();
     const gsap = await fetch(address+'/hyperframes/gsap.min.js');
     assert.equal(gsap.status,200);

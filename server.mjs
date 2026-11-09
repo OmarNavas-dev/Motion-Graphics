@@ -26,6 +26,7 @@ import {auditLoopSeam} from './src/loop-quality-audit.mjs';
 import {auditRenderedPacing} from './src/pacing-quality-audit.mjs';
 import {renderSoundWav,muxSoundtrack} from './src/sound-design.mjs';
 import {createFrameContactSheet} from './src/quality-contact-sheet.mjs';
+import {createVisualDefectReport,compareVisualReports,projectFingerprint,validateIterationRequest} from './plugins/motion-graphics/skills/motion-graphics/scripts/visual-iteration.mjs';
 import {auditTimelineAudio,auditAudioAssets,measureAudioLoudness} from './src/audio-quality-audit.mjs';
 import {addWindowsMediaPaths} from './scripts/windows-media-path.mjs';
 
@@ -293,6 +294,7 @@ const latestLog = (value, incoming) =>
 // Shared post-render pipeline: both Remotion and HyperFrames are audited.
 async function reviewCompletedRender(job,project,output,id){
   const total=project.scenes.reduce((sum,scene)=>sum+scene.duration,0);
+  const expectedAudio=Boolean(project.audioAsset||project.voiceClips?.length||project.musicAsset||project.soundDesign?.enabled&&project.soundDesign?.cues.length);
   if(project.soundDesign?.enabled && project.soundDesign.cues.length){
     const wav=path.join(outDir,'sfx-'+id+'.wav'),mixed=path.join(outDir,'mix-'+id+'.mp4');
     try{
@@ -312,8 +314,7 @@ async function reviewCompletedRender(job,project,output,id){
     }
   }
   try{
-    job.visualAudit=await auditRenderedVideo(output,{
-      expectedAudio:Boolean(project.audioAsset||project.voiceClips?.length||project.musicAsset||project.soundDesign?.enabled&&project.soundDesign?.cues.length)});
+    job.visualAudit=await auditRenderedVideo(output,{expectedAudio});
     job.log+='[Video] '+job.visualAudit.metrics.sampledFrames+' fotogramas evaluados; '+job.visualAudit.warnings.length+' observaciones.\\n';
     for(const warning of job.visualAudit.warnings)job.log+='- '+warning+'\\n';
   }catch(error){job.log+='[Video] Auditoría no disponible: '+error.message+'\\n';}
@@ -338,18 +339,39 @@ async function reviewCompletedRender(job,project,output,id){
       if(!job.loopAudit.seamlessByHeuristic)job.log+='[Loop] Salto en cierre: revisar primera y última imagen.\\n';
     }catch(error){job.loopAudit={measured:false,error:error.message};}
   }
+  const reviewDir=path.join(outDir,'quality-reviews',id);
+  let sheet=null;
   try{
-    const reviewDir=path.join(outDir,'quality-reviews',id);
-    const sheet=await createFrameContactSheet(output,project,reviewDir,{maxFrames:36});
+    sheet=await createFrameContactSheet(output,project,reviewDir,{maxFrames:36});
     job.contactSheet={captured:sheet.captured,requested:sheet.totalRequested,errors:sheet.errors.length,url:'/reviews/'+id+'/index.html'};
     job.log+='[Fotogramas] '+sheet.captured+' capturas: '+job.contactSheet.url+'\\n';
   }catch(error){job.log+='[Fotogramas] Revisión parcial: '+error.message+'\\n';}
+  job.visualDefects=createVisualDefectReport(project,{visualAudit:job.visualAudit,pacingAudit:job.pacingAudit,
+    loopAudit:job.loopAudit,contactSheet:sheet,expectedAudio},{jobId:id,sourceJobId:job.sourceJobId,attempt:job.attempt});
+  if(job.sourceJobId){
+    const previous=jobs.get(job.sourceJobId)?.visualDefects;
+    if(previous)job.iterationComparison=compareVisualReports(previous,job.visualDefects);
+  }
+  await fsp.mkdir(reviewDir,{recursive:true});
+  await fsp.writeFile(path.join(reviewDir,'defects.json'),JSON.stringify(job.visualDefects,null,2));
+  job.log+='[P1] Informe de defectos: /reviews/'+id+'/defects.json ('+job.visualDefects.defects.length+' observaciones).\n';
   job.qualityEvidence={rendered:true,visualApproval:false,heuristicsOnly:true,
     screenshotEvidence:Boolean(job.contactSheet?.captured),audioMeasured:Boolean(job.audioLoudnessAudit),
     loopMeasured:project.loop?Boolean(job.loopAudit?.fps):null};
 }
 
-async function beginRender(project) {
+async function recordFailedRenderReview(job,project) {
+  try {
+    job.visualDefects=createVisualDefectReport(project,{runtimeErrors:[job.error]},
+      {jobId:job.id,sourceJobId:job.sourceJobId,attempt:job.attempt,stage:'preflight'});
+    const directory=path.join(outDir,'quality-reviews',job.id);
+    await fsp.mkdir(directory,{recursive:true});
+    await fsp.writeFile(path.join(directory,'defects.json'),JSON.stringify(job.visualDefects,null,2));
+    job.log+='[P1] Error de render clasificado por escena: /reviews/'+job.id+'/defects.json\n';
+  }catch(error){job.log+='[P1] No se pudo registrar el informe de fallo: '+error.message+'\n';}
+}
+
+async function beginRender(project,{sourceJobId=null,attempt=1}={}) {
   if (project.scenes.some(scene => scene.customScene?.html)) throw new Error('Las escenas HTML/GSAP requieren exportar con HyperFrames. Remotion no las sustituirá por una plantilla.');
   if (creatingJob || currentJob?.status === 'renderizando') {
     throw new Error('Ya hay un render en curso. Espera a que termine.');
@@ -368,7 +390,7 @@ async function beginRender(project) {
   }
   const job = {
     id, engine: 'remotion', status: 'renderizando', progress: 0, error: '',
-    output: name, log: '', startedAt: Date.now(),
+    output: name, log: '', startedAt: Date.now(),sourceJobId,attempt,projectHash:projectFingerprint(project),
   };
   jobs.set(id, job);
   currentJob = job;
@@ -399,8 +421,8 @@ async function beginRender(project) {
     if (job.status !== 'error' && code === 0) {
       const stat = await fsp.stat(output).catch(() => null);
       if (stat?.isFile() && stat.size > 15000) {
-        await reviewCompletedRender(job,project,output,id);
-              job.status = 'completado';
+        try{await reviewCompletedRender(job,project,output,id);job.status='completado';}
+        catch(error){job.status='error';job.error='La auditoría P1 falló: '+error.message;}
         job.progress = 100;
       } else {
         job.status = 'error';
@@ -410,6 +432,7 @@ async function beginRender(project) {
       job.status = 'error';
       job.error ||= `Remotion termino con el codigo ${code}. ${job.log.slice(-1500)}`;
     }
+    if(job.status==='error')await recordFailedRenderReview(job,project);
     currentJob = null;
   });
   return job;
@@ -459,7 +482,7 @@ function assertHyperframesRequirements() {
   }
 }
 
-async function beginHyperframesRender(project) {
+async function beginHyperframesRender(project,{sourceJobId=null,attempt=1}={}) {
   const preflight=checkCustomScenePreflight(project);
   if(!preflight.passed)throw Error('Corrige la escena antes de exportar: '+preflight.errors.slice(0,6).join(' | '));
   if (project.visualEngine === 'canvas') {
@@ -476,7 +499,7 @@ async function beginHyperframesRender(project) {
   const workspace = path.join(outDir, `hyperframes-${id}`);
   const workspaceOutput = path.join(workspace, 'motion-studio-output.mp4');
   const job = {
-    id, engine: 'hyperframes', status: 'renderizando', progress: 1, error: '',
+    id, engine: 'hyperframes', status: 'renderizando', progress: 1, error: '',sourceJobId,attempt,projectHash:projectFingerprint(project),
     output: name, log: 'Preparando composición y recursos locales...\n',
     startedAt: Date.now(), workspace,
   };
@@ -557,6 +580,7 @@ async function beginHyperframesRender(project) {
     } catch (error) {
       job.status = 'error';
       job.error = error instanceof Error ? error.message : 'Error desconocido al renderizar con HyperFrames.';
+      await recordFailedRenderReview(job,project);
       job.log = latestLog(job.log, `\n${job.error}`);
     } finally {
       if (currentJob?.id === id) currentJob = null;
@@ -666,6 +690,17 @@ async function handle(req, res) {
     const job = await beginRender(project);
     return respond(res, 202, {jobId: job.id});
   }
+  if (req.method === 'POST' && pathname === '/api/iterations/rerender') {
+    const body=await bodyJson(req),previous=jobs.get(body.sourceJobId);
+    const project=validateProject(body.project);
+    const context=validateIterationRequest(previous,project);
+    assertApproved(project);
+    await ensureMediaAvailable(project);
+    await saveProject(project);
+    const begin=previous.engine==='hyperframes'?beginHyperframesRender:beginRender;
+    const job=await begin(project,context);
+    return respond(res,202,{jobId:job.id,sourceJobId:previous.id,attempt:job.attempt});
+  }
   const jobMatch = pathname.match(/^\/api\/jobs\/([0-9a-f-]{36})$/);
   if (req.method === 'GET' && jobMatch) {
     const job = jobs.get(jobMatch[1]);
@@ -676,6 +711,7 @@ async function handle(req, res) {
       visualAudit:job.visualAudit??null, audioTimingAudit:job.audioTimingAudit??null,
       audioLoudnessAudit:job.audioLoudnessAudit??null, audioAssetsAudit:job.audioAssetsAudit??null, contactSheet:job.contactSheet??null,
       soundDesignAudit:job.soundtrackAudit??null,loopAudit:job.loopAudit??null,qualityEvidence:job.qualityEvidence??null,pacingAudit:job.pacingAudit??null,
+      visualDefects:job.visualDefects??null,sourceJobId:job.sourceJobId,attempt:job.attempt,iterationComparison:job.iterationComparison??null,
     }) : respond(res, 404, {error: 'Trabajo no encontrado.'});
   }
   if (req.method === 'GET' && pathname === '/preview') {
@@ -694,7 +730,7 @@ async function handle(req, res) {
   if (req.method === 'GET' && assetMatch) {
     return sendFile(res, assetsDir, assetMatch[1], false, req);
   }
-  const reviewMatch=pathname.match(/^\/reviews\/([0-9a-f-]{36})\/(index\.html|report\.json|[0-9]{3}\.png)$/);
+  const reviewMatch=pathname.match(/^\/reviews\/([0-9a-f-]{36})\/(index\.html|report\.json|defects\.json|[0-9]{3}\.png)$/);
   if(req.method==='GET'&&reviewMatch){
     return sendFile(res,path.join(outDir,'quality-reviews',reviewMatch[1]),reviewMatch[2],false);
   }

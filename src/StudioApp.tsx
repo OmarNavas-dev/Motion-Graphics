@@ -19,12 +19,17 @@ import {
 import './studio-app.css';
 
 type JobStatus = {
+  id?: string;
   engine?: 'hyperframes' | 'remotion';
   status: string;
   progress: number;
   error: string;
   log: string;
   download: string | null;
+  attempt?: number;
+  visualDefects?: {defects: {id:string;code:string;sceneId:string|null;seconds:number|null;summary:string;severity:string}[];
+    counts:{error:number;warning:number;info:number};approval:string} | null;
+  iterationComparison?: {before:number;after:number;delta:number;improvedByHeuristic:boolean;artisticApproval:boolean} | null;
 };
 type MediaCandidate = {id: string; thumbnail: string; title: string;
   creator: string; license: string; sourceUrl: string};
@@ -543,6 +548,23 @@ function StudioApp() {
     } finally {
       setBusy(false);
     }
+  };
+
+  const rerenderCorrected = async () => {
+    if (!renderStatus?.id || !renderStatus.visualDefects) return;
+    if (pendingApproval) return setNotice('Aprueba las escenas corregidas después de revisarlas visualmente.');
+    setBusy(true);
+    try {
+      const result = await api<{jobId:string;attempt:number}>('/api/iterations/rerender', {
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({sourceJobId:renderStatus.id,project}),
+      });
+      setRenderJobId(result.jobId);
+      setRenderStatus({status:'renderizando',engine:renderStatus.engine,progress:0,error:'',log:'',download:null});
+      setNotice('Iteración '+result.attempt+'/3 en marcha. Al terminar podrás comparar los informes.');
+      setDirty(false);
+    } catch(error) {setNotice('No se pudo repetir el render: '+(error as Error).message);}
+    finally {setBusy(false);}
   };
 
   const uploadAssetOnly = async (file: File) => {
@@ -1258,6 +1280,21 @@ function StudioApp() {
             <div className="export-track"><div style={{width: `${renderStatus?.progress ?? 0}%`}}/></div>
             {renderStatus?.download &&
               <a className="download-button" href={renderStatus.download}>Descargar video MP4</a>}
+            {renderStatus?.id && renderStatus.visualDefects && <div className="review-alert">
+              <strong>Inspección P1 · iteración {renderStatus.attempt ?? 1}/3</strong>
+              <p>{renderStatus.visualDefects.counts.error} errores · {renderStatus.visualDefects.counts.warning} advertencias · {renderStatus.visualDefects.counts.info} pistas de revisión. La aprobación artística sigue pendiente.</p>
+              <p><a href={'/reviews/'+renderStatus.id+'/defects.json'} download="defectos-motion-studio.json">Descargar defectos JSON para Motion Graphics</a>
+                {renderStatus.download && <>{' · '}<a href={'/reviews/'+renderStatus.id+'/index.html'} target="_blank" rel="noreferrer">Inspeccionar fotogramas</a></>}</p>
+              {renderStatus.iterationComparison && <p>Comparación técnica: {renderStatus.iterationComparison.before} → {renderStatus.iterationComparison.after} alertas (no equivale a aprobación artística).</p>}
+              <details><summary>Defectos detectados por escena</summary><ul>
+                {renderStatus.visualDefects.defects.map(d=><li key={d.id}>
+                  {d.sceneId ?? 'Proyecto'}{d.seconds!==null?' · '+d.seconds.toFixed(2)+' s':''}: {d.summary}
+                </li>)}
+              </ul></details>
+              <button disabled={busy || (renderStatus.attempt ?? 1)>=3}
+                onClick={()=>void rerenderCorrected()}>Renderizar nuevamente el JSON corregido</button>
+              <p className="hint">Entrega el JSON de defectos y el proyecto original a Motion Graphics. Importa su JSON corregido, revisa las escenas, apruébalas y pulsa aquí. Sin cambios reales, Studio rechazará repetir el render.</p>
+            </div>}
             {renderStatus?.error && <pre className="error-log">{renderStatus.error}{renderStatus.log ? `\n\nDiagnóstico:\n${renderStatus.log}` : ''}</pre>}
           </div>
           </>}
