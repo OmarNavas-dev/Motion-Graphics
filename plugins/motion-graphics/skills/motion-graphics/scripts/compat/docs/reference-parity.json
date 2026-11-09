@@ -167,9 +167,11 @@
       "id": "brand-intake",
       "status": "partial",
       "evidence": [
-        "plugins/motion-graphics/skills/motion-graphics/references/direccion-creativa-2.6.md"
+        "src/authoring-workflows-p81.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/generate-authoring-p81.mjs"
       ],
-      "blocker": "Persistent enforceable brand/MOTION design contract absent"
+      "tests": ["authoring-workflows-p81.test.mjs"],
+      "blocker": "Ya genera brand.md, MOTION.md y CLAUDE.md con referencias explícitas; falta inspección visual real de referencias y cumplimiento artístico demostrado en render"
     },
     {
       "source": "charlie947/motion-graphics-skills",
@@ -234,9 +236,11 @@
       "id": "motion-brief-writer",
       "status": "partial",
       "evidence": [
-        "plugins/motion-graphics/skills/motion-graphics/scripts/creative-direction.mjs"
+        "src/authoring-workflows-p81.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/generate-authoring-p81.mjs"
       ],
-      "blocker": "No dedicated verified quantitative brief generator"
+      "tests": ["authoring-workflows-p81.test.mjs"],
+      "blocker": "Generador numérico y de cuatro fases verificado como contrato; falta probar fidelidad visual y loops reales con material aprobado"
     },
     {
       "source": "charlie947/motion-graphics-skills",
@@ -252,9 +256,11 @@
       "id": "motion-prompt-writer",
       "status": "partial",
       "evidence": [
-        "plugins/motion-graphics/skills/motion-graphics/SKILL.md"
+        "src/authoring-workflows-p81.mjs",
+        "plugins/motion-graphics/skills/motion-graphics/scripts/generate-authoring-p81.mjs"
       ],
-      "blocker": "No independent canonical prompt workflow"
+      "tests": ["authoring-workflows-p81.test.mjs"],
+      "blocker": "Genera prompt canónico en ocho partes más originalidad; falta evaluación humana contra videos de referencia"
     },
     {
       "source": "charlie947/motion-graphics-skills",
