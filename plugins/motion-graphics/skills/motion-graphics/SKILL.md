@@ -58,6 +58,8 @@ Entregar un nuevo JSON completo conservando narración, estilo, tiempos y recurs
 
 ## Bibliotecas según la tarea
 
+**P7 · Integraciones externas:** leer [integraciones-externas-p7.md](references/integraciones-externas-p7.md). Usar `scripts/plan-external-request.mjs` para preparar solicitudes de segmentación remove.bg, búsqueda de medios Openverse/Pixabay o video Higgsfield; solo remove.bg dispone de ejecución en el servidor con confirmación explícita y clave local. Higgsfield produce planes **sin envío**: requerirá elegir modelo, revisar precio y autorizar ejecución. Nunca prometer procesamiento real si no se ha ejecutado con credenciales válidas.
+
 **P6 · Audio y simulaciones:** consultar [audio-simulaciones-p6.md](references/audio-simulaciones-p6.md). El generador `scripts/generate-audio-simulation-project.mjs` produce cuatro simulaciones físicas 2D declarativas con señales sonoras sincronizadas, paneo, fades, prioridad de voz y límites verificables; no equivale a fluidos o simulaciones 3D interactivas. Si se incorpora este flujo a un proyecto narrativo, conservar la voz y los tiempos globales antes de validar el JSON.
 
 Leer únicamente las referencias pertinentes, además de la dirección y el contrato:
