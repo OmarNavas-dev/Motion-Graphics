@@ -19,6 +19,7 @@ import {
   type MotionGraphic, type GraphicKind, type GraphicUnit, type GraphicIcon,
   type ImageFit, type CaptionCue,
 } from './studio-schema';
+import {createLayeredImageComposition} from './layered-image-composer.mjs';
 import './studio-app.css';
 
 type JobStatus = {
@@ -1257,6 +1258,23 @@ function StudioApp() {
               <input type="file" accept=".png,.jpg,.jpeg,.webp"
                 onChange={(e: ChangeEvent<HTMLInputElement>) => void upload(e.target.files?.[0], 'imageAsset')}/>
             </label>
+            <div className="file-line">
+              <button className="secondary"
+                disabled={(project.references?.length ?? 0) < 3 || (project.references?.length ?? 0) > 12}
+                onClick={() => {
+                  const assets = project.references ?? [];
+                  const hasVisual = Boolean(currentScene.customScene?.html || currentScene.authored?.layers?.length ||
+                    currentScene.imageAsset || currentScene.videoAsset || currentScene.layers?.length);
+                  if (hasVisual && !window.confirm('¿Reemplazar el diseño visual de esta escena por las imágenes 2.5D?')) return;
+                  try {
+                    patchScene({authored:createLayeredImageComposition(assets,{duration:currentScene.duration}),
+                      customScene:undefined,imageAsset:'',videoAsset:'',layers:[],motionGraphics:[],approved:false});
+                    setNotice('Composición 2.5D creada. Orden de referencias: fondo → centro → frente. Revisa transparencia y encuadre antes de aprobar.');
+                  } catch(error) { setNotice('No se pudo crear la composición 2.5D: '+(error as Error).message); }
+                }}>Crear composición 2.5D con referencias</button>
+            </div>
+            <p className="hint">Importa de 3 a 12 imágenes PNG transparentes en «Personajes y referencias», en orden de atrás hacia delante.
+              Se colocarán como capas de profundidad con una cámara de parallax; no se recortan automáticamente los objetos.</p>
             <label>Clip MP4 de la escena (Remotion o HyperFrames)
               <input type="file" accept=".mp4,video/mp4"
                 onChange={(e: ChangeEvent<HTMLInputElement>) => void upload(e.target.files?.[0], 'videoAsset')}/>
