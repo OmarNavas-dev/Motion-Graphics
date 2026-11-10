@@ -1,3 +1,4 @@
+import {createLayeredImageComposition} from './src/layered-image-composer.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {auditVisualDirection} from './src/visual-direction-audit.mjs';
@@ -37,4 +38,23 @@ test('no marca falsas faltas en una escena 2.5D por planos independientes', () =
     },direction:{objective:'Mostrar profundidad',shots:[{scale:'medium'}]}
   }]});
   assert.equal(result.findings.length,0);
+});
+
+test('compone tres imágenes importadas con profundidad y cámara 2.5D', () => {
+  const ids=['00000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000002','00000000-0000-4000-8000-000000000003'];
+  const assets=ids.map(id=>'user-assets/'+id+'.png');
+  const result=createLayeredImageComposition(assets,{duration:10});
+  assert.equal(result.layers.length,3);
+  assert.deepEqual(result.layers.map(l=>l.asset),assets);
+  assert.deepEqual(result.layers.map(l=>l.type),['image','image','image']);
+  assert.ok(result.layers[0].depth<result.layers[1].depth && result.layers[1].depth<result.layers[2].depth);
+  assert.deepEqual(result.camera.keyframes.map(k=>k.at),[0,5,10]);
+  assert.equal(result.camera.keyframes[1].x,4);
+});
+
+test('rechaza enlaces externos, duplicados y capas insuficientes sin inventar assets', () => {
+  const id='user-assets/00000000-0000-4000-8000-000000000001.png';
+  assert.throws(()=>createLayeredImageComposition([id,id,id]),/únicas/);
+  assert.throws(()=>createLayeredImageComposition([id,'https://example.com/a.png',id]),/únicas|importadas/);
+  assert.throws(()=>createLayeredImageComposition([id]),/entre 3 y 12/);
 });
