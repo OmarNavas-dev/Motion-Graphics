@@ -69,7 +69,7 @@ test('los límites de tamaño se aplican', () => {
     assert.throws(() => normalizeSceneCode({html: '<p>Escena</p>', [key]: 'a'.repeat(limit + 1)}), /supera/);
   }
   assert.equal(SCENE_LIMITS, CUSTOM_SCENE_LIMITS);
-  assert.match(sceneCoderSystemPrompt(), /HTML 150000, CSS 50000, script 100000/);
+  assert.match(sceneCoderSystemPrompt(), /HTML 300000, CSS 100000, script 200000/);
   assert.equal(MAX_PROJECT_BYTES, projectByteLimit(MAX_SCENES));
 });
 
