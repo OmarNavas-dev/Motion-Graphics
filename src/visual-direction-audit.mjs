@@ -18,6 +18,29 @@ export function auditVisualDirection(project) {
     const html = String(scene.customScene?.html ?? '');
     const compiled=compileSceneDirection(scene);
     const timelineCamera = code.split(';').some(step => cameraTarget.test(step) && cameraMotion.test(step)) || compiled.cameraGenerated;
+    // A declared 2.5D scene needs evidence of layered depth, not merely a zoom.
+    const depthRequest = [project?.creativeBrief, project?.visualMode, scene.visualMode,
+      scene.direction?.objective, scene.direction?.materials].filter(Boolean).join(' ');
+    if (/2[.,]5\s*d|two-and-a-half\s*d/i.test(depthRequest) && html) {
+      const depthValues = [...html.matchAll(/data-depth\s*=\s*["']([^"']+)["']/gi)]
+        .map(match => match[1]);
+      const uniqueDepths = new Set(depthValues);
+      if (uniqueDepths.size < 3)
+        push(scene, 'DEPTH_PLANES_MISSING', 'warning',
+          'Escena declarada 2.5D sin tres planos diferenciados de profundidad.',
+          'Planos data-depth distintos: ' + uniqueDepths.size + '; se esperan fondo, centro y frente.');
+      const materialEvidence = /<(?:linearGradient|radialGradient|filter)\b|(?:drop-shadow|box-shadow|feGaussianBlur|feDropShadow)\s*\(/i.test(html + ' ' + String(scene.customScene?.css || ''));
+      if (!materialEvidence)
+        push(scene, 'MATERIAL_DEPTH_WEAK', 'warning',
+          'No se detectan materiales o sombras que ayuden a describir el volumen.',
+          'Sin gradientes SVG, filtros ni sombras CSS identificables.');
+      const parallaxTargets = [...code.matchAll(/S\s*\+\s*["']\s*([.#][\w-]*(?:depth|layer|plane|parallax)[\w-]*)["']/gi)]
+        .map(match => match[1]);
+      if (new Set(parallaxTargets).size < 2)
+        push(scene, 'PARALLAX_NOT_EXECUTED', 'warning',
+          'Se declara profundidad 2.5D, pero GSAP no anima al menos dos planos de forma independiente.',
+          'Planos animados identificados: ' + new Set(parallaxTargets).size + '; revisar la cámara y las capas.');
+    }
 
     if (shots.length > 1 && !timelineCamera)
       push(scene, 'SHOT_PLAN_NOT_EXECUTED', 'warning',
