@@ -264,6 +264,8 @@ export const SCENE_RULES = [
   'No uses recursos externos: ni http(s)://, ni @import, ni url() remoto, ni <script>, <iframe>, <link> ni atributos onclick.',
   'Prioriza transform y opacity por rendimiento; anima atributos SVG como d, width, height y stroke-dashoffset cuando expliquen la accion. Canvas puede dibujarse desde estado GSAP con onUpdate puro, sin acumular pasos. No uses onComplete como requisito para reconstruir un fotograma.',
   'Construye acciones y encuadres con preparacion, cambio y resultado. El ritmo y las pausas dependen del significado. No impongas stagger, zoom, textura, etiquetas ni una cantidad minima de efectos.',
+  'Cuando el brief solicite 2.5D, construye al menos tres grupos SVG/HTML con data-depth distintos (fondo, centro y frente), superficies con volumen, oclusion y sombras de contacto coherentes. No llames 2.5D a un icono plano con zoom.',
+  'En 2.5D, anima con GSAP por lo menos dos capas independientemente usando clases layer-far y layer-near; deja los subtitulos y etiquetas fuera del grupo de camara. Incluye un plano estatico de validacion antes de animar.',
   'El texto visible debe ser breve (maximo 8 palabras por titular) y legible a tamano de telefono.',
   'Si no hay imagen disponible, no incluyas <img> ni __IMAGE__: resuelve la escena con CSS y SVG en linea.',
   'No inventes cifras: si el brief no aporta numeros, no dibujes numeros.',
