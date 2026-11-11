@@ -86,6 +86,8 @@ jobs:
           ffmpeg -version | head -1
           ffprobe -version | head -1
           google-chrome --version || true
+      - name: Verify v4 render evidence and clipped pilot sampling
+        run: npm run test:production-v4
       - name: Render and inspect five real MP4s
         run: npm run accept:five:render
       - name: Render real transparent ProRes and composite with audio
