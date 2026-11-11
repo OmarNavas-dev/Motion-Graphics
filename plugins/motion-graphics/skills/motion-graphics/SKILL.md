@@ -5,7 +5,7 @@ description: Convierte un guion, narración y referencias en un proyecto JSON pa
 
 # Motion Graphics · núcleo 4.0 · Producción verificable
 
-**Objetivo:** producir escenas que representen acontecimientos verificables, con personajes y mecanismos completos, continuidad, cámara motivada y calidad contrastada con las referencias. El entregable de este complemento es JSON importable, **no MP4**. Motion Studio es quien lo exporta. No prometer un resultado profesional sin inspección real.
+**Objetivo:** producir escenas que representen acontecimientos verificables, con personajes y mecanismos completos, continuidad, cámara motivada y calidad contrastada con las referencias. El proyecto final se entrega como JSON importable para exportarlo en Motion Studio. La ruta de preproducción también genera un MP4 de revisión. No prometer un resultado profesional sin inspección real.
 
 ## Protocolo obligatorio de doce pasos (v4)
 
@@ -26,6 +26,10 @@ node scripts/audit-storyboard-v3.mjs --storyboard storyboard.json
 ```
 
 Si falta el storyboard, hay eventos sin tiempos, no se identifica quién actúa o qué cambia, o el plan solo contiene objetivos genéricos, **parar**. No fabricar el storyboard retrospectivamente a partir del JSON para simular cumplimiento.
+
+## Animatic con narración
+
+Si el usuario pide un animatic, una prueba de ritmo o un montaje preliminar, usar la narración real como reloj. Preparar el storyboard y los bocetos ejecutables a partir del guion y la voz que proporciona. Declarar los objetos que deben conservar su estado entre escenas y ejecutar la [ruta de animatic](references/animatic.md) desde el repositorio integrado de Motion Studio. Entregar el MP4 con voz, el JSON editable y el diagnóstico de los empalmes. Revisar el animatic antes de invertir en arte final. Si el render falla o la continuidad queda pendiente, comunicar la escena y el defecto concreto.
 
 ## Proceso de producción en seis puertas bloqueantes
 
