@@ -65,6 +65,7 @@
     "test:explainer": "node --test explainer.test.mjs",
     "review:explainer": "node scripts/review-explainer.mjs",
     "review:offline": "node scripts/review-explainer-offline.mjs",
+    "test:production-v4": "node --test production-v4-video.test.mjs",
     "test:ecosystem": "node scripts/check-motion-ecosystem.mjs",
     "plugin:check": "node scripts/check-plugin-package.mjs",
     "accept:five": "node scripts/acceptance-five-topics.mjs",

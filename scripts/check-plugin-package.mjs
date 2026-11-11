@@ -21,6 +21,13 @@ const styleFiles=STYLE_PRESET_IDS.map(id=>`skills/motion-graphics/references/sty
 const criticalFiles=[
  'plugin.json','.codex-plugin/plugin.json','skills/motion-graphics/SKILL.md',
  'skills/motion-graphics/references/contrato-compartido.md',
+ 'skills/motion-graphics/references/receta-profesional-v4.md',
+ 'skills/motion-graphics/references/storyboard-ejecutable-v3.md',
+ 'skills/motion-graphics/scripts/audit-storyboard-v3.mjs',
+ 'skills/motion-graphics/scripts/audit-explainer-craft-v4.mjs',
+ 'skills/motion-graphics/scripts/gate-sequential-quality.mjs',
+ 'skills/motion-graphics/scripts/sample-pilot-v3.mjs',
+ 'skills/motion-graphics/scripts/video-evidence.mjs',
  'skills/motion-graphics/references/contrato-studio-2.9.md',
  'skills/motion-graphics/references/guias-originales-4-repos.md',
  'skills/motion-graphics/references/galeria-estilos-21.md',
