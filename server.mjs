@@ -645,6 +645,22 @@ async function handle(req, res) {
   if (req.method === 'GET' && pathname === '/api/integrations')
     return respond(res,200,{version:appVersion,sceneContract:MOTION_STUDIO_CONTRACT,customScene:true,
       hyperframes:`renderizador directo ${HYPERFRAMES_VERSION} (instalación automática al primer uso)`,paidApisEnabled:false});
+  if (req.method === 'POST' && pathname === '/api/authoring/storyboard') {
+    const {storyboard,script,words,format,resolution}=await bodyJson(req) ?? {};
+    const {compileStoryboard}=await import('./scripts/compile-storyboard.mjs');
+    const project=compileStoryboard(storyboard,script,{
+      words,format,resolution,fps:storyboard?.fps ?? 30,
+    });
+    const normalized=validateProject(project);
+    for (const asset of collectProjectAssets(normalized)) {
+      const exists=await fsp.stat(path.join(publicDir,asset)).then(info=>info.isFile(),error=>{
+        if(error.code==='ENOENT')return false;
+        throw error;
+      });
+      if(!exists)throw Error('El storyboard hace referencia a una imagen local que falta: '+asset);
+    }
+    return respond(res,200,{project:normalized});
+  }
   if (req.method === 'POST' && pathname === '/api/authoring/p81') {
     const payload=await bodyJson(req);
     const generators={'brand-intake':()=>createBrandKit(payload.brand??payload),

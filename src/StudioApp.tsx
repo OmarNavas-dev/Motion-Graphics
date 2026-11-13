@@ -683,9 +683,27 @@ function StudioApp() {
     setDirty(false);
     return result.sceneIdRepair;
   };
+  const importStoryboard = async (storyboard: unknown) => {
+    const {project: compiled} = await api<{project: StudioProject}>('/api/authoring/storyboard', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({storyboard, script:project.script, format:project.format, resolution:project.resolution}),
+    });
+    if (project.scenes.length && !window.confirm('¿Abrir el storyboard como proyecto nuevo? Guarda primero el proyecto actual si necesitas conservar sus cambios.')) return false;
+    changeProject(compiled);
+    setSelected(0);
+    playerRef.current?.seekTo(0);
+    const pieces = compiled.scenes.reduce((count, scene) =>
+      count + (scene.authored?.source === 'storyboard-art/v1' ? scene.authored.layers.length : 0), 0);
+    setNotice(`Storyboard compilado con ${pieces} piezas. Revisa el encuadre y guarda el proyecto cuando esté listo.`);
+    return true;
+  };
   const importJson = async () => {
     try {
       const parsed = JSON.parse(jsonToImport);
+      if (parsed?.schema === 'motion-studio.storyboard/v3') {
+        if (await importStoryboard(parsed)) setJsonToImport('');
+        return;
+      }
       const repair=await loadJsonProject(parsed.project ?? parsed);
       setNotice(repair?.changes.length
         ? `Proyecto importado. Se repararon ${repair.changes.length} identificadores SVG repetidos. Revisa y aprueba las escenas.`
@@ -765,12 +783,16 @@ function StudioApp() {
               setNotice('Nuevo proyecto vacío. Añade escenas o importa un guion; guarda para reemplazar el proyecto actual.');
             }}>Proyecto nuevo</button>
           </div>
-          <label>Abrir un proyecto JSON guardado
+          <label>Abrir proyecto JSON o storyboard
             <input type="file" accept=".json,application/json" onChange={async (e) => {
               const file = e.target.files?.[0];
               if (!file) return;
               try {
                 const parsed = JSON.parse(await file.text());
+                if (parsed?.schema === 'motion-studio.storyboard/v3') {
+                  await importStoryboard(parsed);
+                  return;
+                }
                 await loadJsonProject(parsed.project ?? parsed);
                 setNotice('Proyecto cargado. Revisa y aprueba sus escenas.');
               } catch (error) {
@@ -1275,6 +1297,35 @@ function StudioApp() {
             </div>
             <p className="hint">Importa de 3 a 12 imágenes PNG transparentes en «Personajes y referencias», en orden de atrás hacia delante.
               Se colocarán como capas de profundidad con una cámara de parallax; no se recortan automáticamente los objetos.</p>
+            {currentScene.authored?.source === 'storyboard-art/v1' && (
+              <details>
+                <summary>Piezas del storyboard ({currentScene.authored.layers.length})</summary>
+                {currentScene.authored.layers.map((piece, index) => (
+                  <details key={piece.id}>
+                    <summary>{piece.id}{piece.parent ? ` · ${piece.parent}` : ''}</summary>
+                    <div className="two-fields">
+                      {([
+                        ['x', 'Posición X', -100, 200],
+                        ['y', 'Posición Y', -100, 200],
+                        ['ax', 'Pivote X', 0, 100],
+                        ['ay', 'Pivote Y', 0, 100],
+                      ] as const).map(([key, label, min, max]) => (
+                        <label key={key}>{label} (%)
+                          <input type="number" min={min} max={max} step="any" value={piece[key] ?? 50}
+                            onChange={event => {
+                              const value = event.currentTarget.valueAsNumber;
+                              if (!Number.isFinite(value) || value < min || value > max) return;
+                              const authored = currentScene.authored!;
+                              const layers = authored.layers.map((layer, i) => i === index ? {...layer, [key]:value} : layer);
+                              patchScene({authored:{...authored, layers}});
+                            }}/>
+                        </label>
+                      ))}
+                    </div>
+                  </details>
+                ))}
+              </details>
+            )}
             <label>Clip MP4 de la escena (Remotion o HyperFrames)
               <input type="file" accept=".mp4,video/mp4"
                 onChange={(e: ChangeEvent<HTMLInputElement>) => void upload(e.target.files?.[0], 'videoAsset')}/>
@@ -1518,7 +1569,7 @@ function StudioApp() {
         </div>
         <div className="assistant-box">
           <div className="panel-heading"><h2>Importar proyecto Motion Graphics</h2><span>JSON · sin servicios externos</span></div>
-          <p>Pega un JSON completo generado fuera de Motion Studio. El editor lo valida y permite renderizarlo localmente.</p>
+          <p>Pega un proyecto JSON o un storyboard v3 con arte por piezas. Para importar un storyboard, pega primero su guion en «Guion y storyboard».</p>
           <textarea value={jsonToImport} onChange={(e) => setJsonToImport(e.target.value)}
             placeholder="Pega aquí el JSON generado y pulsa Importar." rows={3}/>
           <button className="secondary" onClick={() => void importJson()} disabled={!jsonToImport.trim()}>

@@ -106,3 +106,45 @@ Para piezas mayores de 15 segundos, diseñar una escena o secuencia de 8–12 se
 - **Render:** prueba en Motion Studio y examen visual; repetir hasta corregir defectos.
 
 La primera puerta **solo** pasa con storyboard coherente y evidencia revisada. La segunda y tercera exigen, además, código y render satisfactorios. Las puertas posteriores no pueden compensar una primera etapa defectuosa.
+
+## Arte por piezas desde el storyboard
+
+Para una escena con piezas independientes, añade `art` a la escena y usa `.ms-part-ID` como selector de las fases. Cada pieza se dibuja en su propia capa. Puedes usar trazados vectoriales, una imagen ya importada o un grupo que mueva sus piezas hijas. Los trazados y las poses los define quien prepara el storyboard.
+
+```json
+{
+  "background": "#141b2c",
+  "parts": [
+    {
+      "id": "producto",
+      "x": 50,
+      "y": 58,
+      "width": 22,
+      "height": 15,
+      "pivot": {"x": 50, "y": 85},
+      "viewBox": [0, 0, 100, 80],
+      "paths": [
+        {
+          "d": "M10 12H90V70H10Z",
+          "gradient": {"from": "#d1f4ff", "to": "#44738b"}
+        }
+      ],
+      "keys": [{"at": 0, "y": 8}, {"at": 2, "y": -18}, {"at": 4, "y": 8}]
+    }
+  ]
+}
+```
+
+- Declara las piezas de atrás hacia delante. Si usas `parent`, declara antes el padre con `group: true`. El frente de una caja puede cubrir el producto como una capa opaca por encima.
+- `x`, `y`, `width` y `height` son porcentajes del lienzo o del grupo padre. El pivote se mide dentro de la propia pieza.
+- Los `keys` tienen segundos locales a la escena. `x` e `y` en un keyframe desplazan la pieza en porcentajes del lienzo o grupo. También se admiten `rotate`, `scale` y `opacity`. El primer keyframe puede fijar la pose inicial en `at: 0`.
+- Para un vector usa `viewBox` y `paths` con `d` y pintura opcional `fill`, `stroke`, `strokeWidth` o `gradient`. Una imagen usa `asset: "user-assets/UUID.png"`. `art.camera` admite keyframes locales con `x`, `y`, `zoom` y `rotate`. `depth` ajusta el paralaje de las capas raíz.
+- Para una cola articulada, usa un grupo para el pez, con cuerpo y cola como hijos. Coloca el pivote de la cola en la unión al cuerpo. Sitúa la superficie como capa posterior en la lista si debe verse delante del pez.
+
+En Motion Studio, pega el guion en **Guion y storyboard** y abre el storyboard desde **Abrir proyecto JSON o storyboard**. El inspector **Piezas del storyboard** permite ajustar la posición y el pivote por capa. El proyecto importado queda pendiente de revisión y se guarda como JSON de Motion Studio. El storyboard también puede pasar por el animatic de la aplicación o compilarse desde el complemento:
+
+```bash
+node scripts/compile-storyboard.mjs storyboard.json guion.txt proyecto.json palabras.json
+```
+
+`palabras.json` es opcional. Cuando lo aportas, conserva tiempos globales de voz y las anclas de los planos. La pista se añade al proyecto en Motion Studio. Para HTML/GSAP libre, usa `draft` en la escena. Ambas opciones pueden convivir en distintas escenas de un mismo storyboard.

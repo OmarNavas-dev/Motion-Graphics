@@ -27,6 +27,10 @@ node scripts/audit-storyboard-v3.mjs --storyboard storyboard.json
 
 Si falta el storyboard, hay eventos sin tiempos, no se identifica quién actúa o qué cambia, o el plan solo contiene objetivos genéricos, **parar**. No fabricar el storyboard retrospectivamente a partir del JSON para simular cumplimiento.
 
+## Arte editable por piezas
+
+Para una acción que necesite capas, pivotes o partes articuladas, define `scene.art.parts` y vincula las fases con `.ms-part-ID` según [Storyboard ejecutable v3](references/storyboard-ejecutable-v3.md#arte-por-piezas-desde-el-storyboard). Compila con `node scripts/compile-storyboard.mjs storyboard.json guion.txt proyecto.json` o importa el storyboard desde Motion Studio. Revisa los fotogramas de contacto y oclusión en el MP4.
+
 ## Animatic con narración
 
 Si el usuario pide un animatic, una prueba de ritmo o un montaje preliminar, usar la narración real como reloj. Preparar el storyboard y los bocetos ejecutables a partir del guion y la voz que proporciona. Declarar los objetos que deben conservar su estado entre escenas y ejecutar la [ruta de animatic](references/animatic.md) desde el repositorio integrado de Motion Studio. Entregar el MP4 con voz, el JSON editable y el diagnóstico de los empalmes. Revisar el animatic antes de invertir en arte final. Si el render falla o la continuidad queda pendiente, comunicar la escena y el defecto concreto.

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {storyboardPartForSelector,storyboardPartMoves} from './storyboard-art.mjs';
 
 const SCHEMA='motion-studio.storyboard/v3';
 const number=x=>typeof x==='number'&&Number.isFinite(x);
@@ -27,7 +28,10 @@ export function auditProjectCraftSurface(project){
   const code=String(s.customScene?.script||''),html=String(s.customScene?.html||'');
   for(const a of s.direction?.actions||[]){
    if(!physical(a.selector))continue;
-   if(!selectorExists(html,a.selector))issues.push(issue('error','ACTION_TARGET_MISSING',a.selector+' no existe en el HTML.',s.id));
+   if(s.authored?.source==='storyboard-art/v1'){
+    if(!storyboardPartForSelector(s.authored,a.selector))issues.push(issue('error','ACTION_TARGET_MISSING',a.selector+' no existe en las capas.',s.id));
+    else if(!storyboardPartMoves(s.authored,a.selector,a.at,a.at+a.duration))issues.push(issue('error','ACTION_NOT_EXECUTED',a.selector+' no cambia durante la acción.',s.id));
+   }else if(!selectorExists(html,a.selector))issues.push(issue('error','ACTION_TARGET_MISSING',a.selector+' no existe en el HTML.',s.id));
    else if(!code.includes(a.selector))issues.push(issue('error','ACTION_NOT_EXECUTED',a.selector+' se describe pero no se anima en el código.',s.id));
   }
   if(s.duration>=5.5&&(s.direction?.shots||[]).length===1&&['narrative','mechanism'].includes(s.direction?.visualMode))
@@ -134,10 +138,16 @@ export function auditStoryboardV3(storyboard,project=null){
    if(project){
     const target=project.scenes?.find(sc=>sc.id===id);
     if(target)for(const ph of phases){
-     if(!physical(ph.selector)||ph.kind==='hold')continue;
-     if(!selectorExists(target.customScene?.html,ph.selector))add('PHASE_TARGET_MISSING',ph.selector+' falta en HTML.',id);
-     else if(!String(target.customScene?.script||'').includes(ph.selector))
-      add('PHASE_NOT_EXECUTED',ph.selector+' no aparece en código GSAP.',id);
+     if(!physical(ph.selector))continue;
+     if(target.authored?.source==='storyboard-art/v1'){
+      if(!storyboardPartForSelector(target.authored,ph.selector))add('PHASE_TARGET_MISSING',ph.selector+' falta en las capas.',id);
+      else if(ph.kind!=='hold'&&!storyboardPartMoves(target.authored,ph.selector,ph.start-s.start,ph.end-s.start))
+       add('PHASE_NOT_EXECUTED',ph.selector+' no cambia durante la fase.',id);
+     }else if(ph.kind!=='hold'){
+      if(!selectorExists(target.customScene?.html,ph.selector))add('PHASE_TARGET_MISSING',ph.selector+' falta en HTML.',id);
+      else if(!String(target.customScene?.script||'').includes(ph.selector))
+       add('PHASE_NOT_EXECUTED',ph.selector+' no aparece en código GSAP.',id);
+     }
     }
    }
   }
