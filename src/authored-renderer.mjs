@@ -37,6 +37,7 @@ export function renderAuthored(spec, options = {}) {
     hand: '"MS Caveat", "Comic Sans MS", cursive',
     serif: 'Georgia, serif', mono: '"Courier New", monospace',
   })[v] || v || theme.display || 'Arial');
+  const storyboardArt = spec.source === "storyboard-art/v1";
   const children = new Map();
   for (const l of spec.layers || [])
     children.set(l.parent || "", [...(children.get(l.parent || "") || []), l]);
@@ -50,7 +51,7 @@ export function renderAuthored(spec, options = {}) {
   if(cameraKeys.length){
     for(const next of cameraKeys){
       cameraTo={...cameraFrom,...next};
-      if(time <= cameraTo.at){
+      if(time <= cameraTo.at && !(storyboardArt && cameraTo.at === 0)){
         const v=clamp((time-cameraFrom.at)/Math.max(.001,cameraTo.at-cameraFrom.at));
         cameraT=v*v*(3-2*v);
         break;
@@ -67,7 +68,7 @@ export function renderAuthored(spec, options = {}) {
       return "";
     const w =
         (n(l.width, ["text", "caption"].includes(l.type) ? 80 : 10) / 100) * bw,
-      h = (n(l.height, l.width ?? 10) / 100) * bw;
+      h = (n(l.height, l.width ?? 10) / 100) * (storyboardArt ? bh : bw);
     let x = 0,
       y = 0,
       r = n(l.rotate),
@@ -125,7 +126,7 @@ export function renderAuthored(spec, options = {}) {
       pose = from;
     for (const key of l.keyframes || []) {
       const to = { ...from, ...key };
-      if (time <= to.at) {
+      if (time <= to.at && !(storyboardArt && to.at === 0)) {
         const v = clamp((time - from.at) / Math.max(0.001, to.at - from.at)),
           z = v * v * (3 - 2 * v);
         pose = {};
@@ -136,8 +137,8 @@ export function renderAuthored(spec, options = {}) {
       from = to;
       pose = to;
     }
-    x += n(pose.x);
-    y += n(pose.y);
+    x += n(pose.x) * (storyboardArt ? bw / 100 : 1);
+    y += n(pose.y) * (storyboardArt ? bh / 100 : 1);
     r = n(pose.rotate, r);
     s *= n(pose.scale, 1);
     o *= n(pose.opacity, 1);
@@ -294,9 +295,9 @@ export function renderAuthored(spec, options = {}) {
     const factor = 0.4 + 1.2 * clamp(n(l.depth, 0.5)),
       camera =
         root && !l.fixed && l.type !== "caption"
-          ? `translate(${(-cam.x / 100) * width * factor}px,${(-cam.y / 100) * height * factor}px) scale(${1 + (cam.zoom - 1) * factor}) rotate(${cam.rotate}deg)`
+          ? `translate(${(-cam.x / 100) * width * factor}px,${(-cam.y / 100) * height * factor}px) scale(${storyboardArt ? Math.max(.1, 1 + (cam.zoom - 1) * factor) : 1 + (cam.zoom - 1) * factor}) rotate(${cam.rotate}deg)`
           : "none";
-    const html = `<div data-ms-actor="${esc(l.id)}" style="position:absolute;left:${(n(l.x, 50) / 100) * bw}px;top:${(n(l.y, 50) / 100) * bh}px;width:${w}px;height:${h}px;opacity:${o};transform-origin:${n(l.ax, 50)}% ${n(l.ay, 50)}%;transform:translate(-50%,-50%) translate(${x}px,${y}px) rotate(${r}deg) scale(${s * (l.flip ? -1 : 1)},${s});filter:blur(${blur}px);${reveal < 1 ? `clip-path:inset(0 ${(1 - reveal) * 100}% 0 0);` : ""}mix-blend-mode:${esc(l.blend || "normal")}">${body}</div>`;
+    const html = `<div${storyboardArt ? ' class="ms-part-' + esc(l.id) + '"' : ""} data-ms-actor="${esc(l.id)}" style="position:absolute;left:${(n(l.x, 50) / 100) * bw}px;top:${(n(l.y, 50) / 100) * bh}px;width:${w}px;height:${h}px;opacity:${o};transform-origin:${n(l.ax, 50)}% ${n(l.ay, 50)}%;transform:translate(-50%,-50%) translate(${x}px,${y}px) rotate(${r}deg) scale(${s * (l.flip ? -1 : 1)},${s});filter:blur(${blur}px);${reveal < 1 ? `clip-path:inset(0 ${(1 - reveal) * 100}% 0 0);` : ""}mix-blend-mode:${esc(l.blend || "normal")}">${body}</div>`;
     return root
       ? `<div style="position:absolute;inset:0;transform:${camera};transform-origin:50% 50%">${html}</div>`
       : html;

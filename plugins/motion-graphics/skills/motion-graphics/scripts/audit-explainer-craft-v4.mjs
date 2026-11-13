@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {storyboardPartForSelector,storyboardPartMoves} from './storyboard-art.mjs';
 
 const simpleSelector=/^[.#][\w-]+$/;
 const findSelectors=(html,sel)=>{
@@ -18,8 +19,9 @@ export function auditExplainerCraft(project,{storyboard=null}={}){
  const idsAcrossScenes=new Map();
  for(const scene of project?.scenes||[]){
   const id=scene.id||'(sin ID)',html=String(scene.customScene?.html||''),gsap=String(scene.customScene?.script||'');
-  if(!html.trim())add('error','NO_GEOMETRY',id,'Falta HTML/SVG.');
-  if(!gsap.trim())add('warning','NO_ANIMATION',id,'No hay GSAP; confirmar que el plano es intencionalmente estático.');
+  const parts=scene.authored?.source==='storyboard-art/v1' && scene.authored.layers?.length;
+  if(!html.trim()&&!parts)add('error','NO_GEOMETRY',id,'Falta HTML/SVG.');
+  if(!gsap.trim()&&!parts)add('warning','NO_ANIMATION',id,'No hay GSAP; confirmar que el plano es intencionalmente estático.');
   const ids=[...html.matchAll(/\bid\s*=\s*(["'])(.*?)\1/gs)].map(m=>m[2]);
   const local=new Set();for(const svgId of ids){
    if(local.has(svgId))add('error','DUPLICATE_SVG_ID',id,`ID ${svgId} repetido dentro de la escena.`);
@@ -29,7 +31,12 @@ export function auditExplainerCraft(project,{storyboard=null}={}){
    if(!local.has(match[1]))add('error','UNRESOLVED_SVG_REFERENCE',id,`url(#${match[1]}) sin ID local.`);
   for(const action of scene.direction?.actions||[]){
    if(!simpleSelector.test(action.selector||''))continue;
-   if(!findSelectors(html,action.selector))add('error','ACTION_SELECTOR_MISSING',id,`${action.selector} no existe.`);
+   if(parts){
+    if(!storyboardPartForSelector(scene.authored,action.selector))
+     add('error','ACTION_SELECTOR_MISSING',id,`${action.selector} no existe en las capas.`);
+    else if(!storyboardPartMoves(scene.authored,action.selector,action.at,action.at+action.duration))
+     add('error','ACTION_NOT_ANIMATED',id,`${action.selector} no cambia durante la acción.`);
+   }else if(!findSelectors(html,action.selector))add('error','ACTION_SELECTOR_MISSING',id,`${action.selector} no existe.`);
    else if(!gsap.includes(action.selector))add('error','ACTION_NOT_ANIMATED',id,`${action.selector} figura en dirección, pero no en GSAP.`);
   }
   if(scene.approved===true)add('warning','REQUIRES_VISUAL_PROOF',id,'approved=true no puede aceptarse sin evidencia real de render.');

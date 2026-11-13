@@ -14,18 +14,23 @@ export function assembleScenes(base,records,{timing,validate=bundledValidate}={}
   if(used.has(id))throw Error('Id duplicado: '+id);used.add(id);
   if(!Number.isFinite(record.duration)||record.duration<.5||record.duration>60)throw Error(id+': duracion invalida.');
   const c=record.customScene;
-  if(!c?.html?.trim())throw Error(id+': falta HTML completo.');
+  if(!c?.html?.trim() && !record.authored?.layers?.length)throw Error(id+': falta HTML completo o composición por capas.');
   const title=record.title??old.title??'';
   const excerpt=record.scriptExcerpt??old.scriptExcerpt;
   if(typeof excerpt!=='string')throw Error(id+': indicar scriptExcerpt explicitamente. No asignar guion por saltos de linea.');
   return {...old,...record,id,title,scriptExcerpt:excerpt,duration:record.duration,approved:false,
-   customScene:{html:c.html,css:c.css??'',script:c.script??''}};
+   customScene:c?.html?.trim()?{html:c.html,css:c.css??'',script:c.script??''}:undefined};
  });
  let result=base.project?{...base,project:p}:p;
  if(timing)result=addCaptions(result,timing);
  const q=result.project??result,normalized=validate(q);
- for(const [i,s] of q.scenes.entries())for(const field of ['html','css','script']){
-  if(normalized.scenes[i]?.customScene?.[field]!==s.customScene[field])throw Error(s.id+': el importador alteraria '+field);
+ for(const [i,s] of q.scenes.entries()){
+  if(s.customScene)for(const field of ['html','css','script']){
+   if(normalized.scenes[i]?.customScene?.[field]!==s.customScene[field])throw Error(s.id+': el importador alteraria '+field);
+  }
+  if(s.authored?.source==='storyboard-art/v1' &&
+   JSON.stringify(normalized.scenes[i]?.authored)!==JSON.stringify(s.authored))
+   throw Error(s.id+': el importador alteraría el arte del storyboard.');
  }
  return result;
 }

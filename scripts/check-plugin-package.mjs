@@ -24,6 +24,8 @@ const criticalFiles=[
  'skills/motion-graphics/references/receta-profesional-v4.md',
  'skills/motion-graphics/references/storyboard-ejecutable-v3.md',
  'skills/motion-graphics/scripts/audit-storyboard-v3.mjs',
+ 'skills/motion-graphics/scripts/storyboard-art.mjs',
+ 'skills/motion-graphics/scripts/compile-storyboard.mjs',
  'skills/motion-graphics/scripts/audit-explainer-craft-v4.mjs',
  'skills/motion-graphics/scripts/gate-sequential-quality.mjs',
  'skills/motion-graphics/scripts/sample-pilot-v3.mjs',

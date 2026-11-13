@@ -16,7 +16,7 @@ test('resuelve la ruta Inter-Regular que fallaba con ENOENT en Windows',async()=
  await access(path.join(root,'public','fonts',filename));
 });
 test('los alias admitidos existen sin crear una ruta genérica insegura',async()=>{
- for(const variant of ['Inter-Medium.woff2','Inter-Bold.woff2']){
+ for(const variant of ['Inter-Medium.woff2','Inter-Bold.woff2','Inter-ExtraBold.woff2']){
   const filename=legacyFontFilename('/assets/fonts/'+variant);
   assert.ok(filename);await access(path.join(root,'public','fonts',filename));
  }
@@ -24,7 +24,7 @@ test('los alias admitidos existen sin crear una ruta genérica insegura',async()
  assert.equal(legacyFontFilename('/assets/fonts/unknown.woff2'),null);
  assert.equal(legacyFontFilename('/assets/fonts/Inter-Regular.woff2/../../'),null);
 });
-test('servidor sirve Inter-Regular legado por HTTP sin ENOENT',async()=>{
+test('servidor sirve Inter-Regular e Inter-ExtraBold por HTTP sin ENOENT',async()=>{
  const freePort=await new Promise((resolve,reject)=>{
   const listener=createServer();listener.on('error',reject);
   listener.listen(0,'127.0.0.1',()=>{
@@ -47,6 +47,10 @@ test('servidor sirve Inter-Regular legado por HTTP sin ENOENT',async()=>{
   assert.equal(response.status,200);
   assert.match(response.headers.get('content-type'),/font\/woff2/);
   assert.ok((await response.arrayBuffer()).byteLength>1000);
+  const extraBold=await fetch(`http://127.0.0.1:${freePort}/assets/fonts/Inter-ExtraBold.woff2`);
+  assert.equal(extraBold.status,200);
+  assert.match(extraBold.headers.get('content-type'),/font\/woff2/);
+  assert.equal(Buffer.from(await extraBold.arrayBuffer()).subarray(0,4).toString(),'wOF2');
   assert.doesNotMatch(errors,/ENOENT/);
  }finally{
   child.kill();await rm(runtime,{recursive:true,force:true});
