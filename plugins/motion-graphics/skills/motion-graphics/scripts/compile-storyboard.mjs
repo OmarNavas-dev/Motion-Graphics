@@ -13,10 +13,15 @@ const audit=(storyboard,project)=>{
 };
 
 export function compileStoryboard(storyboard,script,{words=[],fps=30,format='vertical',resolution='720p',validate=bundledValidate}={}){
- if(typeof script!=='string'||!script.trim())throw Error('Pega el guion antes de importar el storyboard.');
  if(!Array.isArray(words))throw Error('La transcripción debe contener una lista de palabras con tiempos globales.');
  if(![24,30].includes(fps))throw Error('El animatic admite 24 o 30 fps.');
  audit(storyboard);
+ const narration=storyboard.shots
+  .filter(shot=>typeof shot.narration==='string'&&shot.narration.trim())
+  .sort((a,b)=>a.start-b.start)
+  .map(shot=>shot.narration.trim()).join(' ');
+ const projectScript=(typeof script==='string'?script.trim():'')||narration;
+ if(!projectScript)throw Error('Pega el guion o incluye la narración en los planos del storyboard.');
  let cursor=0;
  const records=storyboard.scenes.map(scene=>{
   const start=ms(scene.start),end=ms(scene.end);
@@ -45,7 +50,7 @@ export function compileStoryboard(storyboard,script,{words=[],fps=30,format='ver
     }))}};
  });
  if(cursor!==ms(storyboard.duration))throw Error('La última escena debe terminar en la duración declarada.');
- const project=assembleScenes({name:storyboard.title??'Animatic',script,format,resolution,fps,
+ const project=assembleScenes({name:storyboard.title??'Animatic',script:projectScript,format,resolution,fps,
   showText:words.length>0,audioAsset:'',references:[],wordTimings:words},records,{validate});
  audit(storyboard,project);
  return project;

@@ -82,3 +82,12 @@ test('invalid art and phases fail before import', () => {
   storyboard.scenes[0].art.parts[1].paths[0].d='M0 0"><script>';
   assert.throws(compile,/Trazado SVG inválido/);
 });
+
+test('an empty editor script falls back to shot narration and keeps explicit text when supplied', () => {
+  const storyboard=plan([piece('producto',{keys:[{at:2,y:-20}]})],[{id:'producto',start:0,end:2}]);
+  storyboard.shots[0].narration='El producto sale por el centro.';
+  assert.equal(compileStoryboard(storyboard,'  ').script,'El producto sale por el centro.');
+  assert.equal(compileStoryboard(storyboard,'Guion editado.').script,'Guion editado.');
+  delete storyboard.shots[0].narration;
+  assert.throws(()=>compileStoryboard(storyboard,''),/Pega el guion o incluye la narración/);
+});

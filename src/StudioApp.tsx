@@ -1569,7 +1569,7 @@ function StudioApp() {
         </div>
         <div className="assistant-box">
           <div className="panel-heading"><h2>Importar proyecto Motion Graphics</h2><span>JSON · sin servicios externos</span></div>
-          <p>Pega un proyecto JSON o un storyboard v3 con arte por piezas. Para importar un storyboard, pega primero su guion en «Guion y storyboard».</p>
+          <p>Pega un proyecto JSON o un storyboard v3 con arte por piezas. Si el storyboard incluye la narración en sus planos, puedes abrirlo con el cuadro de guion vacío.</p>
           <textarea value={jsonToImport} onChange={(e) => setJsonToImport(e.target.value)}
             placeholder="Pega aquí el JSON generado y pulsa Importar." rows={3}/>
           <button className="secondary" onClick={() => void importJson()} disabled={!jsonToImport.trim()}>

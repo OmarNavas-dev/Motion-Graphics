@@ -141,7 +141,7 @@ Para una escena con piezas independientes, añade `art` a la escena y usa `.ms-p
 - Para un vector usa `viewBox` y `paths` con `d` y pintura opcional `fill`, `stroke`, `strokeWidth` o `gradient`. Una imagen usa `asset: "user-assets/UUID.png"`. `art.camera` admite keyframes locales con `x`, `y`, `zoom` y `rotate`. `depth` ajusta el paralaje de las capas raíz.
 - Para una cola articulada, usa un grupo para el pez, con cuerpo y cola como hijos. Coloca el pivote de la cola en la unión al cuerpo. Sitúa la superficie como capa posterior en la lista si debe verse delante del pez.
 
-En Motion Studio, pega el guion en **Guion y storyboard** y abre el storyboard desde **Abrir proyecto JSON o storyboard**. El inspector **Piezas del storyboard** permite ajustar la posición y el pivote por capa. El proyecto importado queda pendiente de revisión y se guarda como JSON de Motion Studio. El storyboard también puede pasar por el animatic de la aplicación o compilarse desde el complemento:
+En Motion Studio, abre el storyboard desde **Abrir proyecto JSON o storyboard**. Con el cuadro de guion vacío, el importador usa la narración de los planos. Si el archivo carece de ella, pega el guion en **Guion y storyboard**. El inspector **Piezas del storyboard** permite ajustar la posición y el pivote por capa. El proyecto importado queda pendiente de revisión y se guarda como JSON de Motion Studio. El storyboard también puede pasar por el animatic de la aplicación o compilarse desde el complemento:
 
 ```bash
 node scripts/compile-storyboard.mjs storyboard.json guion.txt proyecto.json palabras.json
